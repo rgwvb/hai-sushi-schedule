@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>海壽司排班管理系統</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">海</div>
+      <div class="brand-text">
+        <h2>海壽司</h2>
+        <span>排班管理系統</span>
+      </div>
+    </div>
+    <nav>
+      <button class="nav-btn active" data-page="dashboard"><span class="nav-icon">🏠</span><span class="nav-text">首頁</span></button>
+      <button class="nav-btn" data-page="schedule"><span class="nav-icon">👥</span><span class="nav-text">多人班表</span></button>
+      <button class="nav-btn" data-page="personal"><span class="nav-icon">📅</span><span class="nav-text">個人班表</span></button>
+      <button class="nav-btn" data-page="hours"><span class="nav-icon">📊</span><span class="nav-text">工時統計</span></button>
+      <button class="nav-btn" data-page="employees"><span class="nav-icon">👤</span><span class="nav-text">員工資料</span></button>
+      <button class="nav-btn" data-page="sync"><span class="nav-icon">🔄</span><span class="nav-text">資料同步</span></button>
+    </nav>
+    <div class="store-info"><div class="store-title">🍣 海壽司</div><small>Google Sheet 資料端</small></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>海壽司排班管理系統</h1>
+        <div class="connection"><span id="statusDot" class="status-dot"></span><span id="connectionText">尚未同步</span></div>
+      </div>
+      <div class="top-actions">
+        <select id="globalMonth"></select>
+        <button id="refreshBtn" class="refresh-btn">↻ 同步</button>
+        <span class="admin">👤 管理者</span>
+      </div>
+    </header>
+
+    <section id="dashboard" class="page active">
+      <div class="page-title">
+        <div><h2>首頁儀表板</h2><p>Google Sheet 排班與工時摘要</p></div>
+        <span id="lastSync" class="sync-time">尚未同步</span>
+      </div>
+      <div class="cards">
+        <div class="card blue"><div class="card-icon">👥</div><span>本月上班人員</span><strong id="activeCount">0 人</strong></div>
+        <div class="card green"><div class="card-icon">⏱️</div><span>本月總工時</span><strong id="totalHours">0 小時</strong></div>
+        <div class="card orange"><div class="card-icon">📅</div><span>本月班次</span><strong id="totalShifts">0 班</strong></div>
+        <div class="card red"><div class="card-icon">⏰</div><span>本月加班</span><strong id="totalOvertime">0 小時</strong></div>
+      </div>
+      <div class="dashboard-grid">
+        <div class="panel">
+          <div class="panel-title"><div><h3>本月人員工時</h3><span>依 Google Sheet 資料統計</span></div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>姓名</th><th>班次</th><th>正常工時</th><th>加班</th><th>總工時</th></tr></thead>
+              <tbody id="dashboardTable"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><div><h3>最近班表</h3><span>目前月份最新資料</span></div></div>
+          <div id="recentList" class="recent-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="schedule" class="page">
+      <div class="page-title"><div><h2>多人班表</h2><p>直接顯示 Google Sheet「多人班表」資料</p></div></div>
+      <div class="toolbar">
+        <div class="field"><label>月份</label><select id="scheduleMonth"></select></div>
+        <div class="field"><label>人員</label><select id="employeeFilter"><option value="all">全部人員</option></select></div>
+        <div class="field grow"><label>搜尋</label><input type="text" id="searchEmployee" placeholder="輸入員工姓名"></div>
+        <button class="primary" id="scheduleRefresh">↻ 重新同步</button>
+      </div>
+      <div class="legend"><span><i class="normal-dot"></i>一般班</span><span><i class="overtime-dot"></i>有加班</span><span><i class="weekend-dot"></i>六日</span></div>
+      <div class="panel"><div class="schedule-wrap"><table class="schedule-table"><thead id="scheduleHead"></thead><tbody id="scheduleBody"></tbody></table></div></div>
+    </section>
+
+    <section id="personal" class="page">
+      <div class="page-title"><div><h2>個人班表</h2><p>查看個別員工班表與工時</p></div></div>
+      <div class="toolbar"><div class="field"><label>選擇人員</label><select id="personalEmployee"></select></div></div>
+      <div id="personalStats" class="personal-stats"></div>
+      <div class="panel"><div class="table-wrap"><table>
+        <thead><tr><th>日期</th><th>上班</th><th>下班</th><th>休息</th><th>正常工時</th><th>加班</th><th>總工時</th><th>備註</th></tr></thead>
+        <tbody id="personalTable"></tbody>
+      </table></div></div>
+    </section>
+
+    <section id="hours" class="page">
+      <div class="page-title"><div><h2>工時統計</h2><p>依 Google Sheet 計算結果統一顯示</p></div></div>
+      <div class="cards">
+        <div class="card green"><div class="card-icon">⏱️</div><span>總工時</span><strong id="statTotal">0 小時</strong></div>
+        <div class="card blue"><div class="card-icon">✅</div><span>正常工時</span><strong id="statNormal">0 小時</strong></div>
+        <div class="card orange"><div class="card-icon">⚡</div><span>加班工時</span><strong id="statOvertime">0 小時</strong></div>
+        <div class="card red"><div class="card-icon">📆</div><span>總班次</span><strong id="statShifts">0 班</strong></div>
+      </div>
+      <div class="panel"><div class="table-wrap"><table>
+        <thead><tr><th>姓名</th><th>時薪</th><th>班次</th><th>正常工時</th><th>加班工時</th><th>總工時</th></tr></thead>
+        <tbody id="hoursTable"></tbody>
+      </table></div></div>
+    </section>
+
+    <section id="employees" class="page">
+      <div class="page-title"><div><h2>員工資料</h2><p>資料來源：Google Sheet「員工設定」</p></div></div>
+      <div id="employeeCards" class="employee-grid"></div>
+    </section>
+
+    <section id="sync" class="page">
+      <div class="page-title"><div><h2>資料同步</h2><p>Google Sheet 為目前唯一資料端</p></div></div>
+      <div class="sync-panel">
+        <div class="cloud">☁️</div>
+        <h2>Google Sheet</h2>
+        <p>按下同步即可重新取得最新班表與員工資料。</p>
+        <button id="syncBtn" class="primary sync-button">🔄 立即同步</button>
+        <div id="syncMessage" class="sync-message">尚未同步</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="loading" class="loading">
+  <div class="loading-box"><div class="spinner"></div><strong>正在讀取 Google Sheet...</strong></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
