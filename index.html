@@ -40,7 +40,7 @@
         <button class="nav-btn" data-page="unit">🏢 單位選擇</button>
         <button class="nav-btn" data-page="duty">📻 今日勤務</button>
         <button class="nav-btn" data-page="cases">📁 案件卷宗</button>
-        <button class="nav-btn" data-page="career">⭐ 升遷與調任</button>
+        <button class="nav-btn" data-page="career">⭐ 升遷與調任</button>\n        <button class="nav-btn" data-page="academy">📘 警察學堂</button>\n        <button class="nav-btn" data-page="performance">🏅 獎懲考績</button>\n        <button class="nav-btn" data-page="command">👔 主管中心</button>
         <button class="nav-btn" data-page="life">💰 個人生活</button>
         <button class="nav-btn" data-page="records">📊 生涯紀錄</button>
         <button class="nav-btn" data-page="settings">⚙️ 系統設定</button>
@@ -254,7 +254,90 @@
         <div id="careerMsg" class="feedback"></div>
       </section>
 
-      <section id="life" class="page">
+      
+      <section id="academy" class="page">
+        <div class="page-head">
+          <div><h2>警察學堂</h2><p>警察制度、共同勤務、犯罪學與實務觀念。內容以遊戲學習為目的。</p></div>
+          <div class="chips"><span id="knowledgeChip">知識 0</span><span id="quizChip">測驗 0/0</span></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>警察制度速覽</h3><span>依警政署公開資料整理</span></div>
+          <div id="systemKnowledge" class="choice-grid"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>犯罪學重點</h3><span>基礎理論 × 情境理解</span></div>
+          <div id="criminologyCards" class="choice-grid"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>隨堂測驗</h3><button class="secondary-btn" id="newQuizBtn">換一題</button></div>
+          <div id="quizQuestion" class="dispatch-box">按「換一題」開始。</div>
+          <div id="quizChoices" class="action-grid"></div>
+          <div id="quizResult" class="feedback"></div>
+        </div>
+      </section>
+
+      <section id="performance" class="page">
+        <div class="page-head">
+          <div><h2>獎懲與考績</h2><p>勤務表現會累積優劣事蹟、行政獎懲與年度考績，並影響陞遷。</p></div>
+          <div class="chips"><span id="appraisalChip">本年預估：—</span><span id="disciplineChip">紀律分數：100</span></div>
+        </div>
+        <div class="stat-grid four">
+          <div class="stat-card"><span>嘉獎</span><strong id="commendStat">0</strong></div>
+          <div class="stat-card"><span>記功</span><strong id="meritStat">0</strong></div>
+          <div class="stat-card"><span>申誡</span><strong id="admonitionStat">0</strong></div>
+          <div class="stat-card"><span>記過</span><strong id="demeritStat">0</strong></div>
+        </div>
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head"><h3>平時考核</h3><span>遊戲化模型</span></div>
+            <div class="info-list">
+              <div><span>優蹟</span><b id="goodNoteStat">0</b></div>
+              <div><span>劣蹟</span><b id="badNoteStat">0</b></div>
+              <div><span>勤務品質</span><b id="qualityStat">50</b></div>
+              <div><span>民眾服務</span><b id="serviceStat">50</b></div>
+              <div><span>紀律</span><b id="disciplineStat">100</b></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>年度考績預估</h3><span>非官方計算公式</span></div>
+            <div id="appraisalBox" class="info-banner">尚未任職。</div>
+            <div class="button-row"><button class="primary-btn" id="closeYearBtn">辦理年度考績</button></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>獎懲紀錄</h3></div>
+          <div id="disciplineHistory" class="timeline"></div>
+        </div>
+      </section>
+
+      <section id="command" class="page">
+        <div class="page-head">
+          <div><h2>主管中心</h2><p>擔任帶班、所長、組長或更高主管後，玩法從「自己處理案件」轉向人員、勤務、風紀與決策管理。</p></div>
+          <div class="chips"><span id="positionChip">職位：警員</span><span id="commandScoreChip">主管評價：50</span></div>
+        </div>
+        <div id="commandLocked" class="panel">
+          <div class="empty-state">目前仍是基層職位。陞任巡佐以上後會逐步開放主管玩法。</div>
+        </div>
+        <div id="commandContent" style="display:none">
+          <div class="stat-grid four">
+            <div class="stat-card"><span>可用警力</span><strong id="staffStat">8</strong></div>
+            <div class="stat-card"><span>待處理公文</span><strong id="paperworkStat">3</strong></div>
+            <div class="stat-card"><span>單位士氣</span><strong id="moraleStat">70</strong></div>
+            <div class="stat-card"><span>民眾滿意</span><strong id="publicStat">65</strong></div>
+          </div>
+          <div class="panel">
+            <div class="radio-head"><span>📋 今日主管事件</span><button class="secondary-btn" id="nextCommandBtn">下一件主管事件</button></div>
+            <div id="commandCase" class="dispatch-box">等待主管事件。</div>
+            <div id="commandChoices" class="action-grid"></div>
+            <div id="commandResult" class="feedback"></div>
+          </div>
+          <div class="two-col">
+            <div class="panel"><div class="panel-head"><h3>主管工作</h3></div><div id="managerActions" class="action-grid"></div></div>
+            <div class="panel"><div class="panel-head"><h3>職位玩法說明</h3></div><div id="positionDescription" class="muted"></div></div>
+          </div>
+        </div>
+      </section>
+\n      <section id="life" class="page">
         <div class="page-head"><div><h2>個人生活</h2><p>薪資、租屋、休息與壓力會影響長期生涯。</p></div></div>
         <div class="stat-grid four">
           <div class="stat-card"><span>月薪</span><strong id="salaryStat">NT$ 0</strong></div>
@@ -286,6 +369,6 @@
     </main>
   </div>
 </div>
-<script src="backend-config.js"></script>\n<script src="backend.js"></script>\n<script src="script.js"></script>
+<script src="backend-config.js"></script>\n<script src="backend.js"></script>\n<script src="script.js"></script>\n<script src="enhancements.js"></script>
 </body>
 </html>
