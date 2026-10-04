@@ -27,7 +27,11 @@ const NEW=()=>({created:false,name:"",age:18,initialAge:18,gender:"男",educatio
 let s=NEW(),active=null;
 const $=x=>document.getElementById(x),cl=(x)=>Math.max(0,Math.min(100,x)),cash=x=>"NT$ "+Math.round(x).toLocaleString("zh-TW");
 function simNow(){let d=new Date(s.simDate||"2026-01-01T08:00:00");return isNaN(d)?new Date("2026-01-01T08:00:00"):d}
-function setSim(d){s.simDate=d.toISOString().slice(0,19)}
+function localIso(d){
+  const p=n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+}
+function setSim(d){s.simDate=localIso(d)}
 function advanceHours(h){let d=simNow();d.setHours(d.getHours()+h);setSim(d);syncClock()}
 function advanceDays(n){let d=simNow();d.setDate(d.getDate()+n);setSim(d);syncClock()}
 function rocDateTime(){let d=simNow(),y=d.getFullYear()-1911,m=d.getMonth()+1,day=d.getDate(),hh=String(d.getHours()).padStart(2,"0"),mm=String(d.getMinutes()).padStart(2,"0");return y+"年"+m+"月"+day+"日 "+hh+":"+mm}
@@ -92,3 +96,30 @@ $("resetBtn").onclick=()=>{if(confirm("確定清除目前生涯存檔並重新�
 window.addEventListener("beforeunload",()=>localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s)));
 let raw=localStorage.getItem("twPoliceCareerSaveV1");if(raw){try{s=Object.assign(NEW(),JSON.parse(raw))}catch(e){}}
 render();
+
+function applyTheme(name){
+  const allowed=["warroom","police","game"];
+  const theme=allowed.includes(name)?name:"warroom";
+  document.documentElement.dataset.theme=theme;
+  localStorage.setItem("twPoliceTheme",theme);
+  const sel=document.getElementById("themeSelect");
+  if(sel&&sel.value!==theme)sel.value=theme;
+}
+const themeSel=document.getElementById("themeSelect");
+if(themeSel){
+  themeSel.value=localStorage.getItem("twPoliceTheme")||"warroom";
+  themeSel.onchange=()=>applyTheme(themeSel.value);
+}
+applyTheme(localStorage.getItem("twPoliceTheme")||"warroom");
+
+const advDay=document.getElementById("advanceDayBtn");
+if(advDay){
+  advDay.onclick=()=>{
+    advanceDays(1);
+    s.energy=cl(Math.min(100,s.energy+8));
+    s.stress=cl(Math.max(0,s.stress-2));
+    rec("時間推進","休整一天，日期前進至 "+rocDateTime());
+    save();
+    render();
+  };
+}
