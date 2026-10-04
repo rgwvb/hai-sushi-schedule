@@ -234,7 +234,7 @@
   function advancedResolve(i){
     if(!active)return;
     const c=active[2][i],xp=c[1],rep=c[2],en=c[3];
-    s.xp+=xp;s.rep=cl(s.rep+rep);s.energy=cl(s.energy+en);s.stress=cl(s.stress+Math.max(1,Math.round(-en*.3)));s.dutyCount++;advanceHours(2);
+    s.xp+=xp;s.rep=cl(s.rep+rep);s.energy=cl(s.energy+en);s.stress=cl(s.stress+Math.max(1,Math.round(-en*.3)));s.dutyCount++;advanceDays(30);
     if(xp>=18){addGood(2,active[0]+"處置優良");s.service=cl(s.service+2)}
     else if(xp>=14){addGood(1,active[0]+"處置良好");s.service=cl(s.service+1)}
     else if(xp<=4){addBad(2,active[0]+"處置有重大缺失");s.service=cl(s.service-3)}
@@ -243,7 +243,7 @@
     const cid=String(Date.now()).slice(-7);
     s.cases.unshift({id:cid,type:active[0],action:c[0],result:xp>=18?"優良":xp>=14?"良好":xp<=4?"重大缺失":"尚可",xp,date:rocDateTime()});
     rec("完成勤務",active[0]+"｜+"+xp+" XP｜"+positionName());
-    fb("dutyResult","勤務完成：+"+xp+" XP，聲望 "+(rep>=0?"+":"")+rep+"；獎懲考核已同步更新。",xp>=14);
+    fb("dutyResult","勤務完成：+"+xp+" XP，聲望 "+(rep>=0?"+":"")+rep+"；獎懲考核已同步更新。遊戲時間前進約 30 天。",xp>=14);
     $("dutyChoices").innerHTML="";active=null;
     save();render();
   }
