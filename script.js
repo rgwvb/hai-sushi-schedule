@@ -36,12 +36,20 @@ function localIso(d){
   const p=n=>String(n).padStart(2,"0");
   return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
 }
+function parseRocStamp(v){
+  const m=String(v||"").match(/(\d{2,3})年(\d{1,2})月(\d{1,2})日(?:\s+(\d{1,2}):(\d{2}))?/);
+  if(!m)return NaN;
+  return new Date(Number(m[1])+1911,Number(m[2])-1,Number(m[3]),Number(m[4]||0),Number(m[5]||0),0,0).getTime();
+}
 function migrateClock(){
   let epoch=Number(s.simEpoch);
   if(!Number.isFinite(epoch)||epoch<=0)epoch=parseLocalDateTime(s.simDate).getTime();
   let maxEpoch=Number(s.maxSimEpoch);
   if(!Number.isFinite(maxEpoch)||maxEpoch<=0)maxEpoch=epoch;
-  epoch=Math.max(epoch,maxEpoch);
+  // Recover from older buggy saves by looking at the latest timestamp already written to the career/case history.
+  const historyMax=Math.max(0,...(s.history||[]).map(x=>parseRocStamp(x.time)).filter(Number.isFinite));
+  const caseMax=Math.max(0,...(s.cases||[]).map(x=>parseRocStamp(x.date)).filter(Number.isFinite));
+  epoch=Math.max(epoch,maxEpoch,historyMax,caseMax);
   s.simEpoch=epoch;
   s.maxSimEpoch=epoch;
   s.simDate=localIso(new Date(epoch));
