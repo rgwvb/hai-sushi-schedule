@@ -158,11 +158,12 @@ applyTheme(localStorage.getItem("twPoliceTheme")||"warroom");
 
 const advDay=document.getElementById("advanceDayBtn");
 if(advDay){
+  advDay.textContent="⏩ 推進30天";
   advDay.onclick=()=>{
-    advanceDays(1);
-    s.energy=cl(Math.min(100,s.energy+8));
-    s.stress=cl(Math.max(0,s.stress-2));
-    rec("時間推進","休整一天，日期前進至 "+rocDateTime());
+    advanceDays(30);
+    s.energy=cl(Math.min(100,s.energy+15));
+    s.stress=cl(Math.max(0,s.stress-5));
+    rec("時間推進","跳過約一個月，日期前進至 "+rocDateTime());
     save();
     render();
   };
