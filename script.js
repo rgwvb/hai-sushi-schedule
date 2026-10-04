@@ -23,34 +23,58 @@ const D=[
 ["疑似詐騙車手","銀行通報男子持多張提款卡連續提領大量現金。",[["查證身分、提款紀錄與監視器",20,6,-10],["未查證前直接上銬",4,-6,-8],["先觀察動線再上前查證",17,5,-8]]],
 ["失蹤人口","家長報案：13歲孩子放學後未返家，手機無法聯繫。",[["立即整理資訊並啟動協尋",19,6,-8],["請家長再等到深夜",1,-8,-1],["只請家長自行找",1,-10,-1]]],
 ["家暴案件","住宅區傳出激烈爭吵與摔物聲，屋內可能有孩童。",[["確認安全、分隔當事人並完整紀錄",19,6,-11],["只勸雙方不要吵就離開",4,-6,-4],["先請支援再依現場狀況處理",16,4,-9]]]];
-const NEW=()=>({created:false,name:"",age:18,initialAge:18,gender:"男",education:"高中畢業",homeCounty:"新北市",family:"與家人同住",route:"",routeName:"",selectedRoute:"",days:180,law:20,eng:40,fit:50,comm:50,stress:35,health:100,written:null,physical:null,training:false,passed:false,score:0,ranking:null,county:"",unit:"",unitName:"",selectedUnit:"",rank:"考生",year:0,xp:0,rep:50,energy:100,dutyCount:0,savings:80000,salary:0,promo:0,cases:[],history:[],simDate:"2026-01-01T08:00:00",startDate:"2026-01-01T08:00:00",joinDate:""});
+const NEW=()=>({created:false,name:"",age:18,initialAge:18,gender:"男",education:"高中畢業",homeCounty:"新北市",family:"與家人同住",route:"",routeName:"",selectedRoute:"",days:180,law:20,eng:40,fit:50,comm:50,stress:35,health:100,written:null,physical:null,training:false,passed:false,score:0,ranking:null,county:"",unit:"",unitName:"",selectedUnit:"",rank:"考生",year:0,xp:0,rep:50,energy:100,dutyCount:0,savings:80000,salary:0,promo:0,cases:[],history:[],simDate:"2026-01-01T08:00:00",simEpoch:null,maxSimEpoch:null,startDate:"2026-01-01T08:00:00",joinDate:""});
 let s=NEW(),active=null;
 const $=x=>document.getElementById(x),cl=(x)=>Math.max(0,Math.min(100,x)),cash=x=>"NT$ "+Math.round(x).toLocaleString("zh-TW");
-function simNow(){let d=new Date(s.simDate||"2026-01-01T08:00:00");return isNaN(d)?new Date("2026-01-01T08:00:00"):d}
+function parseLocalDateTime(v){
+  if(typeof v==="number"&&Number.isFinite(v))return new Date(v);
+  const m=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+  if(m)return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]),Number(m[4]),Number(m[5]),Number(m[6]||0),0);
+  return new Date(2026,0,1,8,0,0,0);
+}
 function localIso(d){
   const p=n=>String(n).padStart(2,"0");
   return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
 }
-function setSim(d){s.simDate=localIso(d)}
-function advanceHours(h){let d=simNow();d.setHours(d.getHours()+h);setSim(d);syncClock()}
-function advanceDays(n){let d=simNow();d.setDate(d.getDate()+n);setSim(d);syncClock()}
+function migrateClock(){
+  let epoch=Number(s.simEpoch);
+  if(!Number.isFinite(epoch)||epoch<=0)epoch=parseLocalDateTime(s.simDate).getTime();
+  let maxEpoch=Number(s.maxSimEpoch);
+  if(!Number.isFinite(maxEpoch)||maxEpoch<=0)maxEpoch=epoch;
+  epoch=Math.max(epoch,maxEpoch);
+  s.simEpoch=epoch;
+  s.maxSimEpoch=epoch;
+  s.simDate=localIso(new Date(epoch));
+}
+function simNow(){migrateClock();return new Date(s.simEpoch)}
+function setSim(d){
+  const next=d.getTime();
+  migrateClock();
+  // Time is monotonic: normal game actions can never move the calendar backward.
+  const fixed=Math.max(next,s.simEpoch,s.maxSimEpoch||0);
+  s.simEpoch=fixed;s.maxSimEpoch=fixed;s.simDate=localIso(new Date(fixed));
+}
+function advanceHours(h){if(h<0)return;let d=simNow();d.setHours(d.getHours()+h);setSim(d);syncClock()}
+function advanceDays(n){if(n<0)return;let d=simNow();d.setDate(d.getDate()+n);setSim(d);syncClock()}
 function rocDateTime(){let d=simNow(),y=d.getFullYear()-1911,m=d.getMonth()+1,day=d.getDate(),hh=String(d.getHours()).padStart(2,"0"),mm=String(d.getMinutes()).padStart(2,"0");return y+"年"+m+"月"+day+"日 "+hh+":"+mm}
 function syncClock(){
+  migrateClock();
   if(!s.startDate)s.startDate="2026-01-01T08:00:00";
-  if(!s.simDate)s.simDate=s.startDate;
   if(s.initialAge==null)s.initialAge=s.age||18;
-  let elapsed=Math.max(0,(simNow()-new Date(s.startDate))/86400000);
+  const start=parseLocalDateTime(s.startDate);
+  let elapsed=Math.max(0,(simNow().getTime()-start.getTime())/86400000);
   s.age=s.initialAge+Math.floor(elapsed/365.2425);
   if(s.joinDate){
-    let jy=Math.max(0,(simNow()-new Date(s.joinDate))/86400000/365.2425);
+    const join=parseLocalDateTime(s.joinDate);
+    let jy=Math.max(0,(simNow().getTime()-join.getTime())/86400000/365.2425);
     s.year=1+Math.floor(jy);
   }
 }
 function shiftName(){let h=simNow().getHours();if(h<8)return"00:00–08:00 夜勤";if(h<12)return"08:00–12:00 日勤";if(h<16)return"12:00–16:00 日勤";if(h<20)return"16:00–20:00 晚勤";return"20:00–24:00 夜勤"}
 function rec(a,b){s.history.unshift({title:a,detail:b,time:rocDateTime()});s.history=s.history.slice(0,100)}
 function toast(m){let t=document.querySelector(".toast");if(!t){t=document.createElement("div");t.className="toast";document.body.appendChild(t)}t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600)}
-function save(){localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s));toast("已儲存")}
-function load(){let x=localStorage.getItem("twPoliceCareerSaveV1");if(!x)return toast("找不到存檔");try{s=Object.assign(NEW(),JSON.parse(x));render();toast("已讀取存檔")}catch(e){toast("存檔損壞")}}
+function save(){migrateClock();s.maxSimEpoch=Math.max(s.maxSimEpoch||0,s.simEpoch||0);localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s));toast("已儲存")}
+function load(){let x=localStorage.getItem("twPoliceCareerSaveV1");if(!x)return toast("找不到存檔");try{s=Object.assign(NEW(),JSON.parse(x));migrateClock();render();toast("已讀取存檔")}catch(e){toast("存檔損壞")}}
 function fb(id,m,g){let e=$(id);e.className="feedback "+(g?"good":"bad");e.textContent=m}
 function go(p){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===p));document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x.dataset.page===p));window.scrollTo({top:0,behavior:"smooth"});render()}
 document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>go(b.dataset.page));
@@ -81,7 +105,7 @@ function units(){ $("unitBanner").textContent=s.county?"目前分發："+s.count
 $("confirmUnitBtn").onclick=()=>{if(!s.county)return fb("unitMsg","請先完成縣市分發。",0);let u=U.find(x=>x[0]===s.selectedUnit);if(!u)return fb("unitMsg","請先選擇單位。",0);if(s.year<u[3]||s.xp<u[4])return fb("unitMsg","條件不足：需年資 "+u[3]+" 年、XP "+u[4]+"。",0);s.unit=u[0];s.unitName=u[2];s.rank=["警員","巡佐","警務員","主管職"][s.promo];rec("單位報到",s.county+"｜"+u[2]);fb("unitMsg","已報到："+s.county+" "+u[2]+"。",1);save();render()}
 function duty(){ if($("shiftChip"))$("shiftChip").textContent=shiftName()+"｜"+rocDateTime(); $("dutySubtitle").textContent=s.unit?[s.name,s.county,s.unitName,s.rank].join("｜"):"完成分發後即可上勤。";$("energyChip").textContent="體力 "+s.energy;$("dutyCount").textContent=s.dutyCount+" 件";$("dutyXp").textContent=s.xp+" XP";$("dutyRep").textContent=s.rep;$("dutyEnergy").textContent=s.energy}
 $("nextDutyBtn").onclick=()=>{if(!s.unit)return toast("請先完成單位分發");active=D[Math.floor(Math.random()*D.length)];$("dutyCase").innerHTML="<b>"+active[0]+"</b><br>"+active[1];$("dutyChoices").innerHTML=active[2].map((c,i)=>'<div class="action-card" data-d="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+c[0]+'</strong><p>依安全、程序與完整性判定。</p></div>').join("");document.querySelectorAll("[data-d]").forEach(e=>e.onclick=()=>resolve(+e.dataset.d))}
-function resolve(i){let c=active[2][i];s.xp+=c[1];s.rep=cl(s.rep+c[2]);s.energy=cl(s.energy+c[3]);s.stress=cl(s.stress+Math.max(1,Math.round(-c[3]*.35)));s.dutyCount++;advanceHours(2);s.cases.unshift({id:String(Date.now()).slice(-7),type:active[0],action:c[0],result:c[1]>=14?"處置完整":"仍有改善空間",xp:c[1],date:new Date().toLocaleDateString("zh-TW")});rec("完成勤務",active[0]+"｜+"+c[1]+" XP");fb("dutyResult","勤務完成：+"+c[1]+" XP，聲望 "+(c[2]>=0?"+":"")+c[2]+"。",c[1]>=14);$("dutyChoices").innerHTML="";active=null;if(s.dutyCount%6===0){s.energy=100;s.stress=cl(s.stress-5)}save();render()}
+function resolve(i){let c=active[2][i];s.xp+=c[1];s.rep=cl(s.rep+c[2]);s.energy=cl(s.energy+c[3]);s.stress=cl(s.stress+Math.max(1,Math.round(-c[3]*.35)));s.dutyCount++;advanceHours(2);s.cases.unshift({id:String(Date.now()).slice(-7),type:active[0],action:c[0],result:c[1]>=14?"處置完整":"仍有改善空間",xp:c[1],date:rocDateTime()});rec("完成勤務",active[0]+"｜+"+c[1]+" XP");fb("dutyResult","勤務完成：+"+c[1]+" XP，聲望 "+(c[2]>=0?"+":"")+c[2]+"。",c[1]>=14);$("dutyChoices").innerHTML="";active=null;if(s.dutyCount%6===0){s.energy=100;s.stress=cl(s.stress-5)}save();render()}
 function cases(){ $("caseList").innerHTML=s.cases.length?s.cases.map(c=>'<div class="case-item"><h3>#'+c.id+"｜"+c.type+'</h3><div class="case-meta">'+c.date+"｜"+c.xp+' XP</div><p><b>處置：</b>'+c.action+'<br><b>結果：</b>'+c.result+"</p></div>").join(""):'<div class="empty-state">目前沒有案件卷宗。</div>'}
 function career(){document.querySelectorAll(".career-node").forEach((n,i)=>n.classList.toggle("current",i===s.promo))}
 $("promotionBtn").onclick=()=>{let N=[[3,300,65],[6,650,72],[10,1100,80]][s.promo];if(!s.unit)return fb("careerMsg","尚未正式任職。",0);if(!N)return fb("careerMsg","已達本版本最高層級。",1);if(s.year<N[0]||s.xp<N[1]||s.rep<N[2])return fb("careerMsg","需年資 "+N[0]+" 年、XP "+N[1]+"、聲望 "+N[2]+"。",0);s.promo++;s.rank=["警員","巡佐","警務員","主管職"][s.promo];s.salary+=7000;rec("升遷","晉升為 "+s.rank);fb("careerMsg","升遷成功："+s.rank+"。",1);save();render()}
