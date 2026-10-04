@@ -24,7 +24,7 @@ const D=[
 ["失蹤人口","家長報案：13歲孩子放學後未返家，手機無法聯繫。",[["立即整理資訊並啟動協尋",19,6,-8],["請家長再等到深夜",1,-8,-1],["只請家長自行找",1,-10,-1]]],
 ["家暴案件","住宅區傳出激烈爭吵與摔物聲，屋內可能有孩童。",[["確認安全、分隔當事人並完整紀錄",19,6,-11],["只勸雙方不要吵就離開",4,-6,-4],["先請支援再依現場狀況處理",16,4,-9]]]];
 const NEW=()=>({created:false,name:"",age:18,initialAge:18,gender:"男",education:"高中畢業",homeCounty:"新北市",family:"與家人同住",route:"",routeName:"",selectedRoute:"",days:180,law:20,eng:40,fit:50,comm:50,stress:35,health:100,written:null,physical:null,training:false,passed:false,score:0,ranking:null,county:"",unit:"",unitName:"",selectedUnit:"",rank:"考生",year:0,xp:0,rep:50,energy:100,dutyCount:0,savings:80000,salary:0,promo:0,cases:[],history:[],simDate:"2026-01-01T08:00:00",simEpoch:null,maxSimEpoch:null,startDate:"2026-01-01T08:00:00",joinDate:""});
-let s=NEW(),active=null;
+let s=NEW(),active=null;\nconst CLOCK_KEY="twPoliceClockMaxV1";
 const $=x=>document.getElementById(x),cl=(x)=>Math.max(0,Math.min(100,x)),cash=x=>"NT$ "+Math.round(x).toLocaleString("zh-TW");
 function parseLocalDateTime(v){
   if(typeof v==="number"&&Number.isFinite(v))return new Date(v);
@@ -44,23 +44,34 @@ function parseRocStamp(v){
 function migrateClock(){
   let epoch=Number(s.simEpoch);
   if(!Number.isFinite(epoch)||epoch<=0)epoch=parseLocalDateTime(s.simDate).getTime();
+
   let maxEpoch=Number(s.maxSimEpoch);
   if(!Number.isFinite(maxEpoch)||maxEpoch<=0)maxEpoch=epoch;
-  // Recover from older buggy saves by looking at the latest timestamp already written to the career/case history.
+
+  const persistedMax=Number(localStorage.getItem(CLOCK_KEY)||0);
+
+  // Recover from every durable source we have. The calendar is strictly monotonic.
   const historyMax=Math.max(0,...(s.history||[]).map(x=>parseRocStamp(x.time)).filter(Number.isFinite));
   const caseMax=Math.max(0,...(s.cases||[]).map(x=>parseRocStamp(x.date)).filter(Number.isFinite));
-  epoch=Math.max(epoch,maxEpoch,historyMax,caseMax);
+
+  epoch=Math.max(epoch,maxEpoch,historyMax,caseMax,Number.isFinite(persistedMax)?persistedMax:0);
+
   s.simEpoch=epoch;
   s.maxSimEpoch=epoch;
   s.simDate=localIso(new Date(epoch));
+  localStorage.setItem(CLOCK_KEY,String(epoch));
 }
 function simNow(){migrateClock();return new Date(s.simEpoch)}
 function setSim(d){
   const next=d.getTime();
   migrateClock();
-  // Time is monotonic: normal game actions can never move the calendar backward.
-  const fixed=Math.max(next,s.simEpoch,s.maxSimEpoch||0);
-  s.simEpoch=fixed;s.maxSimEpoch=fixed;s.simDate=localIso(new Date(fixed));
+  const persistedMax=Number(localStorage.getItem(CLOCK_KEY)||0);
+  // Hard rule: no game action, reload, stale save, or browser refresh may move time backward.
+  const fixed=Math.max(next,s.simEpoch||0,s.maxSimEpoch||0,Number.isFinite(persistedMax)?persistedMax:0);
+  s.simEpoch=fixed;
+  s.maxSimEpoch=fixed;
+  s.simDate=localIso(new Date(fixed));
+  localStorage.setItem(CLOCK_KEY,String(fixed));
 }
 function advanceHours(h){if(h<0)return;let d=simNow();d.setHours(d.getHours()+h);setSim(d);syncClock()}
 function advanceDays(n){if(n<0)return;let d=simNow();d.setDate(d.getDate()+n);setSim(d);syncClock()}
@@ -81,8 +92,8 @@ function syncClock(){
 function shiftName(){let h=simNow().getHours();if(h<8)return"00:00–08:00 夜勤";if(h<12)return"08:00–12:00 日勤";if(h<16)return"12:00–16:00 日勤";if(h<20)return"16:00–20:00 晚勤";return"20:00–24:00 夜勤"}
 function rec(a,b){s.history.unshift({title:a,detail:b,time:rocDateTime()});s.history=s.history.slice(0,100)}
 function toast(m){let t=document.querySelector(".toast");if(!t){t=document.createElement("div");t.className="toast";document.body.appendChild(t)}t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600)}
-function save(){migrateClock();s.maxSimEpoch=Math.max(s.maxSimEpoch||0,s.simEpoch||0);localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s));toast("已儲存")}
-function load(){let x=localStorage.getItem("twPoliceCareerSaveV1");if(!x)return toast("找不到存檔");try{s=Object.assign(NEW(),JSON.parse(x));migrateClock();render();toast("已讀取存檔")}catch(e){toast("存檔損壞")}}
+function save(){migrateClock();s.maxSimEpoch=Math.max(s.maxSimEpoch||0,s.simEpoch||0);localStorage.setItem(CLOCK_KEY,String(s.maxSimEpoch));localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s));toast("已儲存")}
+function load(){let x=localStorage.getItem("twPoliceCareerSaveV1");if(!x)return toast("找不到存檔");try{const before=Number(localStorage.getItem(CLOCK_KEY)||0);s=Object.assign(NEW(),JSON.parse(x));migrateClock();if(before>0&&s.simEpoch<before){s.simEpoch=before;s.maxSimEpoch=before;s.simDate=localIso(new Date(before))}render();toast("已讀取存檔（遊戲時間不倒退）")}catch(e){toast("存檔損壞")}}
 function fb(id,m,g){let e=$(id);e.className="feedback "+(g?"good":"bad");e.textContent=m}
 function go(p){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===p));document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x.dataset.page===p));window.scrollTo({top:0,behavior:"smooth"});render()}
 document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>go(b.dataset.page));
@@ -124,8 +135,8 @@ function live(a){if(a==="salary"){if(!s.salary)return toast("尚未任職");s.sa
 function records(){ $("historyList").innerHTML=s.history.length?s.history.map(h=>'<div class="timeline-item"><b>'+h.title+'</b><span>'+h.detail+"｜"+h.time+"</span></div>").join(""):'<div class="empty-state">尚無生涯紀錄。</div>'}
 function render(){syncClock();dashboard();character();routes();study();exam();dist();units();duty();cases();career();life();records()}
 $("continueBtn").onclick=()=>go(next());["saveBtn","manualSaveBtn"].forEach(id=>$(id).onclick=save);["loadBtn","manualLoadBtn"].forEach(id=>$(id).onclick=load);
-$("resetBtn").onclick=()=>{if(confirm("確定清除目前生涯存檔並重新開始？")){localStorage.removeItem("twPoliceCareerSaveV1");s=NEW();render();go("dashboard");toast("已重新開始")}};
-window.addEventListener("beforeunload",()=>localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s)));
+$("resetBtn").onclick=()=>{if(confirm("確定清除目前生涯存檔並重新開始？")){localStorage.removeItem("twPoliceCareerSaveV1");localStorage.removeItem(CLOCK_KEY);s=NEW();migrateClock();render();go("dashboard");toast("已重新開始")}};
+window.addEventListener("beforeunload",()=>{migrateClock();localStorage.setItem(CLOCK_KEY,String(s.maxSimEpoch||s.simEpoch||0));localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s))});
 let raw=localStorage.getItem("twPoliceCareerSaveV1");if(raw){try{s=Object.assign(NEW(),JSON.parse(raw))}catch(e){}}
 render();
 
