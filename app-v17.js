@@ -373,7 +373,7 @@ function dashboard(){
 $("miniName").textContent=s.created?s.name:"尚未建立角色";$("miniStatus").textContent=s.position||s.rank;$("careerYearChip").textContent="生涯第 "+s.year+" 年";if($("dateChip"))$("dateChip").textContent=rocDateTime();$("rankChip").textContent="職務："+(s.position||s.rank);$("moneyChip").textContent="存款："+cash(s.savings);
 $("dashboardSub").textContent=s.created?[s.name,s.routeName||"尚未選路線",s.precinct?("臺北市｜"+s.precinct):"尚未分發",s.unitName||""].join("｜"):"建立角色後開始你的警察生涯。";
 [["Law",s.law],["Eng",s.eng],["Fit",s.fit],["Comm",s.comm],["Stress",s.stress],["Rep",s.rep]].forEach(v=>{$("dash"+v[0]).textContent=v[1];$("dash"+v[0]+"Bar").style.width=v[1]+"%"});
-$("dashName").textContent=s.name||"—";$("dashRoute").textContent=s.routeName||"—";$("dashCounty").textContent=s.precinct||"—";$("dashUnit").textContent=s.unitName||"—";$("dashRank").textContent=s.position||s.rank;if($("dashQualification"))$("dashQualification").textContent=s.qualification||"尚未取得";if($("dashOfficialRank"))$("dashOfficialRank").textContent=s.officialRank||"—";if($("dashSequence"))$("dashSequence").textContent=s.sequence||"—";
+$("dashName").textContent=s.name||"—";if($("dashAge"))$("dashAge").textContent=s.age+" 歲";$("dashRoute").textContent=s.routeName||"—";$("dashCounty").textContent=s.precinct||"—";$("dashUnit").textContent=s.unitName||"—";$("dashRank").textContent=s.position||s.rank;if($("dashQualification"))$("dashQualification").textContent=s.qualification||"尚未取得";if($("dashOfficialRank"))$("dashOfficialRank").textContent=s.officialRank||"—";if($("dashSequence"))$("dashSequence").textContent=s.sequence||"—";
 let a=s.retired?"已退休":"先建立角色",b=s.retired?((s.retirementReason||"退休")+"｜原職："+(s.lastActivePosition||"—")+"｜退休日："+(s.retirementDate||"—")):"完成基本資料後，選擇警專、警大或特考路線。";
 if(!s.retired&&s.created&&!s.route){a="選擇入警路線";b="依學歷與規劃選擇路線。"}else if(s.route&&!s.passed){a="完成考試與受訓";b="備考、筆試、體測與訓練。"}else if(s.passed&&!s.precinct){a="填寫臺北市分局志願";b="依模擬成績與缺額分發至臺北市14個分局之一。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"){a="選填初任職務";b="分局分發完成後，從本次實際型態的組、隊職缺中選擇3個初任職務之一。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial"&&!s.rotationEligible){a="完成初任歷練";b="目前在 "+(s.unitName||"分局單位")+" 擔任 "+(s.position||"巡官")+"；累積約12個月歷練後開放下一輪缺額。"}else if(isOfficerTrack()&&s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){a="選填下一階段職務";b="依目前資格與缺額，從分局組室、偵查隊、警備隊或派出所副主管等職務中選擇。"}else if(s.precinct&&!s.unit){a="選擇服務單位";b="依任用路線、分局與可用職缺選擇服務單位。"}else if(s.unit){a="開始勤務與累積職涯";b="處理勤務、累積資績與年資，等待輪調、甄審與陞遷機會。"}
 $("goalTitle").textContent=a;$("goalText").textContent=b;renderRankInsignia();$("recentEvents").innerHTML=s.history.length?s.history.slice(0,6).map(h=>'<div class="timeline-item"><b>'+h.title+'</b><span>'+h.detail+'</span></div>').join(""):'<div class="empty-state">還沒有生涯事件。</div>';
@@ -649,7 +649,25 @@ $("confirmUnitBtn").onclick=()=>{
   fb("unitMsg","已報到："+s.unitName+"。",1);
   save();render();
 }
-function duty(){ if(s.retired){if($("dutySubtitle"))$("dutySubtitle").textContent="已退休，勤務系統關閉。";if($("nextDutyBtn"))$("nextDutyBtn").disabled=true;if($("dutyCase"))$("dutyCase").innerHTML="<b>生涯勤務已結束</b><br>"+(s.retirementReason||"退休")+"。";if($("dutyChoices"))$("dutyChoices").innerHTML="";}else if($("nextDutyBtn"))$("nextDutyBtn").disabled=false; if($("shiftChip"))$("shiftChip").textContent=shiftName()+"｜"+rocDateTime(); $("dutySubtitle").textContent=s.unit?[s.name,"臺北市",s.precinct||"",s.unitName,s.position||s.rank,s.officialRank||"—"].filter(Boolean).join("｜"):"完成分發後即可上勤。";$("energyChip").textContent="體力 "+s.energy;$("dutyCount").textContent=s.dutyCount+" 件";$("dutyXp").textContent=s.xp+" XP";$("dutyRep").textContent=s.rep;$("dutyEnergy").textContent=s.energy}
+function duty(){
+  if($("shiftChip"))$("shiftChip").textContent=shiftName()+"｜"+rocDateTime();
+  if($("energyChip"))$("energyChip").textContent="體力 "+s.energy;
+  if($("dutyCount"))$("dutyCount").textContent=s.dutyCount+" 件";
+  if($("dutyXp"))$("dutyXp").textContent=s.xp+" XP";
+  if($("dutyRep"))$("dutyRep").textContent=s.rep;
+  if($("dutyEnergy"))$("dutyEnergy").textContent=s.energy;
+
+  if(s.retired){
+    if($("dutySubtitle"))$("dutySubtitle").textContent="已退休｜"+(s.retirementReason||"退休")+"｜原職："+(s.lastActivePosition||"—");
+    if($("nextDutyBtn"))$("nextDutyBtn").disabled=true;
+    if($("dutyCase"))$("dutyCase").innerHTML="<b>生涯勤務已結束</b><br>退休後不再接受勤務派案。";
+    if($("dutyChoices"))$("dutyChoices").innerHTML="";
+    return;
+  }
+
+  if($("nextDutyBtn"))$("nextDutyBtn").disabled=false;
+  if($("dutySubtitle"))$("dutySubtitle").textContent=s.unit?[s.name,"臺北市",s.precinct||"",s.unitName,s.position||s.rank,s.officialRank||"—"].filter(Boolean).join("｜"):"完成分發後即可上勤。";
+}
 function cases(){ $("caseList").innerHTML=s.cases.length?s.cases.map(c=>'<div class="case-item"><h3>#'+c.id+"｜"+c.type+'</h3><div class="case-meta">'+c.date+"｜"+c.xp+' XP</div><p><b>處置：</b>'+c.action+'<br><b>結果：</b>'+c.result+"</p></div>").join(""):'<div class="empty-state">目前沒有案件卷宗。</div>'}
 function career(){document.querySelectorAll(".career-node").forEach((n,i)=>n.classList.toggle("current",i===s.promo))}
 $("specialUnitBtn").onclick=()=>{
