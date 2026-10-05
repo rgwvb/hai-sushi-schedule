@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>TW 台灣警察生涯模擬器</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v12.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v13.css">
 </head>
 <body>
 <div class="app-shell">
@@ -15,7 +15,7 @@
       <p>從入警考試、受訓、分局分發，到單位勤務、調任與升遷的完整生涯模擬。</p>
     </div>
     <div class="header-actions">
-      <span class="version">臺北市版 v4.1</span>
+      <span class="version">臺北市版 v4.2</span>
       <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
       <button id="saveBtn" class="ghost-btn">💾 儲存</button>
       <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
@@ -234,7 +234,7 @@
           <div id="dutyModeCards" class="choice-grid"></div>
         </div>
         <div class="panel radio-panel">
-          <div class="radio-head"><span>📻 勤務指揮中心</span><button class="secondary-btn" id="nextDutyBtn">接下一件勤務</button></div>
+          <div class="radio-head"><span>📻 勤務指揮中心</span><button class="secondary-btn" id="nextDutyBtn">開始／換一題</button></div>
           <div id="dutyCase" class="dispatch-box">目前沒有派案。</div>
           <div id="dutyChoices" class="action-grid"></div>
           <div id="dutyResult" class="feedback"></div>
@@ -328,9 +328,9 @@
             </div>
           </div>
           <div class="panel">
-            <div class="panel-head"><h3>年度考績預估</h3><span>非官方計算公式</span></div>
+            <div class="panel-head"><h3>考績結算</h3><span id="appraisalProgress">階段考績 0/4 件</span></div>
             <div id="appraisalBox" class="info-banner">尚未任職。</div>
-            <div class="button-row"><button class="primary-btn" id="closeYearBtn">辦理年度考績</button></div>
+            <div class="button-row"><button class="primary-btn" id="closeYearBtn">尚未達考績門檻</button></div>
           </div>
         </div>
         <div class="panel">
@@ -404,6 +404,6 @@
 <script src="backend-config.js"></script>
 <script src="backend.js"></script>
 <script src="app-v16.js"></script>
-<script src="systems-v11.js"></script>
+<script src="systems-v12.js"></script>
 </body>
 </html>
