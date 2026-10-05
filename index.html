@@ -843,6 +843,12 @@ button:not(:disabled), .choice-card, .action-card, .county-card, .nav-btn{
           <div class="button-row"><button class="primary-btn" id="confirmUnitBtn">確認單位</button></div>
           <div id="unitMsg" class="feedback"></div>
         </div>
+        <div class="panel" id="policeMonitorTrainingPanel">
+          <div class="panel-head"><h3>警正升警監官等訓練／警監班</h3><span>高階職涯進修</span></div>
+          <p class="muted">完成資格審查與訓練後，才可參加第4序列升第3序列的職務甄審。訓練資格依官階、年資及最近三年年終考績模擬。</p>
+          <div class="info-banner" id="policeMonitorTrainingStatus">升至第4序列警正一階職務後，可查看參訓資格。</div>
+          <div class="button-row"><button class="secondary-btn" id="policeMonitorTrainingBtn">申請警正升警監訓練</button></div>
+        </div>
         <div class="panel" id="precinctOrgDirectory">
           <div class="panel-head"><h3 id="precinctOrgTitle">服務機關組織概覽</h3><span>依地方警察局／分局層級顯示</span></div>
           <div id="precinctOrgCards" class="station-directory-grid"></div>
@@ -2013,7 +2019,7 @@ function officerVacancyCard(o,extraTag=""){
   '</div>';
 }
 function units(){
-  renderStationDirectory();renderPrecinctOrg();renderRotationForecast();
+  renderStationDirectory();renderPrecinctOrg();renderRotationForecast();renderPoliceMonitorTraining();
   if(isOfficerTrack()){
     if(s.careerStage==="officer_initial_offer"){
       $("confirmUnitBtn").style.display="";
@@ -2349,7 +2355,7 @@ loadPoliceDirectory();
       goodNotes:0,badNotes:0,commend:0,merit:0,greatMerit:0,admonition:0,demerit:0,greatDemerit:0,
       quality:50,service:50,discipline:100,disciplineLog:[],appraisals:[],
       knowledge:0,quizCorrect:0,quizTotal:0,positionLevel:null,commandScore:50,morale:70,
-      publicSatisfaction:65,staff:8,paperwork:3,commandHistory:[],lastAppraisalYear:null,lastAppraisalDutyCount:0,appraisalRounds:0,dutyMode:"patrol",promotionReviews:[],promotionScore:0,seq10Days:0,promotionExamPassed:false,promotionExamAttempts:0,officerEducationQualified:false,policeZhengQualified:false,sergeantClassPassed:"",promotionTrainingPassed:false,thirdGradeUpgradePassed:false
+      publicSatisfaction:65,staff:8,paperwork:3,commandHistory:[],lastAppraisalYear:null,lastAppraisalDutyCount:0,appraisalRounds:0,dutyMode:"patrol",promotionReviews:[],promotionScore:0,seq10Days:0,promotionExamPassed:false,promotionExamAttempts:0,officerEducationQualified:false,policeZhengQualified:false,sergeantClassPassed:"",promotionTrainingPassed:false,thirdGradeUpgradePassed:false,policeMonitorTrainingPassed:false,policeMonitorTrainingAttempts:0
     };
     Object.keys(d).forEach(k=>{ if(s[k]===undefined||s[k]===null) s[k]=d[k]; });
     if(s.positionLevel===null) s.positionLevel=Math.max(0,Number(s.promo||0));
@@ -2528,6 +2534,40 @@ loadPoliceDirectory();
     const degree=/大學|研究所/.test(String(s.education||""))||s.route==="tpa"||s.promotionTrainingPassed;
     const ok=exam&&degree&&rewardsOutweighPenalties()&&s.age<56&&(s.fit||0)>=60&&(s.discipline||0)>=80;
     return {ok,exam,degree};
+  }
+  function policeMonitorTrainingEligibility(){
+    const routeOK=["cpu","g3"].includes(s.route)||!!(s.promotionExamPassed||s.thirdGradeUpgradePassed);
+    const rankOK=s.officialRank==="警正一階";
+    const seqOK=currentSequenceNo()===4;
+    const started=parseLocalDateTime(s.positionStartDate||s.joinDate||s.simDate);
+    const years=Math.max(0,(simNow().getTime()-started.getTime())/86400000/365.2425);
+    const requiredYears=s.route==="cpu"?6:3;
+    const annual=annualAppraisals(3);
+    const gradeOK=annual.length>=3&&annual.filter(x=>x.grade==="甲等").length>=2&&annual.every(x=>x.grade==="甲等"||x.grade==="乙等");
+    const ok=seqOK&&rankOK&&routeOK&&years>=requiredYears&&gradeOK&&(s.discipline||0)>=80&&!s.policeMonitorTrainingPassed;
+    return {ok,seqOK,rankOK,routeOK,years,requiredYears,annual,gradeOK,passed:!!s.policeMonitorTrainingPassed};
+  }
+  function renderPoliceMonitorTraining(){
+    const panel=$("policeMonitorTrainingPanel");if(!panel)return;
+    const e=policeMonitorTrainingEligibility(),seq=currentSequenceNo();
+    panel.style.display=seq<=5?"":"none";
+    const grades=e.annual.map(x=>x.grade).join("／")||"尚無正式年度考績";
+    let status=e.passed?"已完成警正升警監訓練；符合條件後可申請第3序列職務甄審。":
+      "目前"+sequenceLabel(seq)+"｜官階："+(s.officialRank||"—")+"｜任職年資："+e.years.toFixed(1)+"／"+e.requiredYears+"年｜近三年年終考績："+grades+"（需至少2甲、其餘乙等以上）｜考試資格："+(e.routeOK?"符合":"尚未取得");
+    $("policeMonitorTrainingStatus").textContent=status;
+    $("policeMonitorTrainingBtn").disabled=!e.ok;
+    $("policeMonitorTrainingBtn").textContent=e.passed?"已完成訓練":"申請警正升警監訓練";
+  }
+  function takePoliceMonitorTraining(){
+    const e=policeMonitorTrainingEligibility();
+    if(e.passed)return fb("careerMsg","已完成警正升警監訓練。",1);
+    if(!e.ok)return fb("careerMsg","尚未符合警正升警監訓練資格：需第4序列警正一階、相應考試資格、指定職務年資及最近三年考績至少2甲、其餘乙等以上。",0);
+    const score=Math.round(Math.min(100,35+(s.law||0)*.2+(s.knowledge||0)*.15+(s.service||0)*.1+(promotionScore())*.2+Math.random()*15));
+    s.policeMonitorTrainingAttempts=(s.policeMonitorTrainingAttempts||0)+1;
+    advanceDays(28);
+    if(score>=65){s.policeMonitorTrainingPassed=true;rec("警正升警監官等訓練","警監班結訓及格｜模擬成績 "+score);fb("careerMsg","警正升警監訓練及格！已解鎖第3序列職務甄審資格；仍須依缺額與資績參加陞遷。",1)}
+    else{rec("警正升警監官等訓練","未及格｜模擬成績 "+score);fb("careerMsg","本次訓練未及格，模擬成績 "+score+"；可繼續累積法學、勤務資績後再申請。",0)}
+    save();render();
   }
   function promotionExamEligibility(){
     const seq=currentSequenceNo()===10;
@@ -3135,6 +3175,7 @@ loadPoliceDirectory();
     if(seq===10&&nextSeq===9&&!patrolOfficerQualified()){
       return fb("careerMsg","巡佐／第十序列不能只靠資績直接升巡官。請先完成「警正官等資格」與「警大教育／訓練資格」，且績效、考績及獎懲須符合門檻。",0);
     }
+    if(nextSeq===3&&!s.policeMonitorTrainingPassed)return fb("careerMsg","升任第3序列前，須先完成「警正升警監官等訓練／警監班」。請至「職務輪調」頁查看參訓資格。",0);
     const started=parseLocalDateTime(s.positionStartDate||s.joinDate||s.simDate);
     const positionDays=Math.max(0,Math.floor((simNow().getTime()-started.getTime())/86400000));
     const minPositionDays=seq>=10?730:548;
@@ -3197,6 +3238,7 @@ loadPoliceDirectory();
   window.__policeNewDuty=newAdvancedDuty;
   window.__policeResolveDuty=advancedResolve;
   if($("promotionBtn"))$("promotionBtn").onclick=enhancedPromotion;
+  if($("policeMonitorTrainingBtn"))$("policeMonitorTrainingBtn").onclick=takePoliceMonitorTraining;
   if($("promotionExamBtn"))$("promotionExamBtn").onclick=takePromotionExam;
   if($("sergeantClass1Btn"))$("sergeantClass1Btn").onclick=()=>takeSergeantClass("第1類");
   if($("sergeantClass2Btn"))$("sergeantClass2Btn").onclick=()=>takeSergeantClass("第2類");
