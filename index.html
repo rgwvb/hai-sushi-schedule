@@ -670,6 +670,44 @@ button:hover{transform:none!important}
   .sidebar-nav{grid-template-columns:1fr}
   #dashboard .stat-grid{grid-template-columns:1fr 1fr}
 }
+
+/* 2026 refresh: blue police identity and calmer page hierarchy. */
+#dashboard .hero-card{position:relative;isolation:isolate;overflow:hidden;min-height:168px;padding:28px 30px 28px 108px;border:1px solid #3d75b9;border-radius:18px;background:linear-gradient(112deg,#0b2a52 0%,#124783 54%,#1764a7 100%);box-shadow:0 18px 38px rgba(0,22,55,.34)}
+#dashboard .hero-card:after{content:"";position:absolute;z-index:-1;width:250px;height:250px;right:8%;top:-105px;border:1px solid rgba(205,229,255,.18);border-radius:50%;box-shadow:0 0 0 18px rgba(205,229,255,.035),0 0 0 42px rgba(205,229,255,.025)}
+#dashboard .hero-mark{position:absolute;left:30px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:54px;height:62px;clip-path:polygon(50% 0,94% 17%,88% 72%,50% 100%,12% 72%,6% 17%);background:linear-gradient(145deg,#f7d875,#c49632);color:#15365e;font-size:24px}
+#dashboard .hero-card .eyebrow{color:#b8d8ff;letter-spacing:.15em}
+#dashboard .hero-card h3{font-size:25px;color:#fff}
+#dashboard .hero-card p{max-width:620px;color:#d5e7fb;line-height:1.7}
+#dashboard .hero-card .primary-btn{background:#f0c65e;border-color:#f0c65e;color:#17385f;font-weight:750}
+#dashboard .chips{align-items:center;gap:8px;padding:10px;border:1px solid #263d5a;border-radius:14px;background:linear-gradient(135deg,rgba(16,31,51,.98),rgba(13,24,40,.95));box-shadow:0 8px 22px rgba(0,0,0,.14)}
+#dashboard .chips>span,.rank-status{min-height:34px;display:inline-flex;align-items:center;padding:7px 11px;border:1px solid #2a4567;border-radius:9px;background:#12243a;color:#c8d9ef;font-size:12px}
+#dashboard .chips #rankChip{border:0;background:none;padding:0;color:#eff6ff}
+#dashboard .chips .rank-status{gap:8px;background:#173456;border-color:#386398}
+#dashboard .rank-chip-visual{padding:0!important;border:0!important;background:transparent!important}
+#life .stat-grid.four:first-of-type .stat-card{position:relative;overflow:hidden;padding:18px;border-color:#294667;background:linear-gradient(145deg,#12263e,#101c2f)}
+#life .stat-grid.four:first-of-type .stat-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#4b91e2}
+#life .stat-grid.four:first-of-type .stat-card strong{font-size:23px;color:#f5f9ff}
+#life .retirement-panel{border-color:#304762;background:linear-gradient(145deg,#111f32,#0f1929)}
+#life .retirement-panel .panel-head{padding-bottom:12px;border-bottom:1px solid #273a53}
+#life .retirement-panel .compact-stats .stat-card{background:#0d192a;box-shadow:none}
+#life .retirement-note{max-width:980px;margin:12px 0 0;font-size:12px}
+#life .action-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#life .action-card{min-height:104px;padding:18px;border:1px solid #294667;background:linear-gradient(145deg,#142943,#101c2f);transition:border-color .18s ease,background .18s ease}
+#life .action-card:hover{border-color:#5289c5;background:#183353;transform:none;box-shadow:none}
+#life .action-card strong{font-size:15px;color:#f3f7ff}
+#life .action-card p{color:#9fb4ce;line-height:1.55}
+.career-record-panel{padding:22px}
+.career-record-list{display:grid;gap:0;max-width:920px;margin:auto}
+.career-record{position:relative;display:grid;grid-template-columns:108px 1fr;gap:20px;padding:16px 0}
+.career-record:not(:last-child):after{content:"";position:absolute;left:53px;top:58px;bottom:-16px;width:1px;background:linear-gradient(#4f88c4,#29415e)}
+.career-year{z-index:1;display:grid;place-items:center;align-self:start;min-height:42px;border:1px solid #3c6eaa;border-radius:11px;background:#12345a;color:#cfe4ff;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.career-record-copy{padding:2px 0 12px;border-bottom:1px solid #263a53}
+.career-record:last-child .career-record-copy{border-bottom:0}
+.career-step{display:block;margin-bottom:5px;color:#78a9df;font-size:10px;font-weight:700;letter-spacing:.12em}
+.career-record-copy b{font-size:16px;color:#f1f6fd}
+.career-record-copy p{margin:6px 0 0;color:#b1c2d6;font-size:13px;line-height:1.65}
+@media(max-width:820px){#life .action-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){#dashboard .hero-card{min-height:180px;padding:82px 19px 20px}#dashboard .hero-mark{left:20px;top:16px;transform:none;width:46px;height:52px}#dashboard .hero-card{align-items:flex-start;flex-direction:column}#dashboard .chips{width:100%}#dashboard .chips>span{font-size:11px;padding:6px 8px}.career-record{grid-template-columns:76px 1fr;gap:13px}.career-record:not(:last-child):after{left:37px;top:57px}}
 </style>
 <meta name="description" content="台灣警察生涯模擬器單檔 HTML 版本；CSS 與 JavaScript 已內嵌。">
 </head>
@@ -756,15 +794,16 @@ button:hover{transform:none!important}
           <div class="chips">
             <span id="careerYearChip">生涯第 0 年</span>
             <span id="dateChip">115年1月1日 08:00</span>
-            <span id="rankChip">身分：考生</span><span id="rankInsigniaChip" class="rank-chip-visual"></span>
+            <div class="rank-status"><span id="rankChip">身分：考生</span><span id="rankInsigniaChip" class="rank-chip-visual"></span></div>
             <span id="moneyChip">存款：NT$ 80,000</span>
             <button id="advanceDayBtn" class="ghost-btn compact-btn">推進30天</button>
           </div>
         </div>
 
         <div class="hero-card">
+          <span class="hero-mark" aria-hidden="true">★</span>
           <div>
-            <span class="eyebrow">目前目標</span>
+            <span class="eyebrow">警察生涯總覽</span>
             <h3 id="goalTitle">先建立角色</h3>
             <p id="goalText">完成基本資料後，選擇警專、警大或特考等入警路線。</p>
           </div>
@@ -1144,8 +1183,8 @@ button:hover{transform:none!important}
       </section>
 
       <section id="records" class="page">
-        <div class="page-head"><div><h2>生涯紀錄</h2><p>從報考到勤務、升遷與調任都會留下紀錄。</p></div></div>
-        <div class="panel"><div id="historyList" class="timeline"></div></div>
+        <div class="page-head"><div><h2>職涯任用年表</h2><p>以 2010 年為起點，整理重要任職、調任與升遷。</p></div></div>
+        <div class="panel career-record-panel"><div id="historyList" class="career-record-list"></div></div>
       </section>
 
       <section id="settings" class="page">
@@ -1607,7 +1646,12 @@ function officerRotationOffers(){
     ];
   }
 
-  return pickOfficerOffers(base,Math.min(3,base.length)).map(o=>{if(o.stationName)o.unitName=stationFullName(o.stationName);return o});
+  const otherAgencies=LOCAL_POLICE_AGENCIES.filter(a=>a[0]!==s.county);
+  const agency=otherAgencies[Math.floor(Math.random()*otherAgencies.length)];
+  const comparable=base[Math.floor(Math.random()*base.length)]||{};
+  const external={id:"rotation_external_"+seq+"_"+agency[0],unit:"admin",assignmentType:"administration",unitName:agency[1]+"｜局本部／所屬單位",position:comparable.position||s.position||"警察人員",seq,county:agency[0],localAgency:agency[1],crossCounty:true,desc:"外縣市調任選項，職務序列相當；可轉往"+agency[0]+"服務。"};
+  const local=pickOfficerOffers(base,Math.min(2,base.length)).map(o=>{if(o.stationName)o.unitName=stationFullName(o.stationName);return o});
+  return local.concat(external);
 }
 function retirementProfile(){
   if(s&&s.retired&&s.retirementClass)return {kind:s.retirementClass,voluntary:Number(s.retirementVoluntaryAge||60),mandatory:Number(s.retirementMandatoryAge||65),note:"退休時適用之退休類別"};
@@ -1688,7 +1732,7 @@ function normalizeState(){
   if(!Array.isArray(s.rotationOffers))s.rotationOffers=[];
   if(s.rotationOffers.length){
     const seqNow=isOfficerTrack()?effectiveOfficerSequence():Number(s.careerSequenceNo||9);
-    const stale=s.rotationOffers.some(o=>Number(o.seq||99)!==seqNow);
+    const stale=s.rotationOffers.some(o=>Number(o.seq||99)!==seqNow)||!s.rotationOffers.some(o=>o.crossCounty);
     if(stale){s.rotationOffers=[];s.selectedUnit=""}
   }
   if(!Number.isFinite(Number(s.rotationCycleDays)))s.rotationCycleDays=0;
@@ -1755,9 +1799,10 @@ function localIso(d){
   return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
 }
 function parseRocStamp(v){
-  const m=String(v||"").match(/(\d{2,3})年(\d{1,2})月(\d{1,2})日(?:\s+(\d{1,2}):(\d{2}))?/);
+  const m=String(v||"").match(/(\d{2,4})年(\d{1,2})月(\d{1,2})日(?:\s+(\d{1,2}):(\d{2}))?/);
   if(!m)return NaN;
-  return new Date(Number(m[1])+1911,Number(m[2])-1,Number(m[3]),Number(m[4]||0),Number(m[5]||0),0,0).getTime();
+  const rawYear=Number(m[1]),calendarYear=rawYear<1000?rawYear+1911:rawYear;
+  return new Date(calendarYear,Number(m[2])-1,Number(m[3]),Number(m[4]||0),Number(m[5]||0),0,0).getTime();
 }
 function migrateClock(){
   let epoch=Number(s.simEpoch);
@@ -1793,7 +1838,7 @@ function setSim(d){
 }
 function advanceHours(h){if(h<0)return;let d=simNow();d.setHours(d.getHours()+h);setSim(d);syncClock()}
 function advanceDays(n){if(n<0)return;let d=simNow();d.setDate(d.getDate()+n);setSim(d);syncClock();const retiredNow=checkMandatoryRetirement();if(!s.retired&&!retiredNow&&typeof window.onGameDaysAdvanced==="function")window.onGameDaysAdvanced(n)}
-function rocDateTime(){let d=simNow(),y=d.getFullYear()-1911,m=d.getMonth()+1,day=d.getDate(),hh=String(d.getHours()).padStart(2,"0"),mm=String(d.getMinutes()).padStart(2,"0");return y+"年"+m+"月"+day+"日 "+hh+":"+mm}
+function rocDateTime(){let d=simNow(),y=d.getFullYear()-16,m=d.getMonth()+1,day=d.getDate(),hh=String(d.getHours()).padStart(2,"0"),mm=String(d.getMinutes()).padStart(2,"0");return y+"年"+m+"月"+day+"日 "+hh+":"+mm}
 function syncClock(){
   migrateClock();
   if(!s.startDate)s.startDate="2026-01-01T08:00:00";
@@ -2138,9 +2183,9 @@ function units(){
       const seqNow=effectiveOfficerSequence();
       s.careerSequenceNo=seqNow;
       s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][seqNow]+"序列";
-      const badOffers=!Array.isArray(s.rotationOffers)||!s.rotationOffers.length||s.rotationOffers.some(o=>Number(o.seq)!==seqNow);
+      const badOffers=!Array.isArray(s.rotationOffers)||!s.rotationOffers.length||s.rotationOffers.some(o=>Number(o.seq)!==seqNow)||!s.rotationOffers.some(o=>o.crossCounty);
       if(badOffers){s.rotationOffers=officerRotationOffers();s.selectedUnit="";}
-      $("unitBanner").textContent="目前職務："+(s.position||"—")+"｜"+s.sequence+"。本次只顯示同序列／相當層級職缺；已升任警務員時，不會再出現第九序列巡官缺額。";
+      $("unitBanner").textContent="目前職務："+(s.position||"—")+"｜"+s.sequence+"。可選本縣市或外縣市的同序列／相當職務；已升任警務員時，不會再出現第九序列巡官缺額。";
       $("unitCards").innerHTML=s.rotationOffers.map(o=>officerVacancyCard(o,"輪調職缺")).join("");
       document.querySelectorAll("[data-o]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.o;units()});
       return;
@@ -2215,6 +2260,7 @@ $("confirmUnitBtn").onclick=()=>{
     s.unit=o.unit;
     s.unitName=o.unitName;
     s.assignmentType=o.assignmentType||o.unit;
+    if(o.crossCounty){s.county=o.county;s.localAgency=o.localAgency;s.precinct="";s.selectedStation="";}
     s.stationName=o.stationName||"";
     s.position=o.position;
     s.rank=o.position;
@@ -2332,9 +2378,10 @@ function renderRetirement(){
     }
   }
 }
-function life(){ $("salaryStat").textContent=cash(s.salary);$("savingsStat").textContent=cash(s.savings);$("lifeStress").textContent=s.stress;$("healthStat").textContent=s.health;let A=s.retired?[["rent","🏠 支付生活費","退休後生活支出"],["rest","🛌 休息","壓力 -15、體力 +25"],["exercise","🏋️ 運動","健康 +3、體能 +2"],["social","👥 社交活動","溝通 +2、聲望 +1"]]:[["salary","💵 領取月薪","加入本月薪資"],["rent","🏠 支付生活費","扣除生活成本"],["rest","🛌 完整休假","壓力 -15、體力 +25"],["exercise","🏋️ 運動","健康 +3、體能 +2"],["study","📘 在職進修","法學 +2、英文 +2"],["social","👥 同事聚餐","溝通 +2、聲望 +1"]];$("lifeActions").innerHTML=A.map(a=>'<div class="action-card" data-l="'+a[0]+'"><strong>'+a[1]+'</strong><p>'+a[2]+'</p></div>').join("");document.querySelectorAll("[data-l]").forEach(e=>e.onclick=()=>live(e.dataset.l))}
+function life(){ $("salaryStat").textContent=cash(s.salary);$("savingsStat").textContent=cash(s.savings);$("lifeStress").textContent=s.stress;$("healthStat").textContent=s.health;let A=s.retired?[["rent","支付生活費","退休後生活支出"],["rest","完整休息","壓力 -15、體力 +25"],["exercise","規律運動","健康 +3、體能 +2"],["social","社交活動","溝通 +2、聲望 +1"]]:[["salary","領取月薪","加入本月薪資"],["rent","支付生活費","扣除生活成本"],["rest","完整休息","壓力 -15、體力 +25"],["exercise","規律運動","健康 +3、體能 +2"],["study","在職進修","法學 +2、英文 +2"],["social","同事聚餐","溝通 +2、聲望 +1"]];$("lifeActions").innerHTML=A.map(a=>'<div class="action-card" data-l="'+a[0]+'"><strong>'+a[1]+'</strong><p>'+a[2]+'</p></div>').join("");document.querySelectorAll("[data-l]").forEach(e=>e.onclick=()=>live(e.dataset.l))}
 function live(a){if(a==="salary"){if(!s.salary)return toast("尚未任職");s.savings+=s.salary;advanceDays(30);rec("領取薪資",cash(s.salary))}if(a==="rent"){s.savings-=s.family==="與家人同住"?9000:s.family==="自行租屋"?18000:14000;advanceDays(30)}if(a==="rest"){s.stress=cl(s.stress-15);s.energy=cl(s.energy+25);advanceDays(1)}if(a==="exercise"){s.health=cl(s.health+3);s.fit=cl(s.fit+2);s.stress=cl(s.stress-4);advanceDays(1)}if(a==="study"){s.savings-=1500;s.law=cl(s.law+2);s.eng=cl(s.eng+2);advanceDays(7)}if(a==="social"){s.savings-=800;s.comm=cl(s.comm+2);s.rep=cl(s.rep+1);advanceDays(1)}save();render()}
-function records(){ $("historyList").innerHTML=s.history.length?s.history.map(h=>'<div class="timeline-item"><b>'+h.title+'</b><span>'+h.detail+"｜"+h.time+"</span></div>").join(""):'<div class="empty-state">尚無生涯紀錄。</div>'}
+function careerYearFromStamp(v){const m=String(v||"").match(/(\d{2,4})年/);if(!m)return 2010;const y=Number(m[1]);return y<1000?y+1895:y}
+function records(){const milestones=[{year:2011,title:"初任警職",detail:"警佐三階警員"},{year:2016,title:"派任與職務",detail:"XX派出所｜警正四階｜巡官兼副所長"}];const later=(s.history||[]).filter(h=>/初任|派職|任職|輪調|調任|升遷|陞任|考績|退休/.test(String(h.title||""))).map(h=>({year:careerYearFromStamp(h.time),title:h.title||"職涯紀錄",detail:[h.detail,h.time].filter(Boolean).join("｜")}));const rows=milestones.concat(later).sort((a,b)=>a.year-b.year);$("historyList").innerHTML=rows.map((h,i)=>'<article class="career-record"><div class="career-year">'+h.year+'</div><div class="career-record-copy"><span class="career-step">職涯節點 '+String(i+1).padStart(2,"0")+'</span><b>'+h.title+'</b><p>'+h.detail+'</p></div></article>').join("")}
 function safeRenderPart(name,fn){
   try{fn()}catch(err){
     console.error("[render:"+name+"]",err);
@@ -3077,7 +3124,7 @@ loadPoliceDirectory();
     const isAnnual=p.annualReady;
     const type=isAnnual?"年度考績":"階段考績";
     s.appraisalRounds=(s.appraisalRounds||0)+1;
-    s.appraisals.unshift({year:p.yr-1911,grade,score,type,round:s.appraisalRounds,date:rocDateTime()});
+    s.appraisals.unshift({year:p.yr-16,grade,score,type,round:s.appraisalRounds,date:rocDateTime()});
     s.lastAppraisalDutyCount=s.dutyCount||0;
 
     if(isAnnual){
@@ -3091,7 +3138,7 @@ loadPoliceDirectory();
       else {s.rep=cl(s.rep-2);}
     }
 
-    rec(type,(p.yr-1911)+"年 "+grade+"｜"+score+"分");
+    rec(type,(p.yr-16)+"年 "+grade+"｜"+score+"分");
     fb("appraisalBox",type+"完成："+grade+"（"+score+"分）。",grade!=="丙等");
     save();render();
   }
