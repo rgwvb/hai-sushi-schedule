@@ -166,6 +166,7 @@ function officerRotationOffers(){
   return pickOfficerOffers(base,Math.min(3,base.length)).map(o=>{if(o.stationName)o.unitName=stationFullName(o.stationName);return o});
 }
 function retirementProfile(){
+  if(s&&s.retired&&s.retirementClass)return {kind:s.retirementClass,voluntary:Number(s.retirementVoluntaryAge||60),mandatory:Number(s.retirementMandatoryAge||65),note:"退休時適用之退休類別"};
   const pos=String((s&&s.position)||(s&&s.rank)||"");
   const type=String((s&&s.assignmentType)||"");
 
@@ -198,6 +199,7 @@ function checkMandatoryRetirement(){
   s.retirementAge=s.age;
   s.retirementDate=rocDateTime();
   s.retirementReason=p.kind+"屆齡退休";
+  s.retirementClass=p.kind;s.retirementVoluntaryAge=p.voluntary;s.retirementMandatoryAge=p.mandatory;
   s.lastActivePosition=s.position||s.rank||"";
   s.lastActiveUnit=s.unitName||"";
   s.position="退休警察人員";
@@ -219,6 +221,7 @@ function voluntaryRetire(){
   s.retirementAge=s.age;
   s.retirementDate=rocDateTime();
   s.retirementReason=(serviceYearsExact()>=25&&s.age<p.voluntary?"任職滿25年自願退休":p.kind+"自願退休");
+  s.retirementClass=p.kind;s.retirementVoluntaryAge=p.voluntary;s.retirementMandatoryAge=p.mandatory;
   s.position="退休警察人員";
   s.rank="退休警察人員";
   s.salary=0;
@@ -227,7 +230,7 @@ function voluntaryRetire(){
   rec("自願退休",s.retirementReason+"｜"+s.retirementAge+"歲｜原職："+s.lastActivePosition);
   save();render();go("life");
 }
-const NEW=()=>({created:false,name:"",age:18,initialAge:18,gender:"男",education:"高中畢業",homeCounty:"臺北市",family:"與家人同住",route:"",routeName:"",selectedRoute:"",days:180,law:20,eng:40,fit:50,comm:50,stress:35,health:100,written:null,physical:null,training:false,passed:false,score:0,ranking:null,county:"臺北市",precinct:"",unit:"",unitName:"",assignmentType:"",stationName:"",selectedStation:"",pendingStationPick:false,selectedUnit:"",rank:"考生",qualification:"尚未取得",officialRank:"—",position:"考生",sequence:"—",careerSequenceNo:null,careerStage:"",rotationMonths:0,rotationEligible:false,rotationCycleMonths:0,rotationCycleDays:0,initialOffers:[],rotationOffers:[],dutyMode:"patrol",year:0,xp:0,rep:50,energy:100,dutyCount:0,savings:80000,salary:0,promo:0,cases:[],history:[],simDate:"2026-01-01T08:00:00",simEpoch:null,maxSimEpoch:null,startDate:"2026-01-01T08:00:00",joinDate:"",retired:false,retirementDate:"",retirementReason:"",retirementAge:null,lastActivePosition:"",lastActiveUnit:""});
+const NEW=()=>({created:false,name:"",age:18,initialAge:18,gender:"男",education:"高中畢業",homeCounty:"臺北市",family:"與家人同住",route:"",routeName:"",selectedRoute:"",days:180,law:20,eng:40,fit:50,comm:50,stress:35,health:100,written:null,physical:null,training:false,passed:false,score:0,ranking:null,county:"臺北市",precinct:"",unit:"",unitName:"",assignmentType:"",stationName:"",selectedStation:"",pendingStationPick:false,selectedUnit:"",rank:"考生",qualification:"尚未取得",officialRank:"—",position:"考生",sequence:"—",careerSequenceNo:null,careerStage:"",rotationMonths:0,rotationEligible:false,rotationCycleMonths:0,rotationCycleDays:0,initialOffers:[],rotationOffers:[],dutyMode:"patrol",year:0,xp:0,rep:50,energy:100,dutyCount:0,savings:80000,salary:0,promo:0,cases:[],history:[],simDate:"2026-01-01T08:00:00",simEpoch:null,maxSimEpoch:null,startDate:"2026-01-01T08:00:00",joinDate:"",retired:false,retirementDate:"",retirementReason:"",retirementAge:null,retirementClass:"",retirementVoluntaryAge:null,retirementMandatoryAge:null,lastActivePosition:"",lastActiveUnit:""});
 function normalizeState(){
   s=Object.assign(NEW(),s||{});
   s.county="臺北市";
@@ -342,7 +345,7 @@ function setSim(d){
   localStorage.setItem(CLOCK_KEY,String(fixed));
 }
 function advanceHours(h){if(h<0)return;let d=simNow();d.setHours(d.getHours()+h);setSim(d);syncClock()}
-function advanceDays(n){if(n<0)return;let d=simNow();d.setDate(d.getDate()+n);setSim(d);syncClock();const retiredNow=checkMandatoryRetirement();if(!retiredNow&&typeof window.onGameDaysAdvanced==="function")window.onGameDaysAdvanced(n)}
+function advanceDays(n){if(n<0)return;let d=simNow();d.setDate(d.getDate()+n);setSim(d);syncClock();const retiredNow=checkMandatoryRetirement();if(!s.retired&&!retiredNow&&typeof window.onGameDaysAdvanced==="function")window.onGameDaysAdvanced(n)}
 function rocDateTime(){let d=simNow(),y=d.getFullYear()-1911,m=d.getMonth()+1,day=d.getDate(),hh=String(d.getHours()).padStart(2,"0"),mm=String(d.getMinutes()).padStart(2,"0");return y+"年"+m+"月"+day+"日 "+hh+":"+mm}
 function syncClock(){
   migrateClock();
