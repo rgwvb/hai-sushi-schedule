@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>TW 台灣警察生涯模擬器</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v18.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v19.css">
 </head>
 <body>
 <div class="app-shell">
@@ -15,7 +15,7 @@
       <p>從入警考試、受訓、全國分發，到地方警察局、警政署與署屬機關的完整警察生涯模擬。</p>
     </div>
     <div class="header-actions">
-      <span class="version">全國版 v5.2</span>
+      <span class="version">全國版 v5.3</span>
       <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
       <button id="saveBtn" class="ghost-btn">💾 儲存</button>
       <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
@@ -115,7 +115,12 @@
             <label>起始年齡<input id="charAge" type="number" min="18" max="45" value="18"></label>
             <label>性別<select id="charGender"><option>男</option><option>女</option><option>不設定</option></select></label>
             <label>學歷<select id="charEducation"><option>高中畢業</option><option>大學在學</option><option>大學畢業</option><option>研究所畢業</option></select></label>
-            <label>居住縣市<select id="charHomeCounty"></select></label>
+            <label>居住縣市<select id="charHomeCounty">
+    <option>臺北市</option><option>新北市</option><option>桃園市</option><option>臺中市</option><option>臺南市</option><option>高雄市</option>
+    <option>基隆市</option><option>新竹市</option><option>嘉義市</option><option>宜蘭縣</option><option>新竹縣</option><option>苗栗縣</option>
+    <option>彰化縣</option><option>南投縣</option><option>雲林縣</option><option>嘉義縣</option><option>屏東縣</option><option>花蓮縣</option>
+    <option>臺東縣</option><option>澎湖縣</option><option>金門縣</option><option>連江縣</option>
+  </select></label>
             <label>家庭狀況<select id="charFamily"><option>與家人同住</option><option>自行租屋</option><option>外地求學</option></select></label>
           </div>
           <div class="button-row"><button class="primary-btn" id="createCharacterBtn">建立角色</button></div>
@@ -125,7 +130,12 @@
 
       <section id="route" class="page">
         <div class="page-head"><div><h2>選擇教育與任用路線</h2><p>警專、警大與一般警察特考是不同教育／考試管道；警校畢業後仍須經相應警察特考與任用程序。</p></div></div>
-        <div id="routeCards" class="choice-grid"></div>
+        <div id="routeCards" class="choice-grid">
+    <div class="choice-card" data-r="tpa"><h3>👮 警專二年制 → 四等警察人員特考</h3><p>警專正期教育2年；完成學業後仍須通過相應四等警察人員特考與任用流程，初任以警員職務為主。</p><div class="meta"><span class="tag">難度 ★★★</span><span class="tag">準備 180 天</span><span class="tag">警佐三階任官資格</span></div></div>
+    <div class="choice-card" data-r="cpu"><h3>🎓 警大四年制 → 三等警察人員特考</h3><p>警大學士班4年；畢業後通過相應三等警察人員特考與任用流程，依類科分發警官職務。</p><div class="meta"><span class="tag">難度 ★★★★</span><span class="tag">準備 220 天</span><span class="tag">警正四階任官資格</span></div></div>
+    <div class="choice-card" data-r="g4"><h3>📝 一般警察特考四等</h3><p>一般教育體系報考；通過考試與訓練後取得相應任官資格並分發基層職務。</p><div class="meta"><span class="tag">難度 ★★★</span><span class="tag">準備 210 天</span><span class="tag">警佐三階任官資格</span></div></div>
+    <div class="choice-card" data-r="g3"><h3>📚 一般警察特考三等</h3><p>大學以上學歷路線；通過三等一般警察特考後接受教育與實務訓練，再依類科分發。</p><div class="meta"><span class="tag">難度 ★★★★★</span><span class="tag">準備 270 天</span><span class="tag">警正四階任官資格</span></div></div>
+  </div>
         <div class="button-row"><button class="primary-btn" id="confirmRouteBtn">確認教育／任用路線</button></div>
         <div id="routeMsg" class="feedback"></div>
       </section>
@@ -143,7 +153,14 @@
         </div>
         <div class="panel">
           <div class="panel-head"><h3>本週安排</h3><span>每次行動推進 7 天</span></div>
-          <div id="studyActions" class="action-grid"></div>
+          <div id="studyActions" class="action-grid">
+    <div class="action-card" data-a="law"><strong>📖 讀法學</strong><p>法學 +5、壓力 +3</p></div>
+    <div class="action-card" data-a="eng"><strong>🇬🇧 讀英文</strong><p>英文 +5、壓力 +2</p></div>
+    <div class="action-card" data-a="fit"><strong>🏃 體能訓練</strong><p>體能 +5、健康 +1</p></div>
+    <div class="action-card" data-a="mock"><strong>📝 刷題模考</strong><p>法學 +3、英文 +2</p></div>
+    <div class="action-card" data-a="work"><strong>💼 打工</strong><p>存款 +NT$2,500</p></div>
+    <div class="action-card" data-a="rest"><strong>😴 休息</strong><p>壓力 -10</p></div>
+  </div>
         </div>
         <div class="two-col">
           <div class="panel">
@@ -449,7 +466,7 @@
 </div>
 <script src="backend-config.js"></script>
 <script src="backend.js"></script>
-<script src="app-v22.js"></script>
-<script src="systems-v16.js"></script>
+<script src="app-v23.js"></script>
+<script src="systems-v17.js"></script>
 </body>
 </html>
