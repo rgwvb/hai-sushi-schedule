@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>TW 台灣警察生涯模擬器</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v10.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v11.css">
 </head>
 <body>
 <div class="app-shell">
@@ -15,7 +15,7 @@
       <p>從入警考試、受訓、分局分發，到單位勤務、調任與升遷的完整生涯模擬。</p>
     </div>
     <div class="header-actions">
-      <span class="version">臺北市版 v3.9</span>
+      <span class="version">臺北市版 v4.0</span>
       <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
       <button id="saveBtn" class="ghost-btn">💾 儲存</button>
       <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
@@ -62,7 +62,7 @@
           <div class="chips">
             <span id="careerYearChip">生涯第 0 年</span>
             <span id="dateChip">115年1月1日 08:00</span>
-            <span id="rankChip">身分：考生</span>
+            <span id="rankChip">身分：考生</span><span id="rankInsigniaChip" class="rank-chip-visual"></span>
             <span id="moneyChip">存款：NT$ 80,000</span>
             <button id="advanceDayBtn" class="ghost-btn compact-btn">⏩ 推進30天</button>
           </div>
@@ -95,7 +95,7 @@
               <div><span>任官資格</span><b id="dashQualification">尚未取得</b></div>
               <div><span>現敘官階</span><b id="dashOfficialRank">—</b></div>
               <div><span>現任職務</span><b id="dashRank">考生</b></div>
-              <div><span>陞遷序列</span><b id="dashSequence">—</b></div>
+              <div><span>陞遷序列</span><b id="dashSequence">—</b></div><div class="rank-row"><span>階級識別</span><b id="dashInsignia" class="rank-insignia-wrap">—</b></div>
               <div><span>服務分局</span><b id="dashCounty">—</b></div>
               <div><span>服務單位</span><b id="dashUnit">—</b></div>
             </div>
@@ -271,14 +271,14 @@
             <div><span>任官資格</span><b id="careerQualification">—</b></div>
             <div><span>現敘官階</span><b id="careerOfficialRank">—</b></div>
             <div><span>現任職務</span><b id="careerPosition">—</b></div>
-            <div><span>陞遷序列</span><b id="careerSequence">—</b></div><div class="wide"><span>下一輪職缺預估</span><b id="careerVacancyForecast">—</b></div>
+            <div><span>陞遷序列</span><b id="careerSequence">—</b></div><div><span>階級識別</span><b id="careerInsignia" class="rank-insignia-wrap">—</b></div><div class="wide"><span>下一輪職缺預估</span><b id="careerVacancyForecast">—</b></div>
           </div>
         </div>
         <div id="careerPath" class="sequence-grid"></div>
         <div class="three-col">
           <div class="panel"><h3>職務陞遷甄審</h3><p class="muted" id="promotionRuleText">依缺額、陞遷序列、資績評分、考績與獎懲模擬。</p><label class="promotion-target-label">本次申請職務<select id="promotionTarget"></select></label><div class="info-banner" id="promotionScoreBox">資績分數：—</div><button class="primary-btn" id="promotionBtn">參加甄審</button></div>
           <div class="panel"><h3>專業甄選</h3><p class="muted">可申請偵查、交通、科技偵查等單位。</p><button class="secondary-btn" id="specialUnitBtn">參加甄選</button></div>
-          <div class="panel"><h3>臺北市分局間調任</h3><p class="muted">只在臺北市14個分局之間模擬調任，依年資、資績與缺額判定。</p><button class="secondary-btn" id="transferBtn">申請分局間調任</button></div>
+          <div class="panel"><h3>臺北市分局間調任</h3><p class="muted">只在臺北市14個分局之間模擬調任。調任不會自動降低既有官階／職務序列，只重新選擇新分局的相當職務。</p><button class="secondary-btn" id="transferBtn">申請分局間調任</button></div>
         </div>
         <div id="careerMsg" class="feedback"></div>
       </section>
@@ -403,7 +403,7 @@
 </div>
 <script src="backend-config.js"></script>
 <script src="backend.js"></script>
-<script src="app-v14.js"></script>
-<script src="systems-v10.js"></script>
+<script src="app-v15.js"></script>
+<script src="systems-v11.js"></script>
 </body>
 </html>
