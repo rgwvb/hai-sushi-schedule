@@ -211,7 +211,15 @@ $("runDistributionBtn").onclick=()=>{
   }
   save();render();
 }
+function renderStationDirectory(){
+  if(!$("stationDirectory"))return;
+  $("stationDirectory").style.display=s.precinct?"block":"none";
+  if(!$("stationDirectoryCards"))return;
+  $("stationDirectoryTitle").textContent=(s.precinct||"")+" 派出所／駐在所";
+  $("stationDirectoryCards").innerHTML=stationList().map(name=>'<div class="station-directory-item '+(s.stationName===name?"current":"")+'"><b>'+name+'</b><span>'+stationDutyText()+'</span>'+(s.stationName===name?'<em>目前服務單位</em>':'')+'</div>').join("");
+}
 function units(){
+  renderStationDirectory();
   if(isOfficerTrack()){
     if(s.careerStage==="officer_initial_offer"){
       $("confirmUnitBtn").style.display="";
@@ -260,12 +268,6 @@ function units(){
     return '<div class="choice-card '+((s.selectedUnit===u[0]||s.unit===u[0])?"selected":"")+'" data-u="'+u[0]+'"><h3>'+u[1]+" "+label+'</h3><p>'+u[5]+'</p><div class="meta"><span class="tag">遊戲年資 '+u[3]+' 年</span><span class="tag">XP '+u[4]+'</span><span class="tag">'+(l?"🔒 尚未解鎖":"可申請")+'</span></div></div>';
   }).join("");
   document.querySelectorAll("[data-u]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.u;units()});
-  if($("stationDirectory")){
-    $("stationDirectory").style.display=s.precinct?"block":"none";
-    if($("stationDirectoryTitle"))$("stationDirectoryTitle").textContent=(s.precinct||"")+" 派出所／駐在所";
-    if($("stationDirectoryCards"))$("stationDirectoryCards").innerHTML=stationList().map(name=>'<div class="station-directory-item"><b>'+name+'</b><span>'+stationDutyText()+'</span></div>').join("");
-  }
-
 }
 
 $("confirmUnitBtn").onclick=()=>{
@@ -285,13 +287,15 @@ $("confirmUnitBtn").onclick=()=>{
     s.careerStage="officer_initial";
     s.rotationEligible=false;
     s.rotationMonths=0;
+    s.rotationCycleMonths=0;
+    s.rotationOffers=[];
     s.selectedUnit="";
     rec("初任派職",o.unitName+"｜"+o.position);
     fb("unitMsg","初任派職完成："+o.unitName+"｜"+o.position+"。",1);
     save();render();return;
   }
 
-  if(isOfficerTrack()&&s.rotationEligible&&s.careerStage==="officer_initial"){
+  if(isOfficerTrack()&&s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){
     const o=(s.rotationOffers||[]).find(x=>x.id===s.selectedUnit);
     if(!o)return fb("unitMsg","請先選擇一個本次職缺。",0);
     s.unit=o.unit;
@@ -305,6 +309,8 @@ $("confirmUnitBtn").onclick=()=>{
     s.careerStage="officer_rotation";
     s.rotationEligible=false;
     s.rotationMonths=0;
+    s.rotationCycleMonths=0;
+    s.rotationOffers=[];
     s.selectedUnit="";
     rec("職務輪調",o.unitName+"｜"+o.position);
     fb("unitMsg","已派任："+o.unitName+"｜"+o.position+"。",1);
