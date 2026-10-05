@@ -308,8 +308,8 @@ const NEW=()=>({created:false,name:"",age:18,initialAge:18,gender:"男",educatio
 function normalizeState(){
   s=Object.assign(NEW(),s||{});
   if(!C.includes(s.homeCounty))s.homeCounty="臺北市";
-  if(s.county&&!C.includes(s.county))s.county="";
-  if(s.county&&!s.localAgency)s.localAgency=agencyRecord(s.county)?.[1]||"";
+  if(s.county&&s.county!=="中央"&&!C.includes(s.county))s.county="";
+  if(s.county&&!s.localAgency)s.localAgency=s.county==="中央"?(s.unitName||"內政部警政署"):(agencyRecord(s.county)?.[1]||"");
   if(s.county==="臺北市"&&s.precinct&&!P.some(p=>p[0]===s.precinct))s.precinct="";
   if(s.county!=="臺北市"&&s.precinct==="地方分發")s.precinct="";
   if(!Array.isArray(s.history))s.history=[];
@@ -811,7 +811,7 @@ const retireBtn=$("voluntaryRetireBtn");if(retireBtn)retireBtn.onclick=voluntary
 function runSelfCheck(){
   normalizeState();
   const issues=[];
-  if(s.county&&!C.includes(s.county))issues.push("地方警察機關資料無效");
+  if(s.county&&s.county!=="中央"&&!C.includes(s.county))issues.push("地方警察機關資料無效");
   if(s.county==="臺北市"&&s.precinct&&!P.some(p=>p[0]===s.precinct))issues.push("臺北市分局資料無效");
   if(s.stationName&&!stationList().includes(s.stationName))issues.push("派出所不屬於目前分局");
   if(s.unit==="station"&&!s.stationName)issues.push("派出所勤務缺少實際派出所");if(s.stationName&&!stationList().includes(s.stationName))issues.push("目前派出所與分局不一致");
