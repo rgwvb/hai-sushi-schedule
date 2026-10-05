@@ -1870,7 +1870,7 @@ $("runDistributionBtn").onclick=()=>{
   if(!post)return fb("distributionResult","分發資料錯誤，請重新選擇。",0);
   let r=R.find(x=>x[0]===s.route);
   s.county=post.county;s.localAgency=post.agency;s.precinct=post.precinct||"";s.position=r?r[8]:"警員";s.rank=s.position;s.sequence=r?r[9]:"第十一序列";s.careerSequenceNo=r?r[11]:11;
-  if(!s.joinDate)s.joinDate=s.simDate;s.year=1;s.salary=(s.officialRank==="警正四階"?64000:56500);
+  if(!s.joinDate)s.joinDate=s.simDate;if(!s.positionStartDate)s.positionStartDate=s.joinDate;s.year=1;s.salary=(s.officialRank==="警正四階"?64000:56500);
   if(["cpu","g3"].includes(s.route)){
     s.unit="";s.unitName="";s.assignmentType="";s.position="巡官";s.rank="巡官";s.careerSequenceNo=9;s.sequence="第九序列";s.careerStage="officer_initial_offer";s.rotationMonths=0;s.rotationEligible=false;s.rotationCycleMonths=0;s.rotationCycleDays=0;s.initialOffers=pickOfficerOffers(officerInitialPool(),3);s.rotationOffers=[];
     rec("分發",post.label+"｜待選初任職務");
@@ -3124,19 +3124,24 @@ loadPoliceDirectory();
     if(seq===10&&nextSeq===9&&!patrolOfficerQualified()){
       return fb("careerMsg","巡佐／第十序列不能只靠資績直接升巡官。請先完成「警正官等資格」與「警大教育／訓練資格」，且績效、考績及獎懲須符合門檻。",0);
     }
+    const started=parseLocalDateTime(s.positionStartDate||s.joinDate||s.simDate);
+    const positionDays=Math.max(0,Math.floor((simNow().getTime()-started.getTime())/86400000));
+    const minPositionDays=seq>=10?730:548;
+    if(positionDays<minPositionDays)return fb("careerMsg","目前職務年資尚未達甄審門檻；本序列至少需任職 "+Math.ceil(minPositionDays/30)+" 個月。",0);
+    if(!recentTwoYearAppraisalOK())return fb("careerMsg","需先累積最近兩年合格考績，且至少一年度甲等，才能參加甄審。",0);
     const score=promotionScore();
-    const threshold={11:38,10:44,9:50,8:56,7:64,6:72,5:80,4:86,3:91,2:95,1:98}[seq]||50;
+    const threshold={11:42,10:48,9:55,8:62,7:69,6:76,5:83,4:89,3:93,2:97,1:99}[seq]||55;
     const grade=s.appraisals?.[0]?.grade||appraisalGrade(appraisalScore());
     if(grade==="丙等"||s.greatDemerit>0)return fb("careerMsg","本次不具甄審條件：考績或重大懲處不符。",0);
     if(score<threshold)return fb("careerMsg","資績分數不足：目前 "+score+"，本次模擬甄審參考門檻 "+threshold+"。",0);
     const target=$("promotionTarget")?.value||targetPositions(nextSeq)[0];
-    const vacancyChance=Math.max(.08,Math.min(nextSeq<=3?.42:.88,(nextSeq<=3?.12:.32)+score/(nextSeq<=3?420:160)));
+    const vacancyChance=Math.max(.06,Math.min(nextSeq<=3?.30:.65,(nextSeq<=3?.10:.20)+score/(nextSeq<=3?500:230)));
     if(Math.random()>vacancyChance){
       s.promotionReviews.unshift({date:rocDateTime(),result:"未獲陞任",score,target,sequence:sequenceLabel(nextSeq)});
       rec("陞遷甄審","申請 "+sequenceLabel(nextSeq)+" "+target+"｜資績 "+score+"｜本次因缺額／排序未獲陞任");
       fb("careerMsg","符合基本資格，但本次因缺額或排序未獲陞任。",0);save();render();return;
     }
-    s.careerSequenceNo=nextSeq;s.sequence=sequenceLabel(nextSeq);applyCareerTarget(target,nextSeq);
+    s.careerSequenceNo=nextSeq;s.sequence=sequenceLabel(nextSeq);applyCareerTarget(target,nextSeq);s.positionStartDate=localIso(simNow());
     ensureOfficialRankForSequence(nextSeq);
     if(seq===10&&nextSeq===9){
       const ro={"警佐三階":1,"警佐二階":2,"警佐一階":3,"警正四階":4,"警正三階":5,"警正二階":6,"警正一階":7};
