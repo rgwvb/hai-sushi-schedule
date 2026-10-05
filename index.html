@@ -5,7 +5,603 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>TW 台灣警察生涯模擬器</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v19.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><style id="standaloneStyles">
+:root{
+--bg:#08111f;--bg2:#0c1728;--panel:#101c2f;--panel2:#14233a;--panel3:#0c1626;--line:#2a3b56;
+--text:#f2f6fc;--muted:#91a5bf;--accent:#3b82f6;--accent2:#2563eb;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444;
+--shadow:0 18px 40px rgba(0,0,0,.2)
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(180deg,#08111f 0,#0a1524 55%,#09121f 100%);color:var(--text);font-family:"Segoe UI","Noto Sans TC",system-ui,sans-serif;min-height:100vh}button,input,select{font:inherit}
+button{transition:.18s ease}.app-shell{max-width:1500px;margin:auto;padding:22px}.app-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}.app-header h1{font-size:27px;margin:0 0 6px}.app-header p{margin:0;color:var(--muted);font-size:14px}.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.version,.status-chip,.chips span{display:inline-flex;align-items:center;border-radius:999px;border:1px solid #31527d;background:#12305a;color:#d9ebff;padding:6px 10px;font-size:12px}
+.layout{display:grid;grid-template-columns:255px minmax(0,1fr);gap:14px}.sidebar{background:rgba(16,28,47,.96);border:1px solid var(--line);border-radius:15px;overflow:hidden;height:max-content;position:sticky;top:15px;box-shadow:var(--shadow)}.profile-mini{display:flex;align-items:center;gap:11px;padding:15px;border-bottom:1px solid var(--line);background:#0d192b}.avatar{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#1b3760;border:1px solid #365b86;font-weight:800}.profile-mini strong{display:block;font-size:14px}.profile-mini span{display:block;color:var(--muted);font-size:12px;margin-top:3px}.sidebar nav{padding:10px}.nav-btn{width:100%;border:0;background:transparent;color:var(--text);padding:11px 12px;border-radius:9px;text-align:left;cursor:pointer;margin:2px 0}.nav-btn:hover,.nav-btn.active{background:#1d3558}.sidebar-note{font-size:11px;color:#7890ad;line-height:1.55;padding:13px;border-top:1px solid var(--line)}
+.main{min-width:0}.page{display:none}.page.active{display:block}.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:13px}.page-head h2{font-size:23px;margin:0 0 5px}.page-head p{color:var(--muted);margin:0;font-size:13px}
+.panel,.hero-card,.stat-card{background:rgba(16,28,47,.96);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}.panel{padding:17px;margin-bottom:14px}.hero-card{padding:20px;display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:14px;background:linear-gradient(135deg,#11223b,#122f57)}.hero-card h3{font-size:22px;margin:3px 0 6px}.hero-card p{margin:0;color:#b8c9de}.eyebrow{font-size:11px;color:#8ebdfd;text-transform:uppercase;letter-spacing:.08em}
+.stat-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}.stat-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}.stat-card{padding:14px}.stat-card span{font-size:12px;color:var(--muted)}.stat-card strong{display:block;font-size:21px;margin:4px 0 9px}.bar{height:7px;background:#0b1423;border:1px solid #213552;border-radius:999px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2563eb,#60a5fa);transition:width .3s}.bar.danger i{background:linear-gradient(90deg,#f59e0b,#ef4444)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}.three-col{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.panel-head h3{margin:0;font-size:16px}.panel-head span{font-size:12px;color:var(--muted)}
+.info-list{display:grid;gap:1px}.info-list>div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid rgba(42,59,86,.65)}.info-list>div:last-child{border-bottom:0}.info-list span{color:var(--muted);font-size:13px}.info-list b{font-size:13px;text-align:right}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.form-grid label,.toolbar label{font-size:12px;color:var(--muted)}input,select{width:100%;margin-top:6px;background:#0b1626;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:11px 12px;outline:none}input:focus,select:focus{border-color:#4b83c8;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+.button-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.primary-btn,.secondary-btn,.ghost-btn,.danger-btn{border:1px solid transparent;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:700}.primary-btn{background:var(--accent);color:white}.primary-btn:hover{background:var(--accent2);transform:translateY(-1px)}.secondary-btn{background:#223853;color:white;border-color:#355170}.secondary-btn:hover{background:#2a4669}.ghost-btn{background:#12223a;color:#dceaff;border-color:#294666}.ghost-btn:hover{background:#1a3150}.danger-btn{background:#7f1d1d;color:#fee2e2;border-color:#9f2929}.danger-btn:hover{background:#991b1b}
+.feedback{min-height:0;margin-top:12px;border-radius:10px;color:#c7d7ea;font-size:13px;line-height:1.6}.feedback:not(:empty){padding:11px 12px;border:1px solid #2d4667;background:#0d1c30}.feedback.good{border-color:#21683f;background:#0c2a1c;color:#a7f3d0}.feedback.bad{border-color:#703136;background:#2a1115;color:#fecaca}
+.choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.choice-card,.county-card,.action-card{background:#0f1b2e;border:1px solid var(--line);border-radius:12px;padding:15px;cursor:pointer}.choice-card:hover,.county-card:hover,.action-card:hover{border-color:#4d75a6;background:#13243c}.choice-card.selected,.county-card.selected{outline:2px solid var(--accent);background:#132946}.choice-card h3,.county-card h3{margin:0 0 6px;font-size:16px}.choice-card p,.county-card p,.action-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}.choice-card .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.tag{font-size:11px;padding:4px 7px;border-radius:999px;background:#172a46;border:1px solid #29476c;color:#bbd5f5}
+.action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#dutyChoices [data-advd]{color:var(--text);text-align:left;width:100%;font:inherit}.action-card strong{display:block;font-size:14px;margin-bottom:5px}.action-card.disabled{opacity:.45;cursor:not-allowed}.progress-stack{display:grid;gap:14px}.progress-stack>div>span{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.muted{color:var(--muted);font-size:13px;line-height:1.65}
+.exam-stepper{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}.step{display:flex;align-items:center;gap:8px;background:#0f1b2e;border:1px solid var(--line);padding:10px;border-radius:11px;color:var(--muted)}.step span{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#172a46;font-size:12px}.step.active,.step.done{border-color:#376dab;color:#e8f2ff}.step.done span{background:#166534;color:#dcfce7}.exam-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.exam-summary>div{padding:12px;border-radius:10px;background:#0b1626;border:1px solid #21344f}.exam-summary span{display:block;color:var(--muted);font-size:11px}.exam-summary b{display:block;margin-top:6px;font-size:16px}
+.toolbar{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}.county-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.county-card{padding:12px}.county-card .numbers{display:flex;justify-content:space-between;gap:8px;margin-top:8px;color:#b7c8dd;font-size:11px}.info-banner{padding:11px 12px;border:1px solid #2b4668;background:#0d1b2e;border-radius:10px;color:#bdd0e8;font-size:13px;margin-bottom:13px}
+.radio-panel{border-color:#334a6e}.radio-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;font-weight:700}.dispatch-box{background:#091522;border:1px solid #314663;border-radius:12px;padding:16px;min-height:88px;line-height:1.65;margin-bottom:11px}.case-list{display:grid;gap:10px}.case-item{border:1px solid var(--line);background:#0d1828;border-radius:11px;padding:13px}.case-item h3{margin:0 0 5px;font-size:14px}.case-item .case-meta{font-size:11px;color:var(--muted);margin-bottom:7px}.case-item p{margin:0;color:#c0cfe0;font-size:13px;line-height:1.55}
+.career-path{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 16px}.career-node{padding:11px 15px;border-radius:10px;border:1px solid var(--line);background:#0f1b2e}.career-node.current{border-color:#3f7bc5;background:#14305a}.career-arrow{color:#6582a5}.timeline{display:grid;gap:10px}.timeline-item{position:relative;padding:0 0 0 18px}.timeline-item:before{content:"";position:absolute;left:2px;top:7px;width:7px;height:7px;border-radius:50%;background:#4c86cb}.timeline-item:after{content:"";position:absolute;left:5px;top:17px;bottom:-12px;width:1px;background:#29415f}.timeline-item:last-child:after{display:none}.timeline-item b{display:block;font-size:13px}.timeline-item span{display:block;color:var(--muted);font-size:12px;margin-top:3px}.timeline.compact{max-height:265px;overflow:auto}
+.chips{display:flex;gap:7px;flex-wrap:wrap}.empty-state{padding:30px 10px;text-align:center;color:var(--muted)}.toast{position:fixed;right:18px;bottom:18px;background:#0f1d31;border:1px solid #355278;color:white;border-radius:10px;padding:11px 14px;box-shadow:var(--shadow);z-index:20;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:none}
+@media(max-width:1100px){.stat-grid{grid-template-columns:repeat(3,1fr)}.county-grid{grid-template-columns:repeat(3,1fr)}.three-col{grid-template-columns:1fr 1fr}.exam-summary{grid-template-columns:1fr 1fr}}
+@media(max-width:820px){.app-shell{padding:12px}.layout{grid-template-columns:1fr}.sidebar{position:static}.sidebar nav{display:grid;grid-template-columns:repeat(2,1fr)}.profile-mini,.sidebar-note{display:none}.two-col,.three-col,.form-grid,.choice-grid,.action-grid{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr 1fr}.county-grid{grid-template-columns:repeat(2,1fr)}.hero-card{align-items:flex-start;flex-direction:column}.app-header{flex-direction:column}}
+@media(max-width:520px){.sidebar nav{grid-template-columns:1fr 1fr}.stat-grid,.stat-grid.four{grid-template-columns:1fr 1fr}.exam-stepper{grid-template-columns:1fr 1fr}.exam-summary{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr}.county-grid{grid-template-columns:1fr}.app-header h1{font-size:22px}.page-head{flex-direction:column}.hero-card{padding:16px}}
+
+
+/* Theme switcher */
+.theme-picker{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
+.theme-picker select{width:auto;min-height:34px;margin:0;padding:6px 28px 6px 9px;border-radius:999px}
+.compact-btn{padding:6px 10px;font-size:12px}
+
+/* War room */
+:root[data-theme="warroom"]{
+  --bg:#050b14;--bg2:#081421;--panel:#0b1725;--panel2:#102238;--panel3:#07111d;
+  --line:#1f4568;--text:#edf7ff;--muted:#7fa5c8;--accent:#23a6ff;--accent2:#1576bd;
+  --good:#25d07f;--warn:#f4b740;--bad:#ff5e67;--shadow:0 16px 42px rgba(0,20,40,.34)
+}
+:root[data-theme="warroom"] body{background:
+  radial-gradient(circle at 80% 0%,rgba(35,166,255,.08),transparent 30%),
+  linear-gradient(180deg,#040a12,#07111d 55%,#050b14)}
+:root[data-theme="warroom"] .app-header h1{letter-spacing:.02em}
+:root[data-theme="warroom"] .sidebar{box-shadow:inset 0 0 0 1px rgba(35,166,255,.03),var(--shadow)}
+:root[data-theme="warroom"] .hero-card{background:linear-gradient(135deg,#0d2236,#0b3150)}
+:root[data-theme="warroom"] .version,
+:root[data-theme="warroom"] .status-chip,
+:root[data-theme="warroom"] .chips span{background:#082b48;border-color:#1d5b8d;color:#d6f0ff}
+:root[data-theme="warroom"] .nav-btn.active{background:linear-gradient(90deg,#0d3761,#133154);box-shadow:inset 3px 0 0 #2bb2ff}
+
+/* Police information system */
+:root[data-theme="police"]{
+  --bg:#edf2f7;--bg2:#f4f7fa;--panel:#ffffff;--panel2:#eef4fa;--panel3:#f8fafc;
+  --line:#cbd6e2;--text:#17263a;--muted:#63758a;--accent:#174f8a;--accent2:#123e6b;
+  --good:#1f7a4d;--warn:#a66b0a;--bad:#b73b45;--shadow:0 10px 28px rgba(41,62,85,.09)
+}
+:root[data-theme="police"] body{background:linear-gradient(180deg,#edf2f7,#f7f9fb)}
+:root[data-theme="police"] .sidebar,
+:root[data-theme="police"] .panel,
+:root[data-theme="police"] .hero-card,
+:root[data-theme="police"] .stat-card{background:#fff}
+:root[data-theme="police"] .profile-mini{background:#eaf1f8}
+:root[data-theme="police"] .avatar{background:#dbe9f6;border-color:#aac2d9;color:#153f69}
+:root[data-theme="police"] .nav-btn.active{background:#dbe9f7;color:#143c65;box-shadow:inset 3px 0 0 #174f8a}
+:root[data-theme="police"] input,
+:root[data-theme="police"] select,
+:root[data-theme="police"] .dispatch-box,
+:root[data-theme="police"] .choice-card,
+:root[data-theme="police"] .county-card,
+:root[data-theme="police"] .action-card,
+:root[data-theme="police"] .exam-summary>div,
+:root[data-theme="police"] .career-node{background:#f7fafc;color:var(--text)}
+:root[data-theme="police"] .hero-card{background:linear-gradient(135deg,#f8fbff,#e9f2fb)}
+:root[data-theme="police"] .version,
+:root[data-theme="police"] .status-chip,
+:root[data-theme="police"] .chips span{background:#e5eef8;border-color:#b9cde0;color:#20476f}
+:root[data-theme="police"] .muted,
+:root[data-theme="police"] .panel-head span,
+:root[data-theme="police"] .choice-card p,
+:root[data-theme="police"] .county-card p,
+:root[data-theme="police"] .action-card p{color:#63758a}
+
+/* Game UI */
+:root[data-theme="game"]{
+  --bg:#11131b;--bg2:#191d2b;--panel:#1b2030;--panel2:#252c42;--panel3:#151a27;
+  --line:#3a4460;--text:#fff7e8;--muted:#b7b2a5;--accent:#f08a34;--accent2:#cc6b20;
+  --good:#64c878;--warn:#f2c14e;--bad:#e86161;--shadow:0 14px 34px rgba(0,0,0,.28)
+}
+:root[data-theme="game"] body{background:
+  radial-gradient(circle at 12% 0%,rgba(240,138,52,.1),transparent 25%),
+  linear-gradient(180deg,#11131b,#171b28)}
+:root[data-theme="game"] .panel,
+:root[data-theme="game"] .stat-card,
+:root[data-theme="game"] .sidebar{border-width:2px}
+:root[data-theme="game"] .nav-btn.active{background:#48301f;color:#ffd9b8;box-shadow:inset 3px 0 0 #f08a34}
+:root[data-theme="game"] .hero-card{background:linear-gradient(135deg,#2b2530,#45301f)}
+:root[data-theme="game"] .version,
+:root[data-theme="game"] .status-chip,
+:root[data-theme="game"] .chips span{background:#3c2b1f;border-color:#76502f;color:#ffe2c4}
+:root[data-theme="game"] .primary-btn{box-shadow:0 4px 0 #8b4817}
+:root[data-theme="game"] .choice-card:hover,
+:root[data-theme="game"] .county-card:hover,
+:root[data-theme="game"] .action-card:hover{transform:translateY(-1px)}
+
+
+/* v3 institution model */
+.duty-mode-panel{margin-bottom:14px}
+#careerPath{margin-top:0}
+#careerPath .career-node{font-size:13px}
+#promotionScoreBox{margin:10px 0 12px}
+#dashQualification,#dashOfficialRank,#dashSequence{color:var(--text)}
+@media(max-width:620px){
+  #careerPath{display:grid;grid-template-columns:1fr}
+  #careerPath .career-arrow{transform:rotate(90deg);text-align:center}
+}
+
+
+/* v4 sequence-based career UI */
+.sequence-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:14px 0;
+}
+.sequence-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px 16px;
+}
+.sequence-card.current{
+  border-color:var(--accent);
+  box-shadow:inset 0 0 0 1px var(--accent);
+}
+.sequence-card.passed{opacity:.62}
+.sequence-card .seq-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+  margin-bottom:8px;
+}
+.sequence-card .seq-head span{
+  color:var(--muted);
+  font-size:12px;
+  text-align:right;
+}
+.sequence-card p{margin:0;color:var(--muted);line-height:1.65}
+.sequence-card em{
+  display:inline-block;
+  margin-top:10px;
+  font-style:normal;
+  font-size:12px;
+  color:var(--accent);
+}
+.promotion-target-label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin:12px 0;
+}
+.promotion-target-label select{width:100%}
+@media(max-width:720px){
+  .sequence-grid{grid-template-columns:1fr}
+  .sequence-card .seq-head{flex-direction:column}
+  .sequence-card .seq-head span{text-align:left}
+}
+
+
+/* v5 officer rotation */
+#unit .choice-card b{color:var(--text)}
+#unit .info-banner{line-height:1.7}
+
+
+/* v6 Taipei-only scope */
+#distribution .county-card h3{margin-bottom:6px}
+#distribution .county-card p{min-height:44px}
+
+
+/* v3.3 station detail */
+.station-directory-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.station-directory-item{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--panel3);
+}
+.station-directory-item b{font-size:14px}
+.station-directory-item span{color:var(--muted);font-size:12px;line-height:1.55}
+.station-note{margin:12px 0 0}
+@media(max-width:720px){
+  .station-directory-grid{grid-template-columns:1fr}
+}
+
+
+/* v3.5 audit and precinct organization */
+#precinctOrgDirectory{margin-bottom:14px}
+.station-directory-item.current{
+  border-color:var(--accent);
+  box-shadow:inset 0 0 0 1px var(--accent);
+}
+.station-directory-item em{
+  font-style:normal;
+  font-size:11px;
+  color:var(--accent);
+}
+#selfCheckResult.good{border-color:rgba(34,197,94,.45)}
+#selfCheckResult.bad{border-color:rgba(239,68,68,.45)}
+
+
+/* v3.8 vacancy forecast */
+.vacancy-forecast{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:center;
+  margin:10px 0 14px;
+  padding:11px 14px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:var(--panel3);
+}
+.vacancy-forecast span{color:var(--muted);font-size:12px}
+.vacancy-forecast b{text-align:right;font-size:13px}
+.exam-summary .wide{grid-column:1/-1}
+@media(max-width:720px){
+  .vacancy-forecast{align-items:flex-start;flex-direction:column}
+  .vacancy-forecast b{text-align:left}
+}
+
+
+/* v3.9 progressive exam action */
+.exam-action-hint{
+  margin:14px 0 10px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--panel3);
+  color:var(--muted);
+  font-size:13px;
+}
+.exam-progress-actions button{
+  min-width:220px;
+}
+.exam-progress-actions .primary-btn{
+  animation:examPulse 1.5s ease-in-out 1;
+}
+@keyframes examPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.025)}
+}
+@media(max-width:600px){
+  .exam-progress-actions button{width:100%;min-width:0}
+}
+
+
+/* v4.0 police rank insignia */
+.rank-chip-visual{
+  display:inline-flex!important;
+  align-items:center;
+  gap:7px;
+}
+.rank-insignia-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+}
+.rank-insignia{
+  position:relative;
+  display:inline-flex;
+  min-width:118px;
+  height:38px;
+  padding:3px 8px;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  border:2px solid #d9b700;
+  border-radius:4px;
+  background:#080808;
+  box-shadow:inset 0 0 0 1px rgba(255,230,0,.22);
+}
+.rank-insignia.compact{
+  min-width:74px;
+  height:25px;
+  border-width:1px;
+  padding:2px 5px;
+}
+.insignia-lines{
+  position:absolute;
+  inset:4px 5px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-evenly;
+  z-index:1;
+}
+.insignia-lines i{
+  display:block;
+  height:5px;
+  background:#f6d600;
+  box-shadow:0 1px 0 rgba(255,255,255,.25);
+}
+.rank-insignia.compact .insignia-lines{inset:3px 4px}
+.rank-insignia.compact .insignia-lines i{height:3px}
+.insignia-stars{
+  position:relative;
+  z-index:2;
+  color:#fff2a8;
+  text-shadow:0 1px 0 #6d5500,0 0 3px #000;
+  font-size:19px;
+  letter-spacing:2px;
+  line-height:1;
+  white-space:nowrap;
+}
+.rank-insignia.compact .insignia-stars{font-size:12px;letter-spacing:1px}
+.rank-insignia-label{
+  font-size:12px;
+  white-space:nowrap;
+  color:var(--muted);
+}
+.rank-chip-visual .rank-insignia-label{font-size:11px;color:inherit}
+.rank-row{min-height:52px}
+@media(max-width:620px){
+  .rank-insignia-wrap{align-items:flex-end;flex-direction:column}
+  .rank-insignia{min-width:104px}
+}
+
+
+/* v4.1 use original Wikimedia police rank SVGs */
+.rank-insignia{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  width:auto;
+  height:auto;
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+  overflow:visible;
+}
+.rank-insignia img{
+  display:block;
+  width:140px;
+  height:auto;
+  max-width:100%;
+  image-rendering:auto;
+}
+.rank-insignia.compact img{
+  width:88px;
+}
+.rank-license-note{
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px solid var(--line);
+  font-size:10px;
+  line-height:1.5;
+  color:var(--muted);
+}
+@media(max-width:620px){
+  .rank-insignia img{width:118px}
+  .rank-insignia.compact img{width:76px}
+}
+
+
+/* v4.2 faster appraisal and auto-next duty */
+#closeYearBtn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+  filter:saturate(.45);
+}
+#appraisalProgress{
+  font-weight:700;
+}
+
+
+/* v4.3 retirement system */
+.retirement-panel{margin-bottom:14px}
+.compact-stats .stat-card strong{font-size:20px}
+.retirement-note{margin:12px 0 0;line-height:1.65}
+#voluntaryRetireBtn:disabled{opacity:.5;cursor:not-allowed}
+
+
+/* v4.4 rank insignia inside officer vacancy cards */
+.officer-vacancy-card .vacancy-card-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:18px;
+  margin-bottom:8px;
+}
+.officer-vacancy-card .vacancy-card-head h3{
+  margin:0 0 6px;
+}
+.officer-vacancy-card .vacancy-position{
+  display:block;
+  font-size:15px;
+  color:var(--text);
+}
+.officer-vacancy-card .vacancy-rank{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex:0 0 auto;
+}
+.officer-vacancy-card .vacancy-rank .rank-insignia img{
+  width:112px;
+}
+.officer-vacancy-card .vacancy-rank .rank-insignia-label{
+  display:none;
+}
+@media(max-width:720px){
+  .officer-vacancy-card .vacancy-card-head{
+    flex-direction:column;
+  }
+  .officer-vacancy-card .vacancy-rank .rank-insignia img{
+    width:104px;
+  }
+}
+
+
+/* v5.0 nationwide + patrol officer qualification */
+.officer-qualification-panel{margin:14px 0}
+.qualification-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.qualification-grid>div{
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:var(--panel3);
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:5px 12px;
+}
+.qualification-grid span{color:var(--muted);font-size:12px}
+.qualification-grid b.ok{color:#4ade80}
+.qualification-grid b.no{color:#f59e0b}
+.qualification-grid small{grid-column:1/-1;color:var(--muted);line-height:1.5}
+.qualification-notes{
+  margin-top:10px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+}
+.qualification-actions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin-top:12px;
+}
+.qualification-actions button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  filter:saturate(.5);
+}
+.qualification-disclaimer{margin:10px 0 0;line-height:1.6}
+@media(max-width:900px){
+  .qualification-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .qualification-grid,.qualification-actions{grid-template-columns:1fr}
+}
+
+
+/* v5.1 nationwide precinct + station directory */
+.nationwide-directory-panel{margin-top:14px}
+.directory-toolbar{
+  display:grid;
+  grid-template-columns:minmax(180px,260px) minmax(240px,1fr);
+  gap:12px;
+  margin-bottom:12px;
+}
+.directory-toolbar label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:var(--muted);
+  font-size:12px;
+}
+.directory-toolbar select,
+.directory-toolbar input{
+  width:100%;
+}
+.police-directory-tree{
+  display:grid;
+  gap:9px;
+}
+.directory-division{
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:var(--panel3);
+  overflow:hidden;
+}
+.directory-division summary{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:12px 14px;
+  cursor:pointer;
+  list-style:none;
+}
+.directory-division summary::-webkit-details-marker{display:none}
+.directory-division summary span{
+  color:var(--muted);
+  font-size:12px;
+  white-space:nowrap;
+}
+.directory-division[open] summary{
+  border-bottom:1px solid var(--line);
+}
+.directory-division-meta{
+  padding:9px 14px 0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+.directory-stations{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  padding:12px 14px 14px;
+}
+.directory-station{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:10px 11px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:rgba(255,255,255,.018);
+}
+.directory-station b{font-size:13px}
+.directory-station span{
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.5;
+}
+.directory-division.unresolved summary b{color:var(--warn)}
+.directory-source-note{margin:12px 0 0;line-height:1.65}
+@media(max-width:760px){
+  .directory-toolbar{grid-template-columns:1fr}
+  .directory-stations{grid-template-columns:1fr}
+}
+
+
+/* v5.2 interaction safety */
+button:not(:disabled), .choice-card, .action-card, .county-card, .nav-btn{
+  pointer-events:auto;
+}
+.exam-progress-actions button:disabled{
+  pointer-events:none;
+}
+.exam-progress-actions .primary-btn{
+  position:relative;
+  z-index:2;
+}
+
+
+/* v5.3 core UI recovery */
+#charHomeCounty{min-height:44px}
+#routeCards:empty::before,
+#studyActions:empty::before{
+  content:"介面載入中…";
+  display:block;
+  padding:18px;
+  color:var(--muted);
+}
+.current-assignment-card{
+  cursor:default;
+  border-color:var(--accent);
+}
+#dutyChoices .action-card{
+  cursor:pointer;
+  user-select:none;
+  position:relative;
+  z-index:1;
+}
+#dutyChoices .action-card:active{
+  transform:scale(.995);
+}
+
+</style>
+<meta name="description" content="台灣警察生涯模擬器單檔 HTML 版本；CSS 與 JavaScript 已內嵌。">
 </head>
 <body>
 <div class="app-shell">
@@ -15,7 +611,7 @@
       <p>從入警考試、受訓、全國分發，到地方警察局、警政署與署屬機關的完整警察生涯模擬。</p>
     </div>
     <div class="header-actions">
-      <span class="version">全國版 v5.5</span>
+      <span class="version">全國版 v5.5・單檔HTML</span>
       <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
       <button id="saveBtn" class="ghost-btn">💾 儲存</button>
       <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
@@ -464,9 +1060,2141 @@
     </main>
   </div>
 </div>
-<script src="backend-config.js"></script>
-<script src="backend.js"></script>
-<script src="app-v24.js"></script>
-<script src="systems-v18.js"></script>
+<script id="standaloneBackendConfig">
+// Fill these with your Supabase project values.
+// Project Settings -> API
+window.SUPABASE_CONFIG = {
+  url: "",
+  anonKey: ""
+};
+
+</script>
+<script id="standaloneBackend">
+(() => {
+  const cfg = window.SUPABASE_CONFIG || {};
+  const ok = /^https:\/\/.+\.supabase\.co$/.test(cfg.url || "") && (cfg.anonKey || "").length > 20;
+
+  function headers(token) {
+    const h = {
+      "apikey": cfg.anonKey,
+      "Authorization": "Bearer " + (token || cfg.anonKey),
+      "Content-Type": "application/json"
+    };
+    return h;
+  }
+
+  async function signUp(email, password, displayName) {
+    if (!ok) throw new Error("Supabase 尚未設定");
+    const r = await fetch(cfg.url + "/auth/v1/signup", {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify({ email, password, data: { display_name: displayName || "" } })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.msg || data.error_description || "註冊失敗");
+    if (data.access_token) localStorage.setItem("twPoliceAccessToken", data.access_token);
+    if (data.refresh_token) localStorage.setItem("twPoliceRefreshToken", data.refresh_token);
+    return data;
+  }
+
+  async function signIn(email, password) {
+    if (!ok) throw new Error("Supabase 尚未設定");
+    const r = await fetch(cfg.url + "/auth/v1/token?grant_type=password", {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify({ email, password })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error_description || "登入失敗");
+    localStorage.setItem("twPoliceAccessToken", data.access_token);
+    localStorage.setItem("twPoliceRefreshToken", data.refresh_token);
+    return data;
+  }
+
+  function signOut() {
+    localStorage.removeItem("twPoliceAccessToken");
+    localStorage.removeItem("twPoliceRefreshToken");
+  }
+
+  function token() {
+    return localStorage.getItem("twPoliceAccessToken") || "";
+  }
+
+  async function me() {
+    if (!ok || !token()) return null;
+    const r = await fetch(cfg.url + "/auth/v1/user", { headers: headers(token()) });
+    if (!r.ok) return null;
+    return r.json();
+  }
+
+  async function saveGame(state, slotName = "main") {
+    if (!ok) throw new Error("Supabase 尚未設定");
+    const user = await me();
+    if (!user) throw new Error("請先登入");
+    const url = cfg.url + "/rest/v1/game_saves?on_conflict=user_id,slot_name";
+    const payload = [{ user_id: user.id, slot_name: slotName, version: 1, state }];
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { ...headers(token()), "Prefer": "resolution=merge-duplicates,return=representation" },
+      body: JSON.stringify(payload)
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.message || "雲端儲存失敗");
+    return data[0] || null;
+  }
+
+  async function loadGame(slotName = "main") {
+    if (!ok) throw new Error("Supabase 尚未設定");
+    const user = await me();
+    if (!user) throw new Error("請先登入");
+    const q = encodeURIComponent(user.id);
+    const s = encodeURIComponent(slotName);
+    const r = await fetch(cfg.url + "/rest/v1/game_saves?user_id=eq." + q + "&slot_name=eq." + s + "&select=state&limit=1", {
+      headers: headers(token())
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.message || "雲端讀取失敗");
+    return data[0]?.state || null;
+  }
+
+  async function addCase(caseRecord) {
+    if (!ok) return;
+    const user = await me();
+    if (!user) return;
+    const payload = [{
+      user_id: user.id,
+      case_no: caseRecord.id || String(Date.now()),
+      case_type: caseRecord.type || "未分類",
+      action: caseRecord.action || "",
+      result: caseRecord.result || "",
+      xp: Number(caseRecord.xp || 0),
+      case_date: new Date().toISOString().slice(0,10)
+    }];
+    await fetch(cfg.url + "/rest/v1/case_records", {
+      method: "POST",
+      headers: { ...headers(token()), "Prefer": "return=minimal" },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  window.CloudDB = { configured: ok, signUp, signIn, signOut, me, saveGame, loadGame, addCase };
+})();
+
+</script>
+<script id="standaloneApp">
+const C=["臺北市","新北市","桃園市","臺中市","臺南市","高雄市","基隆市","新竹市","嘉義市","宜蘭縣","新竹縣","苗栗縣","彰化縣","南投縣","雲林縣","嘉義縣","屏東縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
+const LOCAL_POLICE_AGENCIES=[
+  ["臺北市","臺北市政府警察局",34,76,true],
+  ["新北市","新北市政府警察局",38,74,true],
+  ["桃園市","桃園市政府警察局",32,71,true],
+  ["臺中市","臺中市政府警察局",36,73,true],
+  ["臺南市","臺南市政府警察局",32,69,true],
+  ["高雄市","高雄市政府警察局",36,72,true],
+  ["基隆市","基隆市警察局",18,62,false],
+  ["新竹市","新竹市警察局",18,66,false],
+  ["嘉義市","嘉義市政府警察局",16,61,false],
+  ["宜蘭縣","宜蘭縣政府警察局",18,62,false],
+  ["新竹縣","新竹縣政府警察局",22,67,false],
+  ["苗栗縣","苗栗縣警察局",18,61,false],
+  ["彰化縣","彰化縣警察局",24,64,false],
+  ["南投縣","南投縣政府警察局",18,60,false],
+  ["雲林縣","雲林縣警察局",20,60,false],
+  ["嘉義縣","嘉義縣警察局",18,59,false],
+  ["屏東縣","屏東縣政府警察局",22,61,false],
+  ["花蓮縣","花蓮縣警察局",18,60,false],
+  ["臺東縣","臺東縣警察局",18,59,false],
+  ["澎湖縣","澎湖縣政府警察局",12,56,false],
+  ["金門縣","金門縣警察局",10,55,false],
+  ["連江縣","連江縣警察局",8,54,false]
+];
+const CENTRAL_POLICE_AGENCIES=[
+  "內政部警政署","內政部警政署刑事警察局","內政部警政署航空警察局","內政部警政署國道公路警察局","內政部警政署鐵路警察局",
+  "內政部警政署保安警察第一總隊","內政部警政署保安警察第二總隊","內政部警政署保安警察第三總隊","內政部警政署保安警察第四總隊",
+  "內政部警政署保安警察第五總隊","內政部警政署保安警察第六總隊","內政部警政署保安警察第七總隊",
+  "內政部警政署基隆港務警察總隊","內政部警政署臺中港務警察總隊","內政部警政署高雄港務警察總隊","內政部警政署花蓮港務警察總隊"
+];
+function agencyRecord(city){return LOCAL_POLICE_AGENCIES.find(x=>x[0]===city)||null}
+function localAgencyName(){return (s&&s.localAgency)||agencyRecord(s&&s.county)?.[1]||((s&&s.county)?s.county+"警察局":"")}
+function localPrefix(){return localAgencyName()+((s&&s.precinct)?s.precinct:"")}
+const P=[
+["大同分局","老城區、商圈、交通節點",28,66],
+["大安分局","住宅商業混合、校園與大型道路",24,72],
+["中山分局","商業旅館、娛樂場所與交通勤務",30,74],
+["萬華分局","老城區、商圈、交通樞紐與複合治安勤務",32,70],
+["中正第一分局","中央行政機關、重要設施與大型活動勤務",20,78],
+["中正第二分局","交通樞紐、住宅商業與一般治安勤務",24,69],
+["南港分局","展覽活動、交通節點、商辦住宅勤務",18,65],
+["士林分局","觀光商圈、住宅與大型活動勤務",26,68],
+["北投分局","住宅、觀光與山區勤務",18,64],
+["松山分局","商業住宅、活動與交通勤務",22,71],
+["信義分局","大型商圈、活動、夜間人潮與重要場所勤務",30,76],
+["內湖分局","科技商辦、住宅與交通勤務",22,68],
+["文山第一分局","校園、住宅與山區勤務",18,65],
+["文山第二分局","校園、住宅與山區勤務",18,64]
+];
+
+let POLICE_DIRECTORY=null;
+let DIRECTORY_READY=false;
+let DIRECTORY_ERROR="";
+let DISTRIBUTION_POSTS=[];
+
+function directoryCounty(city){
+  return POLICE_DIRECTORY&&POLICE_DIRECTORY.counties?POLICE_DIRECTORY.counties[city]||null:null;
+}
+function directoryDivision(city,name){
+  const c=directoryCounty(city);
+  return c&&Array.isArray(c.divisions)?c.divisions.find(d=>d.name===name)||null:null;
+}
+function fallbackDistributionPosts(){
+  return [
+    ...P.map(p=>({id:"taipei:"+p[0],label:"臺北市｜"+p[0],county:"臺北市",agency:"臺北市政府警察局",precinct:p[0],desc:p[1],vacancy:p[2],threshold:p[3]})),
+    ...LOCAL_POLICE_AGENCIES.filter(x=>x[0]!=="臺北市").map(x=>({id:"local:"+x[0],label:x[1],county:x[0],agency:x[1],precinct:"",desc:"地方警察局分發；全國分局／派出所名錄載入後會細分到實際分局或警察所。",vacancy:x[2],threshold:x[3]}))
+  ];
+}
+function divisionGameValues(city,name,index,total){
+  const agency=agencyRecord(city)||[city,city+"警察局",20,65,false];
+  if(city==="臺北市"){
+    const p=P.find(x=>x[0]===name);
+    if(p)return {vacancy:p[2],threshold:p[3]};
+  }
+  let hash=0;for(const ch of String(name))hash=(hash+ch.charCodeAt(0))%17;
+  return {
+    vacancy:Math.max(6,Math.round((agency[2]||20)*Math.max(.35,2/Math.max(2,total)))),
+    threshold:Math.max(50,Math.min(82,(agency[3]||65)+(hash%7)-3))
+  };
+}
+function rebuildDistributionPosts(){
+  if(!DIRECTORY_READY){
+    DISTRIBUTION_POSTS=fallbackDistributionPosts();
+    return;
+  }
+  const out=[];
+  for(const agency of LOCAL_POLICE_AGENCIES){
+    const city=agency[0],data=directoryCounty(city),divs=data&&Array.isArray(data.divisions)?data.divisions:[];
+    if(divs.length){
+      divs.forEach((d,i)=>{
+        const g=divisionGameValues(city,d.name,i,divs.length);
+        out.push({
+          id:"dir:"+city+":"+d.name,
+          label:city+"｜"+d.name,
+          county:city,
+          agency:data.agency||agency[1],
+          precinct:d.name,
+          desc:(d.stations?.length||0)+" 個分駐／派出／駐在所｜"+(d.address||""),
+          vacancy:g.vacancy,
+          threshold:g.threshold
+        });
+      });
+    }else{
+      out.push({id:"local:"+city,label:agency[1],county:city,agency:agency[1],precinct:"",desc:"目前來源未解析出分局層級，先以警察局分發。",vacancy:agency[2],threshold:agency[3]});
+    }
+  }
+  DISTRIBUTION_POSTS=out;
+}
+function distributionPost(id){return DISTRIBUTION_POSTS.find(x=>x.id===id)||null}
+rebuildDistributionPosts();
+const STATIONS={
+  "大同分局":["寧夏路派出所","延平派出所","建成派出所","民族路派出所","民生西路派出所","重慶北路派出所"],
+  "大安分局":["和平東路派出所","安和路派出所","敦化南路派出所","新生南路派出所","瑞安街派出所","羅斯福路派出所","臥龍街派出所"],
+  "中山分局":["中山一派出所","中山二派出所","圓山派出所","長春路派出所","長安東路派出所","民權一派出所","建國派出所","大直派出所"],
+  "萬華分局":["龍山派出所","康定路派出所","東園街派出所","西園路派出所","大理街派出所","華江派出所","莒光派出所","西門町派出所","青年路派出所"],
+  "中正第一分局":["仁愛路派出所","介壽路派出所","博愛路派出所","忠孝東路派出所","忠孝西路派出所"],
+  "中正第二分局":["思源街派出所","廈門街派出所","南昌路派出所","南海路派出所","泉州街派出所"],
+  "南港分局":["同德派出所","南港派出所","舊莊派出所","玉成派出所"],
+  "士林分局":["天母派出所","山仔后派出所","後港派出所","文林派出所","永福派出所","溪山派出所","社子派出所","翠山派出所","芝山岩派出所","蘭雅派出所","平等駐在所"],
+  "北投分局":["光明派出所","公園派出所","大屯派出所","奇岩派出所","永明派出所","石牌派出所","竹子湖派出所","長安派出所","關渡派出所"],
+  "松山分局":["松山派出所","中崙派出所","東社派出所","三民派出所","民有派出所"],
+  "信義分局":["三張犁派出所","五分埔派出所","六張犁派出所","吳興街派出所","福德街派出所"],
+  "內湖分局":["內湖派出所","潭美派出所","西湖派出所","大湖派出所","文德派出所","東湖派出所","康樂派出所","康寧派出所","港墘派出所"],
+  "文山第一分局":["木柵派出所","木新派出所","復興派出所","指南派出所","萬芳派出所"],
+  "文山第二分局":["景美派出所","興隆派出所","萬盛派出所"]
+};
+function stationRecords(){
+  const d=directoryDivision(s&&s.county,s&&s.precinct);
+  if(d&&Array.isArray(d.stations)&&d.stations.length)return d.stations;
+  if(s&&s.county==="臺北市"&&STATIONS[s.precinct])return STATIONS[s.precinct].map(name=>({name,address:"",phone:""}));
+  return [];
+}
+function stationList(){return stationRecords().map(x=>typeof x==="string"?x:x.name).filter(Boolean)}
+function stationRecord(name){return stationRecords().find(x=>(typeof x==="string"?x:x.name)===name)||null}
+function randomStation(){const a=stationList();return a.length?a[Math.floor(Math.random()*a.length)]:"轄內派出所"}
+function stationFullName(name){return localPrefix()+name}
+function stationDutyText(){return "常見職務：所長、副所長、巡佐、警員。主要勤務：110報案、巡邏、值班、守望、臨檢、交通事故、失蹤人口、家暴婦幼、詐欺、竊盜、毒品、通緝犯與為民服務。"}
+const PRECINCT_ORG=[
+  ["組","行政組","勤務規劃、法規、公關、總務等"],
+  ["組","督察組","勤務督導、考核、風紀與內部管理"],
+  ["組","防治組","婦幼、社區警政、失蹤人口、警勤區等"],
+  ["組","保防組","安全防護、保防與社會治安調查"],
+  ["組","民防組","民防、義警、防空疏散、災害防救"],
+  ["組","交通組","交通勤務規劃、申訴、專案與疏導"],
+  ["室","秘書室","文書、檔案、研考、出納與綜合行政"],
+  ["室","人事室","任免、考核、差勤、訓練與人事服務"],
+  ["室","會計室","歲計、會計與內部審核"],
+  ["中心","勤務指揮中心","110受理、指揮、派遣、管制與通報"],
+  ["隊","偵查隊","刑案偵查、案件管制與刑事勤務"],
+  ["隊","警備隊","機動支援、重大事故與臨時勤務"]
+];
+const LOCAL_ORG=[
+  ["科／組","行政／保安／教育／交通等業務單位","地方警察局依規模設科、室、中心及相關業務單位"],
+  ["室","督察、人事、秘書、會計、政風等","幕僚、督察、人事與行政支援"],
+  ["中心","勤務指揮中心","110受理、指揮、派遣、管制與重大事件通報"],
+  ["直屬隊","刑事、交通、保安、婦幼、少年等","各地依組織規程設置不同直屬大隊或隊"],
+  ["分局／警察所","地方外勤指揮單位","下轄分駐所、派出所與警勤區"]
+];
+function renderPrecinctOrg(){
+  if(!$("precinctOrgDirectory")||!$("precinctOrgCards"))return;
+  $("precinctOrgDirectory").style.display=s.county?"block":"none";
+  if($("precinctOrgTitle"))$("precinctOrgTitle").textContent=(s.precinct||localAgencyName())+" 組織概覽";
+  const org=s.county==="臺北市"&&s.precinct?PRECINCT_ORG:LOCAL_ORG;
+  $("precinctOrgCards").innerHTML=org.map(x=>'<div class="station-directory-item"><b>'+x[0]+'｜'+x[1]+'</b><span>'+x[2]+'</span></div>').join("");
+}
+const R=[
+["tpa","👮","警專二年制 → 四等警察人員特考","警專正期教育2年；完成學業後仍須通過相應四等警察人員特考與任用流程，初任以警員職務為主。",3,180,"警佐三階任官資格","警佐三階","警員","第十一序列",730,11],
+["cpu","🎓","警大四年制 → 三等警察人員特考","警大學士班4年；畢業後仍須通過相應三等警察人員特考與任用流程，依類科分發巡官、分隊長或同等職務。",4,220,"警正四階任官資格","警正四階","巡官","第九序列",1460,9],
+["g4","📝","一般警察特考四等","一般教育體系報考；通過考試後進行教育與實務訓練，完成後取得相應四等任官資格並分發基層職務。",3,210,"警佐三階任官資格","警佐三階","警員","第十一序列",540,11],
+["g3","📚","一般警察特考三等","大學以上學歷路線；通過三等一般警察特考後接受較長教育與實務訓練，再依類科分發。",5,270,"警正四階任官資格","警正四階","巡官","第九序列",720,9]
+];
+const U=[
+["station","🏢","派出所",0,0,"該分局轄內派出所：值班、巡邏、110、家暴、失蹤、詐騙與一般治安案件。"],
+["security","🛡️","警備隊",0,60,"分局警備隊支援機動、重大事故、聚眾與臨時勤務。"],
+["traffic","🏍️","交通分隊",1,80,"交通警察大隊配賦分隊：事故、酒駕、疏導與交通執法。"],
+["detective","🔎","偵查隊",2,180,"分局偵查隊：刑案偵查、筆錄、監視器與案件追查。"],
+["admin","🗂️","分局組室",2,150,"分局行政、保防、防治、督察等內勤業務職務。"]
+];
+const D=[
+["110 民眾糾紛","超商兩名男子爭吵，其中一人疑似酒後情緒激動。",[["確認安全、分隔雙方並詢問店員",16,4,-8],["只要求雙方離開",6,-2,-4],["查詢紀錄並呼叫支援共同到場",13,3,-7]]],
+["交通事故","路口兩車碰撞，一名駕駛頸部不適，車流快速回堵。",[["先確認傷者、通知救護並疏導交通",18,5,-10],["先爭論肇責再決定救護",5,-4,-6],["只拍照後請雙方自行協調",3,-5,-3]]],
+["疑似酒駕","巡邏發現前車行車不穩，多次偏離車道。",[["保持安全距離、通報車號並安全攔查",17,4,-9],["高速超車強行攔停",5,-4,-12],["持續觀察並請支援注意前方",14,3,-7]]],
+["疑似詐騙車手","銀行通報男子持多張提款卡連續提領大量現金。",[["查證身分、提款紀錄與監視器",20,6,-10],["未查證前直接上銬",4,-6,-8],["先觀察動線再上前查證",17,5,-8]]],
+["失蹤人口","家長報案：13歲孩子放學後未返家，手機無法聯繫。",[["立即整理資訊並啟動協尋",19,6,-8],["請家長再等到深夜",1,-8,-1],["只請家長自行找",1,-10,-1]]],
+["家暴案件","住宅區傳出激烈爭吵與摔物聲，屋內可能有孩童。",[["確認安全、分隔當事人並完整紀錄",19,6,-11],["只勸雙方不要吵就離開",4,-6,-4],["先請支援再依現場狀況處理",16,4,-9]]]];
+const isOfficerTrack=()=>["cpu","g3"].includes(s?.route)||Boolean(s?.officerEducationQualified&&Number(s?.careerSequenceNo)<=9);
+const officerInitialPool=()=>{
+  if(s.county==="臺北市"&&s.precinct){
+    return [
+      {id:"admin_officer",unit:"admin",assignmentType:"administration",unitName:localPrefix()+"行政組",position:"巡官",seq:9,desc:"勤務規劃、法規、公關、總務等分局行政業務。"},
+      {id:"prevention_officer",unit:"admin",assignmentType:"prevention",unitName:localPrefix()+"防治組",position:"巡官",seq:9,desc:"婦幼、社區警政、失蹤人口、警勤區與外事相關業務。"},
+      {id:"security_officer",unit:"admin",assignmentType:"security_affairs",unitName:localPrefix()+"保防組",position:"巡官",seq:9,desc:"安全防護、社會治安調查、保防與特種勤務情報相關業務。"},
+      {id:"civil_officer",unit:"admin",assignmentType:"civil_defense",unitName:localPrefix()+"民防組",position:"巡官",seq:9,desc:"民防、義警、防空疏散、災害防救與城鎮韌性等業務。"},
+      {id:"traffic_officer",unit:"admin",assignmentType:"traffic_office",unitName:localPrefix()+"交通組",position:"巡官",seq:9,desc:"交通勤務規劃、疏導、申訴與專案等業務。"},
+      {id:"detective_officer",unit:"detective",assignmentType:"detective",unitName:localPrefix()+"偵查隊",position:"巡官",seq:9,desc:"刑案偵查、案件管制、偵查支援與刑事勤務。"},
+      {id:"guard_officer",unit:"security",assignmentType:"guard",unitName:localPrefix()+"警備隊",position:"巡官",seq:9,desc:"機動支援、駐地安全、重大事故與臨時勤務。"}
+    ];
+  }
+  const agency=localAgencyName();
+  return [
+    {id:"local_precinct_officer",unit:"admin",assignmentType:"local_precinct",unitName:agency+"所屬分局／警察所",position:"巡官",seq:9,desc:"地方分局／警察所初任警官職務；實際名稱依各警察局編制與缺額而定。"},
+    {id:"local_admin_officer",unit:"admin",assignmentType:"administration",unitName:agency+"局本部科、室、中心",position:"巡官",seq:9,desc:"地方警察局局本部幕僚或業務單位歷練；各地實際科室名稱不同。"},
+    {id:"local_detective_officer",unit:"detective",assignmentType:"detective",unitName:agency+"刑事警察大隊／刑事單位",position:"偵查員",seq:9,desc:"刑事偵查、情資及專案案件歷練。"},
+    {id:"local_traffic_officer",unit:"traffic",assignmentType:"traffic",unitName:agency+"交通警察大隊／交通隊",position:"分隊長／巡官",seq:9,desc:"交通事故、執法、交維與交通勤務管理。"},
+    {id:"local_security_officer",unit:"security",assignmentType:"guard",unitName:agency+"保安警察隊／警備單位",position:"巡官",seq:9,desc:"機動支援、保安與重大勤務歷練。"}
+  ];
+}
+function pickOfficerOffers(pool,count=3){
+  const a=[...pool],out=[];
+  while(a.length&&out.length<count){out.push(a.splice(Math.floor(Math.random()*a.length),1)[0])}
+  return out;
+}
+function officerInitialOffers(){
+  if(!Array.isArray(s.initialOffers)||!s.initialOffers.length)s.initialOffers=pickOfficerOffers(officerInitialPool(),3);
+  return s.initialOffers;
+}
+function effectiveOfficerSequence(){
+  let seq=Number(s&&s.careerSequenceNo);
+  if(!Number.isFinite(seq)||seq<0||seq>9)seq=9;
+  const pos=String((s&&s.position)||(s&&s.rank)||"");
+  if(/警務員/.test(pos))seq=Math.min(seq,8);
+  if(/警務正|偵查正|分局.*組長|偵查隊長/.test(pos))seq=Math.min(seq,6);
+  else if(/第七序列警務員|督察員|警備隊長|偵查隊副隊長/.test(pos))seq=Math.min(seq,7);
+  if(/組長|偵查隊長|主任/.test(pos))seq=Math.min(seq,6);
+  if(/副分局長|科長|大隊長|專員/.test(pos))seq=Math.min(seq,5);
+  if(/分局長|大隊長/.test(pos))seq=Math.min(seq,4);
+  if(/警政署組長|勤務指揮中心主任|刑事警察局副局長|直轄市.*警察局副局長/.test(pos))seq=Math.min(seq,3);
+  if(/警政委員|警政署主任秘書|警政署督察室主任|航空警察局局長|國道公路警察局局長|保安警察第[一二]總隊總隊長/.test(pos))seq=Math.min(seq,2);
+  if(/警政署副署長|刑事警察局局長|直轄市.*警察局局長|臺灣警察專科學校校長/.test(pos))seq=Math.min(seq,1);
+  if(/警政署署長|中央警察大學校長/.test(pos))seq=0;
+  return Math.max(0,Math.min(9,seq));
+}
+function officerRotationOffers(){
+  const seq=effectiveOfficerSequence();
+  const pfx=localPrefix();
+
+  // 職務輪調是「同序列／相當職務」的橫向歷練，不應把已升任警務員的人降回巡官。
+  const pools={
+    9:[
+      {id:"rotation_admin",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"巡官",seq:9,desc:"分局行政、勤務規劃與法規歷練。"},
+      {id:"rotation_security",unit:"admin",assignmentType:"security_affairs",unitName:pfx+"保防組",position:"巡官",seq:9,desc:"保防、安全防護與社會治安調查歷練。"},
+      {id:"rotation_prevention",unit:"admin",assignmentType:"prevention",unitName:pfx+"防治組",position:"巡官",seq:9,desc:"婦幼、社區警政與失蹤人口業務歷練。"},
+      {id:"rotation_civil",unit:"admin",assignmentType:"civil_defense",unitName:pfx+"民防組",position:"巡官",seq:9,desc:"民防、義警、防災與城鎮韌性歷練。"},
+      {id:"rotation_traffic",unit:"admin",assignmentType:"traffic_office",unitName:pfx+"交通組",position:"巡官",seq:9,desc:"交通勤務規劃與專案歷練。"},
+      {id:"rotation_detective",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查員",seq:9,desc:"刑案偵查與案件管制歷練。"},
+      {id:"rotation_guard",unit:"security",assignmentType:"guard",unitName:pfx+"警備隊",position:"巡官",seq:9,desc:"機動與重大勤務歷練。"},
+      {id:"station_deputy",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡官兼副所長",seq:9,desc:"派出所副主管，兼顧勤務、帶班與所務。"}
+    ],
+    8:[
+      {id:"rotation_admin8",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"警務員",seq:8,desc:"分局行政業務之較高層級幕僚歷練。"},
+      {id:"rotation_security8",unit:"admin",assignmentType:"security_affairs",unitName:pfx+"保防組",position:"警務員",seq:8,desc:"保防與安全防護業務之幕僚歷練。"},
+      {id:"rotation_prevention8",unit:"admin",assignmentType:"prevention",unitName:pfx+"防治組",position:"警務員",seq:8,desc:"防治、婦幼與社區警政業務之幕僚歷練。"},
+      {id:"rotation_civil8",unit:"admin",assignmentType:"civil_defense",unitName:pfx+"民防組",position:"警務員",seq:8,desc:"民防與防災業務之幕僚歷練。"},
+      {id:"rotation_traffic8",unit:"admin",assignmentType:"traffic_office",unitName:pfx+"交通組",position:"警務員",seq:8,desc:"交通業務之幕僚與協調歷練。"},
+      {id:"rotation_detective8",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查員",seq:8,desc:"刑案偵查與專案案件之較高層級歷練。"},
+      {id:"rotation_guard8",unit:"security",assignmentType:"guard",unitName:pfx+"警備隊",position:"警務員",seq:8,desc:"機動勤務與隊務幕僚歷練。"},
+      {id:"station_chief",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"警務員兼所長",seq:8,desc:"派出所主管職，負責所務、勤務、人員與轄區治安。"}
+    ],
+    7:[
+      {id:"rotation_admin7",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"第七序列警務員",seq:7,desc:"分局較高層級幕僚與業務督導歷練。"},
+      {id:"rotation_security7",unit:"admin",assignmentType:"security_affairs",unitName:pfx+"保防組",position:"第七序列警務員",seq:7,desc:"保防與安全防護業務督導歷練。"},
+      {id:"rotation_prevention7",unit:"admin",assignmentType:"prevention",unitName:pfx+"防治組",position:"第七序列警務員",seq:7,desc:"防治、婦幼與社區警政業務督導歷練。"},
+      {id:"rotation_inspector7",unit:"admin",assignmentType:"inspection",unitName:pfx+"督察組",position:"督察員",seq:7,desc:"勤務督導、考核與風紀業務歷練。"},
+      {id:"rotation_guard7",unit:"security",assignmentType:"guard",unitName:pfx+"警備隊",position:"警備隊長",seq:7,desc:"警備隊主管職，負責隊務與機動勤務督導。"},
+      {id:"rotation_detective7",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查隊副隊長",seq:7,desc:"刑案與偵查勤務副主管歷練。"}
+    ],
+    6:[
+      {id:"rotation_policeaffairs6a",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"警務正",seq:6,desc:"第六序列警務正，辦理較高層級幕僚、督導及專案工作。"},
+      {id:"rotation_admin6",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"行政組長",seq:6,desc:"分局行政組主管職。"},
+      {id:"rotation_security6",unit:"admin",assignmentType:"security_affairs",unitName:pfx+"保防組",position:"保防組長",seq:6,desc:"分局保防組主管職。"},
+      {id:"rotation_prevention6",unit:"admin",assignmentType:"prevention",unitName:pfx+"防治組",position:"防治組長",seq:6,desc:"分局防治組主管職。"},
+      {id:"rotation_civil6",unit:"admin",assignmentType:"civil_defense",unitName:pfx+"民防組",position:"民防組長",seq:6,desc:"分局民防組主管職。"},
+      {id:"rotation_traffic6",unit:"admin",assignmentType:"traffic_office",unitName:pfx+"交通組",position:"交通組長",seq:6,desc:"分局交通組主管職。"},
+      {id:"rotation_detective6",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查隊長",seq:6,desc:"分局偵查隊主管職。"},
+      {id:"rotation_command6",unit:"admin",assignmentType:"command_center",unitName:pfx+"勤務指揮中心",position:"主任",seq:6,desc:"勤務指揮中心主管職，負責110、派遣、管制及重大事故通報。"}
+    ]
+  };
+
+  const genericSeq=Math.min(seq,6);
+  let base=pools[seq]||pools[genericSeq]||pools[9];
+
+  // 高階生涯擴展到全國與中央警察機關。第3至第1序列依警政署公開陞遷序列表建模；最高職務層級另列署長／警大校長。
+  if(seq===3){
+    base=[
+      {id:"npa_dir3",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"組長",seq:3,desc:"警政署業務單位主管。"},
+      {id:"npa_cmd3",unit:"central",assignmentType:"central_command",unitName:"內政部警政署勤務指揮中心",position:"主任",seq:3,desc:"全國重大治安、交通、災害與110勤務指揮。"},
+      {id:"cib_deputy3",unit:"central",assignmentType:"central_cib",unitName:"內政部警政署刑事警察局",position:"副局長",seq:3,desc:"刑事警察局副首長，參與全國刑事偵防政策與指揮。"},
+      {id:"metro_deputy3",unit:"central",assignmentType:"central_local",unitName:"直轄市政府警察局",position:"副局長",seq:3,desc:"直轄市警察局副首長職務。"}
+    ];
+  }else if(seq===2){
+    base=[
+      {id:"npa_sec2",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"主任秘書",seq:2,desc:"署本部高階幕僚主管。"},
+      {id:"npa_inspector2",unit:"central",assignmentType:"central_command",unitName:"內政部警政署督察室",position:"主任",seq:2,desc:"全國警察督察、考核與風紀高階主管。"},
+      {id:"npa_commissioner2",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"警政委員",seq:2,desc:"警政署高階警政幕僚職務。"},
+      {id:"aviation_chief2",unit:"central",assignmentType:"central_special",unitName:"內政部警政署航空警察局",position:"局長",seq:2,desc:"航空警察局首長。"},
+      {id:"highway_chief2",unit:"central",assignmentType:"central_special",unitName:"內政部警政署國道公路警察局",position:"局長",seq:2,desc:"國道公路警察局首長。"},
+      {id:"spc1_chief2",unit:"central",assignmentType:"central_special",unitName:"內政部警政署保安警察第一總隊",position:"總隊長",seq:2,desc:"保安警察第一總隊首長。"},
+      {id:"spc2_chief2",unit:"central",assignmentType:"central_special",unitName:"內政部警政署保安警察第二總隊",position:"總隊長",seq:2,desc:"保安警察第二總隊首長。"}
+    ];
+  }else if(seq===1){
+    const metro=LOCAL_POLICE_AGENCIES.filter(x=>x[4]).map(x=>x[1]);
+    const metroAgency=metro[Math.floor(Math.random()*metro.length)];
+    base=[
+      {id:"npa_deputy1",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"副署長",seq:1,desc:"警政署副首長。"},
+      {id:"cib_chief1",unit:"central",assignmentType:"central_cib",unitName:"內政部警政署刑事警察局",position:"局長",seq:1,desc:"刑事警察局首長，統籌全國重大刑案與刑事偵防。"},
+      {id:"metro_chief1",unit:"central",assignmentType:"central_local",unitName:metroAgency,position:"局長",seq:1,desc:"直轄市政府警察局首長。"},
+      {id:"tpa_chief1",unit:"central",assignmentType:"central_school",unitName:"臺灣警察專科學校",position:"校長",seq:1,desc:"臺灣警察專科學校校長。"}
+    ];
+  }else if(seq===0){
+    base=[
+      {id:"npa_chief0",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"署長",seq:0,desc:"全國警察行政最高首長，統一指揮、監督全國警察機關（構）執行警察任務。"},
+      {id:"cpu_president0",unit:"central",assignmentType:"central_school",unitName:"中央警察大學",position:"校長",seq:0,desc:"中央警察大學校長，屬警察體系最高層級職務之一。"}
+    ];
+  }else if(seq<=5){
+    base=[
+      {id:"senior_staff",unit:"admin",assignmentType:"senior",unitName:"臺北市政府警察局局本部／所屬單位",position:seq===5?"專員":"高階主管職",seq,desc:"較高序列之局本部或大型單位主管／幕僚職務；依缺額與資格產生。"},
+      {id:"senior_command",unit:"admin",assignmentType:"senior",unitName:"臺北市政府警察局所屬分局／大隊",position:seq===5?"副主管職":"分局長／大隊長等高階主管職",seq,desc:"較高序列主管職務；不再回到基層巡官職缺。"}
+    ];
+  }
+
+  return pickOfficerOffers(base,Math.min(3,base.length)).map(o=>{if(o.stationName)o.unitName=stationFullName(o.stationName);return o});
+}
+function retirementProfile(){
+  if(s&&s.retired&&s.retirementClass)return {kind:s.retirementClass,voluntary:Number(s.retirementVoluntaryAge||60),mandatory:Number(s.retirementMandatoryAge||65),note:"退休時適用之退休類別"};
+  const pos=String((s&&s.position)||(s&&s.rank)||"");
+  const type=String((s&&s.assignmentType)||"");
+
+  // 108/1/1生效之警察危勞職務標準：第一類屆齡59；第二類屆齡60。
+  const firstClass=/^(警員|巡佐|小隊長|偵查佐|隊員|教育班長)$/.test(pos);
+  if(firstClass)return {kind:"危勞第一類",voluntary:50,mandatory:59,note:"警員、巡佐、小隊長、偵查佐等第一類危勞職務"};
+
+  const secondTitle=/(巡官|分隊長|偵查員|偵查正|督察員|警備隊長|副所長|所長|副分局長|分局長|大隊長|副大隊長|隊長|副隊長|中隊長|副中隊長)/.test(pos);
+  const operationalPolice=/^(station_command|detective|guard|traffic|traffic_office|inspection|command_center)$/.test(type);
+  const policeOfficerInOperationalRole=/(警務員|警務正|組長|主任)/.test(pos)&&operationalPolice;
+  if(secondTitle||policeOfficerInOperationalRole)return {kind:"危勞第二類",voluntary:55,mandatory:60,note:"巡官以上及表列主管、偵查、警備等第二類危勞職務"};
+
+  return {kind:"一般屆齡",voluntary:60,mandatory:65,note:"未列入危勞降齡範圍之警察內勤／一般職務"};
+}
+function serviceYearsExact(){
+  if(!s||!s.joinDate)return 0;
+  const join=parseLocalDateTime(s.joinDate);
+  return Math.max(0,(simNow().getTime()-join.getTime())/86400000/365.2425);
+}
+function canVoluntaryRetire(){
+  if(!s||!s.unit||s.retired)return false;
+  const p=retirementProfile();
+  return s.age>=p.voluntary||serviceYearsExact()>=25;
+}
+function checkMandatoryRetirement(){
+  if(!s||s.retired||!s.unit)return false;
+  const p=retirementProfile();
+  if(s.age<p.mandatory)return false;
+  s.retired=true;
+  s.retirementAge=s.age;
+  s.retirementDate=rocDateTime();
+  s.retirementReason=p.kind+"屆齡退休";
+  s.retirementClass=p.kind;s.retirementVoluntaryAge=p.voluntary;s.retirementMandatoryAge=p.mandatory;
+  s.lastActivePosition=s.position||s.rank||"";
+  s.lastActiveUnit=s.unitName||"";
+  s.position="退休警察人員";
+  s.rank="退休警察人員";
+  s.salary=0;
+  s.rotationEligible=false;
+  s.rotationOffers=[];
+  rec("屆齡退休",p.kind+"｜"+s.retirementAge+"歲｜原職："+s.lastActivePosition+"｜"+s.lastActiveUnit);
+  return true;
+}
+function voluntaryRetire(){
+  if(s.retired)return;
+  if(!s.unit)return toast("尚未正式任職");
+  const p=retirementProfile();
+  if(!canVoluntaryRetire())return toast("目前尚未符合自願退休條件");
+  s.lastActivePosition=s.position||s.rank||"";
+  s.lastActiveUnit=s.unitName||"";
+  s.retired=true;
+  s.retirementAge=s.age;
+  s.retirementDate=rocDateTime();
+  s.retirementReason=(serviceYearsExact()>=25&&s.age<p.voluntary?"任職滿25年自願退休":p.kind+"自願退休");
+  s.retirementClass=p.kind;s.retirementVoluntaryAge=p.voluntary;s.retirementMandatoryAge=p.mandatory;
+  s.position="退休警察人員";
+  s.rank="退休警察人員";
+  s.salary=0;
+  s.rotationEligible=false;
+  s.rotationOffers=[];
+  rec("自願退休",s.retirementReason+"｜"+s.retirementAge+"歲｜原職："+s.lastActivePosition);
+  save();render();go("life");
+}
+const NEW=()=>({created:false,name:"",age:18,initialAge:18,gender:"男",education:"高中畢業",homeCounty:"臺北市",family:"與家人同住",route:"",routeName:"",selectedRoute:"",days:180,law:20,eng:40,fit:50,comm:50,stress:35,health:100,written:null,physical:null,training:false,passed:false,score:0,ranking:null,county:"",localAgency:"",precinct:"",unit:"",unitName:"",assignmentType:"",stationName:"",selectedStation:"",pendingStationPick:false,selectedUnit:"",unitSelectionOpen:false,rank:"考生",qualification:"尚未取得",officialRank:"—",position:"考生",sequence:"—",careerSequenceNo:null,careerStage:"",rotationMonths:0,rotationEligible:false,rotationCycleMonths:0,rotationCycleDays:0,initialOffers:[],rotationOffers:[],dutyMode:"patrol",year:0,xp:0,rep:50,energy:100,dutyCount:0,savings:80000,salary:0,promo:0,cases:[],history:[],simDate:"2026-01-01T08:00:00",simEpoch:null,maxSimEpoch:null,startDate:"2026-01-01T08:00:00",joinDate:"",retired:false,retirementDate:"",retirementReason:"",retirementAge:null,retirementClass:"",retirementVoluntaryAge:null,retirementMandatoryAge:null,lastActivePosition:"",lastActiveUnit:""});
+function normalizeState(){
+  s=Object.assign(NEW(),s||{});
+  if(!C.includes(s.homeCounty))s.homeCounty="臺北市";
+  if(s.county&&s.county!=="中央"&&!C.includes(s.county))s.county="";
+  if(s.county&&!s.localAgency)s.localAgency=s.county==="中央"?(s.unitName||"內政部警政署"):(agencyRecord(s.county)?.[1]||"");
+  if(s.county==="臺北市"&&s.precinct&&!P.some(p=>p[0]===s.precinct))s.precinct="";
+  if(s.county!=="臺北市"&&s.precinct==="地方分發")s.precinct="";
+  if(!Array.isArray(s.history))s.history=[];
+  if(!Array.isArray(s.cases))s.cases=[];
+  if(!Array.isArray(s.initialOffers))s.initialOffers=[];
+  if(!Array.isArray(s.rotationOffers))s.rotationOffers=[];
+  if(s.rotationOffers.length){
+    const seqNow=isOfficerTrack()?effectiveOfficerSequence():Number(s.careerSequenceNo||9);
+    const stale=s.rotationOffers.some(o=>Number(o.seq||99)!==seqNow);
+    if(stale){s.rotationOffers=[];s.selectedUnit=""}
+  }
+  if(!Number.isFinite(Number(s.rotationCycleDays)))s.rotationCycleDays=0;
+  if(!Number.isFinite(Number(s.rotationCycleMonths)))s.rotationCycleMonths=0;
+  if(!Number.isFinite(Number(s.rotationMonths)))s.rotationMonths=0;
+  if(typeof s.retired!=="boolean")s.retired=false;
+  if(s.retired){
+    s.salary=0;
+    s.position="退休警察人員";
+    s.rank="退休警察人員";
+    s.rotationEligible=false;
+  }
+  if(isOfficerTrack()){
+    const eff=effectiveOfficerSequence();
+    if(Number(s.careerSequenceNo)!==eff){
+      s.careerSequenceNo=eff;
+      s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][eff]+"序列";
+      s.rotationOffers=[];
+      s.selectedUnit="";
+    }
+  }
+  if(s.stationName&&s.precinct&&(DIRECTORY_READY||s.county==="臺北市")&&!stationList().includes(s.stationName))s.stationName="";
+  if(!s.county){
+    s.unit="";s.unitName="";s.assignmentType="";s.stationName="";s.selectedStation="";s.pendingStationPick=false;s.selectedUnit="";
+  }
+  if(s.unit==="station"&&s.precinct&&(DIRECTORY_READY||s.county==="臺北市")){
+    if(!s.stationName){
+      s.pendingStationPick=true;s.unit="";s.unitName="";s.selectedUnit="station";
+    }else{
+      s.unitName=stationFullName(s.stationName);
+    }
+  }
+  if(isOfficerTrack()&&s.unit==="precinct_guard"){
+    s.unit="";s.unitName="";s.assignmentType="";s.stationName="";
+    s.careerStage="officer_initial_offer";s.initialOffers=[];s.selectedUnit="";
+  }
+  if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"&&effectiveOfficerSequence()<9){
+    s.careerStage="officer_rotation";
+    s.rotationEligible=true;
+    s.initialOffers=[];
+    s.rotationOffers=[];
+    s.selectedUnit="";
+  }
+  if(isOfficerTrack()&&s.county&&!s.careerStage&&s.passed){
+    s.careerStage=s.unit?"officer_initial":"officer_initial_offer";
+  }
+  if(!isOfficerTrack()&&s.careerStage&&String(s.careerStage).startsWith("officer_")){
+    s.careerStage=s.unit?"basic_active":"basic_initial";
+  }
+  if(!isOfficerTrack()&&s.unit&&s.unitSelectionOpen===undefined)s.unitSelectionOpen=false;
+  return s;
+}
+let s=NEW(),active=null;
+const CLOCK_KEY="twPoliceClockMaxV1";
+const $=x=>document.getElementById(x),cl=(x)=>Math.max(0,Math.min(100,x)),cash=x=>"NT$ "+Math.round(x).toLocaleString("zh-TW");
+function parseLocalDateTime(v){
+  if(typeof v==="number"&&Number.isFinite(v))return new Date(v);
+  const m=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+  if(m)return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]),Number(m[4]),Number(m[5]),Number(m[6]||0),0);
+  return new Date(2026,0,1,8,0,0,0);
+}
+function localIso(d){
+  const p=n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+}
+function parseRocStamp(v){
+  const m=String(v||"").match(/(\d{2,3})年(\d{1,2})月(\d{1,2})日(?:\s+(\d{1,2}):(\d{2}))?/);
+  if(!m)return NaN;
+  return new Date(Number(m[1])+1911,Number(m[2])-1,Number(m[3]),Number(m[4]||0),Number(m[5]||0),0,0).getTime();
+}
+function migrateClock(){
+  let epoch=Number(s.simEpoch);
+  if(!Number.isFinite(epoch)||epoch<=0)epoch=parseLocalDateTime(s.simDate).getTime();
+
+  let maxEpoch=Number(s.maxSimEpoch);
+  if(!Number.isFinite(maxEpoch)||maxEpoch<=0)maxEpoch=epoch;
+
+  const persistedMax=Number(localStorage.getItem(CLOCK_KEY)||0);
+
+  // Recover from every durable source we have. The calendar is strictly monotonic.
+  const historyMax=Math.max(0,...(s.history||[]).map(x=>parseRocStamp(x.time)).filter(Number.isFinite));
+  const caseMax=Math.max(0,...(s.cases||[]).map(x=>parseRocStamp(x.date)).filter(Number.isFinite));
+
+  epoch=Math.max(epoch,maxEpoch,historyMax,caseMax,Number.isFinite(persistedMax)?persistedMax:0);
+
+  s.simEpoch=epoch;
+  s.maxSimEpoch=epoch;
+  s.simDate=localIso(new Date(epoch));
+  localStorage.setItem(CLOCK_KEY,String(epoch));
+}
+function simNow(){migrateClock();return new Date(s.simEpoch)}
+function setSim(d){
+  const next=d.getTime();
+  migrateClock();
+  const persistedMax=Number(localStorage.getItem(CLOCK_KEY)||0);
+  // Hard rule: no game action, reload, stale save, or browser refresh may move time backward.
+  const fixed=Math.max(next,s.simEpoch||0,s.maxSimEpoch||0,Number.isFinite(persistedMax)?persistedMax:0);
+  s.simEpoch=fixed;
+  s.maxSimEpoch=fixed;
+  s.simDate=localIso(new Date(fixed));
+  localStorage.setItem(CLOCK_KEY,String(fixed));
+}
+function advanceHours(h){if(h<0)return;let d=simNow();d.setHours(d.getHours()+h);setSim(d);syncClock()}
+function advanceDays(n){if(n<0)return;let d=simNow();d.setDate(d.getDate()+n);setSim(d);syncClock();const retiredNow=checkMandatoryRetirement();if(!s.retired&&!retiredNow&&typeof window.onGameDaysAdvanced==="function")window.onGameDaysAdvanced(n)}
+function rocDateTime(){let d=simNow(),y=d.getFullYear()-1911,m=d.getMonth()+1,day=d.getDate(),hh=String(d.getHours()).padStart(2,"0"),mm=String(d.getMinutes()).padStart(2,"0");return y+"年"+m+"月"+day+"日 "+hh+":"+mm}
+function syncClock(){
+  migrateClock();
+  if(!s.startDate)s.startDate="2026-01-01T08:00:00";
+  if(s.initialAge==null)s.initialAge=s.age||18;
+  const start=parseLocalDateTime(s.startDate);
+  let elapsed=Math.max(0,(simNow().getTime()-start.getTime())/86400000);
+  s.age=s.initialAge+Math.floor(elapsed/365.2425);
+  if(s.joinDate){
+    const join=parseLocalDateTime(s.joinDate);
+    let jy=Math.max(0,(simNow().getTime()-join.getTime())/86400000/365.2425);
+    s.year=1+Math.floor(jy);
+  }
+}
+function shiftName(){let h=simNow().getHours();if(h<8)return"00:00–08:00 夜勤";if(h<12)return"08:00–12:00 日勤";if(h<16)return"12:00–16:00 日勤";if(h<20)return"16:00–20:00 晚勤";return"20:00–24:00 夜勤"}
+function rec(a,b){s.history.unshift({title:a,detail:b,time:rocDateTime()});s.history=s.history.slice(0,100)}
+function toast(m){let t=document.querySelector(".toast");if(!t){t=document.createElement("div");t.className="toast";document.body.appendChild(t)}t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600)}
+function save(){normalizeState();migrateClock();s.maxSimEpoch=Math.max(s.maxSimEpoch||0,s.simEpoch||0);localStorage.setItem(CLOCK_KEY,String(s.maxSimEpoch));localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s));toast("已儲存")}
+function load(){let x=localStorage.getItem("twPoliceCareerSaveV1");if(!x)return toast("找不到存檔");try{const before=Number(localStorage.getItem(CLOCK_KEY)||0);s=Object.assign(NEW(),JSON.parse(x));normalizeState();migrateClock();if(before>0&&s.simEpoch<before){s.simEpoch=before;s.maxSimEpoch=before;s.simDate=localIso(new Date(before))}render();toast("已讀取存檔（已修復舊狀態）")}catch(e){console.error(e);toast("存檔損壞")}}
+function fb(id,m,g){let e=$(id);e.className="feedback "+(g?"good":"bad");e.textContent=m}
+function go(p){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===p));document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x.dataset.page===p));window.scrollTo({top:0,behavior:"smooth"});render()}
+document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>go(b.dataset.page));
+function next(){if(s.retired)return"life";if(!s.created)return"character";if(!s.route)return"route";if(!s.passed)return s.written===null?"study":"exam";if(!s.county)return"distribution";if(isOfficerTrack()&&(s.careerStage==="officer_initial_offer"||(["officer_initial","officer_rotation"].includes(s.careerStage)&&s.rotationEligible)))return"unit";if(!s.unit)return"unit";return"duty"}
+function dashboard(){
+$("miniName").textContent=s.created?s.name:"尚未建立角色";$("miniStatus").textContent=s.position||s.rank;$("careerYearChip").textContent="生涯第 "+s.year+" 年";if($("dateChip"))$("dateChip").textContent=rocDateTime();$("rankChip").textContent="職務："+(s.position||s.rank);$("moneyChip").textContent="存款："+cash(s.savings);
+$("dashboardSub").textContent=s.created?[s.name,s.routeName||"尚未選路線",s.county?([s.county,s.precinct].filter(Boolean).join("｜")):"尚未分發",s.unitName||""].join("｜"):"建立角色後開始你的警察生涯。";
+[["Law",s.law],["Eng",s.eng],["Fit",s.fit],["Comm",s.comm],["Stress",s.stress],["Rep",s.rep]].forEach(v=>{$("dash"+v[0]).textContent=v[1];$("dash"+v[0]+"Bar").style.width=v[1]+"%"});
+$("dashName").textContent=s.name||"—";if($("dashAge"))$("dashAge").textContent=s.age+" 歲";$("dashRoute").textContent=s.routeName||"—";$("dashCounty").textContent=[s.county,s.precinct].filter(Boolean).join("｜")||"—";$("dashUnit").textContent=s.unitName||"—";$("dashRank").textContent=s.position||s.rank;if($("dashQualification"))$("dashQualification").textContent=s.qualification||"尚未取得";if($("dashOfficialRank"))$("dashOfficialRank").textContent=s.officialRank||"—";if($("dashSequence"))$("dashSequence").textContent=s.sequence||"—";
+let a=s.retired?"已退休":"先建立角色",b=s.retired?((s.retirementReason||"退休")+"｜原職："+(s.lastActivePosition||"—")+"｜退休日："+(s.retirementDate||"—")):"完成基本資料後，選擇警專、警大或特考路線。";
+if(!s.retired&&s.created&&!s.route){a="選擇入警路線";b="依學歷與規劃選擇路線。"}else if(s.route&&!s.passed){a="完成考試與受訓";b="備考、筆試、體測與訓練。"}else if(s.passed&&!s.county){a="填寫全國警察機關志願";b="依模擬成績與缺額分發至全臺地方警察機關。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"){a="選填初任職務";b="分局分發完成後，從本次實際型態的組、隊職缺中選擇3個初任職務之一。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial"&&!s.rotationEligible){a="完成初任歷練";b="目前在 "+(s.unitName||"分局單位")+" 擔任 "+(s.position||"巡官")+"；累積約12個月歷練後開放下一輪缺額。"}else if(isOfficerTrack()&&s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){a="選填下一階段職務";b="依目前資格與缺額，從分局組室、偵查隊、警備隊或派出所副主管等職務中選擇。"}else if(s.county&&!s.unit){a="選擇服務單位";b="依任用路線、分局與可用職缺選擇服務單位。"}else if(s.unit){a="開始勤務與累積職涯";b="處理勤務、累積資績與年資，等待輪調、甄審與陞遷機會。"}
+$("goalTitle").textContent=a;$("goalText").textContent=b;renderRankInsignia();$("recentEvents").innerHTML=s.history.length?s.history.slice(0,6).map(h=>'<div class="timeline-item"><b>'+h.title+'</b><span>'+h.detail+'</span></div>').join(""):'<div class="empty-state">還沒有生涯事件。</div>';
+}
+function character(){if(!$("charHomeCounty").options.length)$("charHomeCounty").innerHTML=C.map(c=>"<option>"+c+"</option>").join("");$("charName").value=s.name||"林子維";$("charAge").value=s.age;$("charGender").value=s.gender;$("charEducation").value=s.education;$("charHomeCounty").value=s.homeCounty;$("charFamily").value=s.family}
+$("createCharacterBtn").onclick=()=>{s.created=true;s.name=$("charName").value.trim()||"無名警員";s.age=Math.max(18,Math.min(45,+$("charAge").value||18));s.initialAge=s.age;s.gender=$("charGender").value;s.education=$("charEducation").value;s.homeCounty=$("charHomeCounty").value;s.family=$("charFamily").value;rec("建立角色",s.name+"，"+s.age+"歲，"+s.education+"，居住 "+s.homeCounty);fb("characterMsg","角色建立完成。",1);save();render()}
+function routeCardsMarkup(){
+  return R.map(r=>'<div class="choice-card '+((s.selectedRoute===r[0]||s.route===r[0])?"selected":"")+'" data-r="'+r[0]+'"><h3>'+r[1]+" "+r[2]+'</h3><p>'+r[3]+'</p><div class="meta"><span class="tag">難度 '+"★".repeat(r[4])+'</span><span class="tag">準備 '+r[5]+' 天</span><span class="tag">'+r[6]+'</span></div></div>').join("");
+}
+function studyActionsMarkup(){
+  const A=[["law","📖 讀法學","法學 +5、壓力 +3"],["eng","🇬🇧 讀英文","英文 +5、壓力 +2"],["fit","🏃 體能訓練","體能 +5、健康 +1"],["mock","📝 刷題模考","法學 +3、英文 +2"],["work","💼 打工","存款 +NT$2,500"],["rest","😴 休息","壓力 -10"]];
+  return A.map(a=>'<div class="action-card" data-a="'+a[0]+'"><strong>'+a[1]+'</strong><p>'+a[2]+'</p></div>').join("");
+}
+function ensureCoreUI(){
+  try{
+    const home=$("charHomeCounty");
+    if(home){
+      const current=s.homeCounty&&C.includes(s.homeCounty)?s.homeCounty:"臺北市";
+      if(home.options.length!==C.length||![...home.options].every((o,i)=>o.value===C[i])){
+        home.innerHTML=C.map(c=>'<option value="'+c+'">'+c+'</option>').join("");
+      }
+      home.value=current;
+    }
+    const routesBox=$("routeCards");
+    if(routesBox&&routesBox.children.length===0)routesBox.innerHTML=routeCardsMarkup();
+    const studyBox=$("studyActions");
+    if(studyBox&&studyBox.children.length===0)studyBox.innerHTML=studyActionsMarkup();
+    if($("writtenProgress"))$("writtenProgress").style.width=cl(s.law*.6+s.eng*.4)+"%";
+    if($("fitnessProgress"))$("fitnessProgress").style.width=cl(s.fit)+"%";
+    if($("overallProgress"))$("overallProgress").style.width=cl((s.law*.6+s.eng*.4)*.65+s.fit*.35-s.stress*.08)+"%";
+  }catch(err){console.error("[core-ui-repair]",err)}
+}
+function routes(){
+  const box=$("routeCards");if(!box)return;
+  box.innerHTML=routeCardsMarkup();
+  box.querySelectorAll("[data-r]").forEach(e=>e.onclick=()=>{s.selectedRoute=e.dataset.r;routes()});
+}
+$("confirmRouteBtn").onclick=()=>{if(!s.created)return fb("routeMsg","請先建立角色。",0);let r=R.find(x=>x[0]===s.selectedRoute);if(!r)return fb("routeMsg","請先選擇路線。",0);if(r[0]==="g3"&&!["大學畢業","研究所畢業"].includes(s.education))return fb("routeMsg","本遊戲中三等需大學以上學歷。",0);s.route=r[0];s.routeName=r[2];s.days=r[5];s.written=null;s.physical=null;s.training=false;s.passed=false;s.rank="考生";s.position="考生";s.qualification="尚未取得";s.officialRank="—";s.sequence="—";rec("選擇入警路線",r[2]);fb("routeMsg","已選擇 "+r[2]+"。",1);save();render()}
+function study(){
+  if($("studyDaysChip"))$("studyDaysChip").textContent="距考試 "+s.days+" 天";
+  if($("studyLaw"))$("studyLaw").textContent=s.law;
+  if($("studyEng"))$("studyEng").textContent=s.eng;
+  if($("studyFit"))$("studyFit").textContent=s.fit;
+  if($("studyStress"))$("studyStress").textContent=s.stress;
+  const box=$("studyActions");
+  if(box){
+    box.innerHTML=studyActionsMarkup();
+    box.querySelectorAll("[data-a]").forEach(e=>e.onclick=()=>train(e.dataset.a));
+  }
+  let w=s.law*.6+s.eng*.4,o=w*.65+s.fit*.35-s.stress*.08;
+  if($("writtenProgress"))$("writtenProgress").style.width=cl(w)+"%";
+  if($("fitnessProgress"))$("fitnessProgress").style.width=cl(s.fit)+"%";
+  if($("overallProgress"))$("overallProgress").style.width=cl(o)+"%";
+  if($("studyAdvice"))$("studyAdvice").textContent=!s.route?"先選擇入警路線。":s.law<55?"建議優先讀法學。":s.fit<60?"建議加強體能。":s.stress>70?"壓力偏高，建議休息。":"目前狀態穩定。";
+}
+function train(a){if(!s.route)return toast("請先選入警路線");if(s.days<=0)return toast("已到考試日期");if(a==="law"){s.law=cl(s.law+5);s.stress=cl(s.stress+3);s.savings-=300}if(a==="eng"){s.eng=cl(s.eng+5);s.stress=cl(s.stress+2);s.savings-=200}if(a==="fit"){s.fit=cl(s.fit+5);s.health=cl(s.health+1)}if(a==="mock"){s.law=cl(s.law+3);s.eng=cl(s.eng+2);s.stress=cl(s.stress+4)}if(a==="work"){s.savings+=2500;s.stress=cl(s.stress+3)}if(a==="rest"){s.stress=cl(s.stress-10);s.health=cl(s.health+2)}s.days=Math.max(0,s.days-7);advanceDays(7);save();render()}
+function syncExamActionButtons(){
+  const w=$("writtenExamBtn"),p=$("physicalExamBtn"),tr=$("trainingBtn"),next=$("examNextPageBtn");
+  const all=[w,p,tr,next].filter(Boolean);
+  all.forEach(b=>{
+    b.style.setProperty("display","none","important");
+    b.disabled=true;
+    b.style.pointerEvents="none";
+    b.setAttribute("aria-hidden","true");
+    b.classList.remove("primary-btn");
+    b.classList.add("secondary-btn");
+  });
+  let active=null;
+  if(!s.route||s.written===null||s.written<55)active=w;
+  else if(s.physical===null||s.physical<55)active=p;
+  else if(!s.training)active=tr;
+  else active=next;
+  if(active){
+    active.style.setProperty("display","inline-flex","important");
+    active.disabled=false;
+    active.style.pointerEvents="auto";
+    active.removeAttribute("aria-hidden");
+    active.classList.remove("secondary-btn");
+    active.classList.add("primary-btn");
+  }
+}
+function exam(){
+  $("examRoute").textContent=s.routeName||"尚未選擇";
+  if($("trainingBtn"))$("trainingBtn").textContent=s.route==="tpa"?"完成警專教育＋四等任用流程":s.route==="cpu"?"完成警大教育＋三等任用流程":s.route==="g4"?"完成四等教育／實務訓練":s.route==="g3"?"完成三等教育／實務訓練":"完成受訓";
+  $("examWritten").textContent=s.written===null?"—":s.written;
+  $("examPhysical").textContent=s.physical===null?"—":s.physical;
+  $("examRank").textContent=s.ranking?"第 "+s.ranking+" 名":"—";
+
+  ["stepWritten","stepPhysical","stepTraining","stepResult"].forEach(i=>$(i).className="step");
+  if(s.written===null||s.written<55){
+    $("stepWritten").classList.add("active");
+  }else{
+    $("stepWritten").classList.add("done");
+    if(s.physical===null||s.physical<55){
+      $("stepPhysical").classList.add("active");
+    }else{
+      $("stepPhysical").classList.add("done");
+      if(!s.training){
+        $("stepTraining").classList.add("active");
+      }else{
+        $("stepTraining").classList.add("done");
+        $("stepResult").classList.add("done");
+      }
+    }
+  }
+
+  const w=$("writtenExamBtn"),p=$("physicalExamBtn"),tr=$("trainingBtn"),next=$("examNextPageBtn");
+  let activeBtn=null;
+  if(!s.route||s.written===null||s.written<55)activeBtn=w;
+  else if(s.physical===null||s.physical<55)activeBtn=p;
+  else if(!s.training)activeBtn=tr;
+  else activeBtn=next;
+  syncExamActionButtons();
+  if($("examActionHint")){
+    $("examActionHint").textContent=
+      activeBtn===w?"目前步驟：筆試。通過後會自動切換到「參加體測」。":
+      activeBtn===p?"筆試已通過。現在進行體測，通過後會自動切換到受訓。":
+      activeBtn===tr?"體測已通過。完成受訓後會切換到全國分發。":
+      activeBtn===next?"錄取流程完成，可前往全國分發。":"";
+  }
+}
+$("writtenExamBtn").onclick=()=>{if(!s.route)return fb("examMsg","請先選擇路線。",0);let r=R.find(x=>x[0]===s.route),z=Math.round(s.law*.55+s.eng*.25+s.comm*.1+s.fit*.1-r[4]*2.8-Math.max(0,(s.stress-50)*.12)+(Math.random()*12-4));s.written=cl(z);advanceHours(3);rec("參加筆試","成績 "+s.written);fb("examMsg",s.written>=55?"筆試通過，成績 "+s.written+"。已自動切換到下一步：體測。":"未達遊戲門檻55分，可回備考重考。",s.written>=55);save();render();setTimeout(()=>{if(s.written>=55&&$("physicalExamBtn"))$("physicalExamBtn").focus()},0)}
+$("physicalExamBtn").onclick=()=>{if(s.written===null||s.written<55)return fb("examMsg","需先通過筆試。",0);s.physical=cl(Math.round(s.fit-s.stress*.08+s.health*.06+(Math.random()*10-3)));advanceDays(7);rec("參加體測","成績 "+s.physical);fb("examMsg",s.physical>=55?"體測通過，成績 "+s.physical+"。已自動切換到下一步：受訓。":"未達遊戲門檻55分。",s.physical>=55);save();render();setTimeout(()=>{if(s.physical>=55&&$("trainingBtn"))$("trainingBtn").focus()},0)}
+$("trainingBtn").onclick=()=>{if(s.physical===null||s.physical<55)return fb("examMsg","需先通過前階段測驗。",0);let r=R.find(x=>x[0]===s.route);if(!r)return fb("examMsg","找不到任用路線。",0);s.training=true;advanceDays(r[10]);s.score=Math.round(s.written*.68+s.physical*.32);s.ranking=Math.max(1,Math.round(1800-s.score*17+Math.random()*120));s.passed=true;s.qualification=r[6];s.officialRank=r[7];s.position="待分發";s.rank="待分發";s.sequence=r[9];s.careerSequenceNo=r[11];s.comm=cl(s.comm+5);let detail=(s.route==="tpa"?"完成警專教育並通過四等警察人員特考任用流程":s.route==="cpu"?"完成警大教育並通過三等警察人員特考任用流程":s.route==="g4"?"完成四等一般警察特考教育與實務訓練":"完成三等一般警察特考教育與實務訓練");rec("取得任官資格",detail+"｜"+s.qualification);fb("examMsg",detail+"。目前任官資格："+s.qualification+"；已切換到下一步：臺北市分局分發。",1);save();render();setTimeout(()=>{if($("examNextPageBtn"))$("examNextPageBtn").focus()},0)}
+if($("examNextPageBtn"))$("examNextPageBtn").onclick=()=>{if(!s.passed)return fb("examMsg","尚未完成錄取流程。",0);go("distribution")};
+function cn(id){let row=distributionPost(id);return row?[row.vacancy,row.threshold]:[20,65]}
+function dist(){
+  const options=directoryOptionsHTML();
+  [1,2,3].forEach(n=>{
+    let e=$("pref"+n),v=e.value;
+    e.innerHTML='<option value="">請選擇分發志願</option>'+options;
+    if(v&&distributionPost(v))e.value=v;
+  });
+  if(DIRECTORY_READY){
+    $("countyCards").innerHTML=C.map(city=>{
+      const d=directoryCounty(city),divs=d?.divisions||[];
+      const stations=divs.reduce((sum,x)=>sum+(x.stations?.length||0),0)+(d?.unassignedStations?.length||0);
+      return '<div class="county-card"><h3>'+(d?.agency||agencyRecord(city)?.[1]||city+"警察局")+'</h3><p>'+divs.length+' 個分局／警察所｜'+stations+' 個分駐／派出／駐在所</p><div class="numbers"><span>可於下方名錄展開查看</span></div></div>';
+    }).join("");
+  }else{
+    $("countyCards").innerHTML=LOCAL_POLICE_AGENCIES.map(a=>'<div class="county-card"><h3>'+a[1]+'</h3><p>全國分局與派出所名錄載入中。</p><div class="numbers"><span>模擬門檻 '+a[3]+'</span></div></div>').join("");
+  }
+  renderNationalDirectory();
+}
+$("runDistributionBtn").onclick=()=>{
+  if(!s.passed)return fb("distributionResult","尚未完成錄取流程。",0);
+  let prefs=[$("pref1").value,$("pref2").value,$("pref3").value].filter(Boolean);
+  if(!prefs.length)return fb("distributionResult","至少填一個分發志願。",0);
+  let chosenId=prefs.find(id=>s.score>=cn(id)[1])||prefs[prefs.length-1];
+  const post=distributionPost(chosenId);
+  if(!post)return fb("distributionResult","分發資料錯誤，請重新選擇。",0);
+  let r=R.find(x=>x[0]===s.route);
+  s.county=post.county;s.localAgency=post.agency;s.precinct=post.precinct||"";s.position=r?r[8]:"警員";s.rank=s.position;s.sequence=r?r[9]:"第十一序列";s.careerSequenceNo=r?r[11]:11;
+  if(!s.joinDate)s.joinDate=s.simDate;s.year=1;s.salary=(s.officialRank==="警正四階"?64000:56500);
+  if(["cpu","g3"].includes(s.route)){
+    s.unit="";s.unitName="";s.assignmentType="";s.position="巡官";s.rank="巡官";s.careerSequenceNo=9;s.sequence="第九序列";s.careerStage="officer_initial_offer";s.rotationMonths=0;s.rotationEligible=false;s.rotationCycleMonths=0;s.rotationCycleDays=0;s.initialOffers=pickOfficerOffers(officerInitialPool(),3);s.rotationOffers=[];
+    rec("分發",post.label+"｜待選初任職務");
+    fb("distributionResult","分發成功："+post.label+"。下一步會從該機關常見的組、隊或分局職務中抽出3個初任職缺。",1);
+  }else{
+    s.careerStage="basic_initial";s.unit="";s.unitName="";s.unitSelectionOpen=true;
+    rec("分發",post.label);
+    fb("distributionResult","分發成功："+post.label+"。下一步選擇基層服務單位。",1);
+  }
+  save();render();
+}
+function rankInsigniaSpec(seq){
+  const map={
+    11:{label:"一線三星",file:"10"},
+    10:{label:"一線四星",file:"09"},
+    9:{label:"二線一星",file:"08"},
+    8:{label:"二線二星",file:"07"},
+    7:{label:"二線二星",file:"07"},
+    6:{label:"二線三星",file:"06"},
+    5:{label:"二線四星",file:"05"},
+    4:{label:"三線一星",file:"04"},
+    3:{label:"三線二星",file:"03"},
+    2:{label:"三線三星",file:"02"},
+    1:{label:"三線三星",file:"02"},
+    0:{label:"三線四星",file:"01"}
+  };
+  return map[Number(seq)]||{label:"未配階",file:""};
+}
+function rankInsigniaURL(file){
+  return file?"https://commons.wikimedia.org/wiki/Special:Redirect/file/TW-Police-Rank_"+file+".svg":"";
+}
+function rankInsigniaHTML(seq,compact=false){
+  const spec=rankInsigniaSpec(seq);
+  if(!spec.file)return '<span class="rank-insignia-label">未配階</span>';
+  return '<span class="rank-insignia '+(compact?"compact":"")+'" title="'+spec.label+'"><img src="'+rankInsigniaURL(spec.file)+'" alt="'+spec.label+' 階級識別圖"></span><span class="rank-insignia-label">'+spec.label+"</span>";
+}
+function renderRankInsignia(){
+  const seq=(typeof effectiveOfficerSequence==="function"&&isOfficerTrack())?effectiveOfficerSequence():Number(s.careerSequenceNo||11);
+  if($("dashInsignia"))$("dashInsignia").innerHTML=rankInsigniaHTML(seq);
+  if($("careerInsignia"))$("careerInsignia").innerHTML=rankInsigniaHTML(seq);
+  if($("rankInsigniaChip"))$("rankInsigniaChip").innerHTML=rankInsigniaHTML(seq,true);
+}
+function rocDay(d){
+  return (d.getFullYear()-1911)+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日";
+}
+function rotationForecastText(){
+  if(!isOfficerTrack())return "基層警員線以單位甄選、分局調任與職缺為主，不設定固定輪調倒數。";
+  if(s.careerStage==="officer_initial_offer")return "初任職缺：現在已開放，可直接選填。";
+  if(s.rotationEligible)return "下一輪職缺：現在已開放，可直接選填。";
+  if(!s.unit)return "完成初任派職後，系統才會開始計算下一輪職缺時間。";
+  const needDays=s.careerStage==="officer_initial"?360:540;
+  const elapsed=Math.max(0,Number(s.rotationCycleDays)||0);
+  const remain=Math.max(0,needDays-elapsed);
+  const d=simNow();
+  d.setDate(d.getDate()+remain);
+  const months=Math.ceil(remain/30);
+  return "預計下一輪職缺："+rocDay(d)+"（約 "+months+" 個月後）｜目前歷練 "+Math.floor(elapsed/30)+"/"+Math.round(needDays/30)+" 個月";
+}
+function renderRotationForecast(){
+  const txt=rotationForecastText();
+  if($("rotationForecast"))$("rotationForecast").textContent=txt;
+  if($("careerVacancyForecast"))$("careerVacancyForecast").textContent=txt;
+}
+function renderStationDirectory(){
+  if(!$("stationDirectory"))return;
+  const records=stationRecords();
+  $("stationDirectory").style.display=records.length?"block":"none";
+  if(!$("stationDirectoryCards"))return;
+  $("stationDirectoryTitle").textContent=(s.precinct||localAgencyName())+" 分駐／派出／駐在所";
+  $("stationDirectoryCards").innerHTML=records.map(st=>{
+    const name=typeof st==="string"?st:st.name;
+    const detail=typeof st==="string"?"":[st.address,st.phone?("☎ "+st.phone):""].filter(Boolean).join("｜");
+    return '<div class="station-directory-item '+(s.stationName===name?"current":"")+'"><b>'+name+'</b><span>'+(detail||stationDutyText())+'</span>'+(s.stationName===name?'<em>目前服務單位</em>':'')+'</div>';
+  }).join("");
+}
+function directoryOptionsHTML(){
+  const groups=new Map();
+  DISTRIBUTION_POSTS.forEach(p=>{if(!groups.has(p.county))groups.set(p.county,[]);groups.get(p.county).push(p)});
+  return [...groups.entries()].map(([city,posts])=>'<optgroup label="'+city+'">'+posts.map(p=>'<option value="'+p.id+'">'+p.label+'</option>').join("")+'</optgroup>').join("");
+}
+function renderNationalDirectory(){
+  if(!$("directoryCountySelect")||!$("policeDirectoryTree"))return;
+  if(!$("directoryCountySelect").options.length){
+    $("directoryCountySelect").innerHTML=C.map(c=>'<option>'+c+'</option>').join("");
+    $("directoryCountySelect").value=(s&&C.includes(s.county)?s.county:(s&&C.includes(s.homeCounty)?s.homeCounty:"臺北市"));
+  }
+  const city=$("directoryCountySelect").value||"臺北市";
+  const data=directoryCounty(city);
+  if($("directorySourceStatus")){
+    $("directorySourceStatus").textContent=DIRECTORY_READY
+      ?("警政署開放資料｜"+(POLICE_DIRECTORY.meta?.divisionCount||0)+" 個分局／警察所｜"+(POLICE_DIRECTORY.meta?.stationCount||0)+" 個分駐／派出／駐在所")
+      :(DIRECTORY_ERROR?("名錄載入失敗："+DIRECTORY_ERROR):"正在載入警政署全國警察單位資料…");
+  }
+  if(!data){
+    $("policeDirectoryTree").innerHTML='<div class="empty-state">'+(DIRECTORY_READY?"此縣市目前沒有可顯示的分局資料。":"全國名錄載入中…")+'</div>';
+    return;
+  }
+  const q=String($("directorySearch")?.value||"").trim().toLowerCase();
+  let divs=(data.divisions||[]).map(d=>({...d,stations:(d.stations||[]).filter(st=>!q||d.name.toLowerCase().includes(q)||String(st.name||"").toLowerCase().includes(q)||String(st.address||"").toLowerCase().includes(q))}))
+    .filter(d=>!q||d.name.toLowerCase().includes(q)||d.stations.length);
+  $("policeDirectoryTree").innerHTML=divs.map(d=>
+    '<details class="directory-division"><summary><b>'+d.name+'</b><span>'+d.stations.length+' 所</span></summary>'+
+      '<div class="directory-division-meta">'+[d.address,d.phone?("☎ "+d.phone):""].filter(Boolean).join("｜")+'</div>'+
+      '<div class="directory-stations">'+d.stations.map(st=>'<div class="directory-station"><b>'+st.name+'</b><span>'+[st.address,st.phone?("☎ "+st.phone):""].filter(Boolean).join("｜")+'</span></div>').join("")+'</div>'+
+    '</details>'
+  ).join("")+(data.unassignedStations?.length?'<details class="directory-division unresolved"><summary><b>尚待來源層級確認</b><span>'+data.unassignedStations.length+' 所</span></summary><div class="directory-stations">'+data.unassignedStations.map(st=>'<div class="directory-station"><b>'+st.name+'</b><span>'+[st.address,st.phone?("☎ "+st.phone):""].filter(Boolean).join("｜")+'</span></div>').join("")+'</div></details>':"");
+}
+async function loadPoliceDirectory(){
+  try{
+    const res=await fetch("https://rgwvb.github.io/hai-sushi-schedule/police-directory.json?v="+Date.now(),{cache:"no-store"});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const data=await res.json();
+    if(!data||!data.counties||!Object.keys(data.counties).length)throw new Error("資料尚未建立");
+    POLICE_DIRECTORY=data;DIRECTORY_READY=true;DIRECTORY_ERROR="";
+    rebuildDistributionPosts();
+    if(s&&s.county&&!s.localAgency)s.localAgency=directoryCounty(s.county)?.agency||agencyRecord(s.county)?.[1]||"";
+    if(s&&s.precinct){
+      const has=directoryDivision(s.county,s.precinct);
+      if(!has&&s.county!=="中央"&&s.county!=="臺北市"){s.precinct="";s.stationName="";s.unit="";s.unitName="";}
+    }
+    if(Array.isArray(s?.initialOffers)&&s.initialOffers.some(o=>o.stationName==="轄內派出所")){s.initialOffers=[];s.selectedUnit="";}
+    if(Array.isArray(s?.rotationOffers)&&s.rotationOffers.some(o=>o.stationName==="轄內派出所")){s.rotationOffers=[];s.selectedUnit="";}
+    dist();renderNationalDirectory();renderStationDirectory();
+    if(s&&s.precinct&&$("unit")?.classList.contains("active"))units();
+  }catch(err){
+    DIRECTORY_ERROR=err&&err.message?err.message:String(err);
+    console.warn("police directory load failed",err);
+    renderNationalDirectory();
+  }
+}
+function officerVacancyCard(o,extraTag=""){
+  const seq=Number(o.seq||9);
+  const selected=s.selectedUnit===o.id?"selected":"";
+  const rank=rankInsigniaHTML(seq,true);
+  return '<div class="choice-card officer-vacancy-card '+selected+'" data-o="'+o.id+'">'+
+    '<div class="vacancy-card-head"><div><h3>'+o.unitName+'</h3><strong class="vacancy-position">'+o.position+'</strong></div>'+
+    '<div class="vacancy-rank">'+rank+'</div></div>'+
+    '<p>'+o.desc+'</p>'+
+    '<div class="meta"><span class="tag">第'+seq+'序列職務</span>'+(extraTag?'<span class="tag">'+extraTag+'</span>':'')+'<span class="tag">'+rankInsigniaSpec(seq).label+'</span></div>'+
+  '</div>';
+}
+function units(){
+  renderStationDirectory();renderPrecinctOrg();renderRotationForecast();
+  if(isOfficerTrack()){
+    if(s.careerStage==="officer_initial_offer"){
+      $("confirmUnitBtn").style.display="";
+      $("unitBanner").textContent="已分發至 "+([s.county,s.precinct].filter(Boolean).join("｜"))+"。以下為本次3個模擬初任職缺。";
+      const offers=officerInitialOffers();
+      $("unitCards").innerHTML=offers.map(o=>officerVacancyCard(o,"初任職缺")).join("");
+      document.querySelectorAll("[data-o]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.o;units()});
+      return;
+    }
+    if(s.careerStage==="officer_initial"&&!s.rotationEligible){
+      $("unitBanner").textContent="目前初任："+(s.unitName||"—")+"｜"+(s.position||"巡官")+"。遊戲以12個月作為第一階段歷練期（僅為遊戲節奏設定）。";
+      $("unitCards").innerHTML='<div class="choice-card selected officer-vacancy-card"><div class="vacancy-card-head"><div><h3>🏢 '+(s.unitName||"目前單位")+'</h3><strong class="vacancy-position">'+(s.position||"巡官")+'</strong></div><div class="vacancy-rank">'+rankInsigniaHTML(effectiveOfficerSequence(),true)+'</div></div><p>目前任職中｜'+s.sequence+'</p><div class="meta"><span class="tag">歷練 '+(s.rotationMonths||0)+'/12 個月</span><span class="tag">'+rankInsigniaSpec(effectiveOfficerSequence()).label+'</span></div></div>';
+      $("confirmUnitBtn").style.display="none";
+      return;
+    }
+    if(s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){
+      $("confirmUnitBtn").style.display="";
+      const seqNow=effectiveOfficerSequence();
+      s.careerSequenceNo=seqNow;
+      s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][seqNow]+"序列";
+      const badOffers=!Array.isArray(s.rotationOffers)||!s.rotationOffers.length||s.rotationOffers.some(o=>Number(o.seq)!==seqNow);
+      if(badOffers){s.rotationOffers=officerRotationOffers();s.selectedUnit="";}
+      $("unitBanner").textContent="目前職務："+(s.position||"—")+"｜"+s.sequence+"。本次只顯示同序列／相當層級職缺；已升任警務員時，不會再出現第九序列巡官缺額。";
+      $("unitCards").innerHTML=s.rotationOffers.map(o=>officerVacancyCard(o,"輪調職缺")).join("");
+      document.querySelectorAll("[data-o]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.o;units()});
+      return;
+    }
+    $("unitBanner").textContent="目前職務："+(s.unitName||"—")+"｜"+(s.position||"—")+"。後續職務輪調將依缺額與序列開放。";
+    $("unitCards").innerHTML='<div class="empty-state">目前沒有新的輪調缺額。</div>';
+    $("confirmUnitBtn").style.display="none";
+    return;
+  }
+
+  if(s.unit&&!s.unitSelectionOpen&&!s.pendingStationPick){
+    $("confirmUnitBtn").style.display="none";
+    $("unitBanner").textContent="目前服務單位："+(s.unitName||"—")+"｜"+(s.position||s.rank||"警員")+"。需要轉往其他單位時，請由「陞遷與調任」開啟新的職缺／調任流程。";
+    $("unitCards").innerHTML='<div class="choice-card selected current-assignment-card"><h3>🏢 '+(s.unitName||"目前單位")+'</h3><p>'+[s.county,s.precinct,s.stationName,s.position||s.rank].filter(Boolean).join("｜")+'</p><div class="meta"><span class="tag">已報到</span><span class="tag">'+(s.sequence||"第十一序列")+'</span></div></div>';
+    return;
+  }
+  $("confirmUnitBtn").style.display="";
+  if(s.pendingStationPick){
+    $("unitBanner").textContent="請選擇 "+(s.precinct||localAgencyName())+" 轄內實際分駐／派出／駐在所。";
+    const stations=stationList();
+    $("unitCards").innerHTML=stations.map(name=>{const st=stationRecord(name);const detail=st&&typeof st==="object"?[st.address,st.phone?("☎ "+st.phone):""].filter(Boolean).join("｜"):"";return '<div class="choice-card '+(s.selectedStation===name?"selected":"")+'" data-station="'+name+'"><h3>🏢 '+name+'</h3><p>'+(detail||stationDutyText())+'</p><div class="meta"><span class="tag">'+(s.precinct||s.county)+'</span><span class="tag">第一線勤務</span></div></div>'}).join("")+'<div class="choice-card" data-station-back="1"><h3>← 返回單位類型</h3><p>改選警備、交通、偵查或分局／局本部單位。</p></div>';
+    document.querySelectorAll("[data-station]").forEach(e=>e.onclick=()=>{s.selectedStation=e.dataset.station;units()});
+    const back=document.querySelector("[data-station-back]");if(back)back.onclick=()=>{s.pendingStationPick=false;s.selectedStation="";units()};
+    if($("stationDirectory"))$("stationDirectory").style.display="none";
+    return;
+  }
+  $("unitBanner").textContent=s.county?"目前分發："+[s.county,s.precinct].filter(Boolean).join("｜")+"。":"尚未完成分發。";
+  $("unitCards").innerHTML=U.map(u=>{
+    let l=s.year<u[3]||s.xp<u[4];
+    let label=(u[0]==="traffic"
+      ?localAgencyName()+"交通警察單位"
+      :localPrefix()+u[2]);
+    return '<div class="choice-card '+((s.selectedUnit===u[0]||s.unit===u[0])?"selected":"")+'" data-u="'+u[0]+'"><h3>'+u[1]+" "+label+'</h3><p>'+u[5]+'</p><div class="meta"><span class="tag">遊戲年資 '+u[3]+' 年</span><span class="tag">XP '+u[4]+'</span><span class="tag">'+(l?"🔒 尚未解鎖":"可申請")+'</span></div></div>';
+  }).join("");
+  document.querySelectorAll("[data-u]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.u;units()});
+}
+
+$("confirmUnitBtn").onclick=()=>{
+  if(!s.county)return fb("unitMsg","請先完成分發。",0);
+
+  if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"){
+    const o=(s.initialOffers||[]).find(x=>x.id===s.selectedUnit);
+    if(!o)return fb("unitMsg","請先選擇一個初任職缺。",0);
+    s.unit=o.unit;
+    s.unitName=o.unitName;
+    s.assignmentType=o.assignmentType||o.unit;
+    s.stationName=o.stationName||"";
+    s.position=o.position;
+    s.rank=o.position;
+    s.careerSequenceNo=o.seq;
+    s.sequence="第九序列";
+    s.careerStage="officer_initial";
+    s.rotationEligible=false;
+    s.rotationMonths=0;
+    s.rotationCycleMonths=0;
+    s.rotationCycleDays=0;
+    s.rotationOffers=[];
+    s.selectedUnit="";
+    rec("初任派職",o.unitName+"｜"+o.position);
+    fb("unitMsg","初任派職完成："+o.unitName+"｜"+o.position+"。",1);
+    save();render();return;
+  }
+
+  if(isOfficerTrack()&&s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){
+    const seqNow=effectiveOfficerSequence();
+    const o=(s.rotationOffers||[]).find(x=>x.id===s.selectedUnit);
+    if(!o)return fb("unitMsg","請先選擇一個本次職缺。",0);
+    if(Number(o.seq)!==seqNow){
+      s.rotationOffers=officerRotationOffers();s.selectedUnit="";save();render();
+      return fb("unitMsg","偵測到舊版不相符職缺，已依目前 "+s.position+"／第"+seqNow+"序列重新產生。",0);
+    }
+    s.unit=o.unit;
+    s.unitName=o.unitName;
+    s.assignmentType=o.assignmentType||o.unit;
+    s.stationName=o.stationName||"";
+    s.position=o.position;
+    s.rank=o.position;
+    s.careerSequenceNo=o.seq;
+    s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][o.seq]+"序列";
+    s.careerStage="officer_rotation";
+    s.rotationEligible=false;
+    s.rotationMonths=0;
+    s.rotationCycleMonths=0;
+    s.rotationCycleDays=0;
+    s.rotationOffers=[];
+    s.selectedUnit="";
+    rec("職務輪調",o.unitName+"｜"+o.position);
+    fb("unitMsg","已派任："+o.unitName+"｜"+o.position+"。",1);
+    save();render();return;
+  }
+
+  let u=U.find(x=>x[0]===s.selectedUnit);
+  if(!u&&!s.pendingStationPick)return fb("unitMsg","請先選擇單位。",0);
+  if(s.pendingStationPick){
+    if(!s.selectedStation)return fb("unitMsg","請先選擇一間派出所。",0);
+    s.unit="station";s.assignmentType="station";s.stationName=s.selectedStation;s.unitName=stationFullName(s.selectedStation);s.position="警員";s.rank="警員";s.pendingStationPick=false;s.selectedUnit="station";s.unitSelectionOpen=false;s.careerStage="basic_active";
+    rec("派出所報到","臺北市｜"+s.precinct+"｜"+s.stationName);
+    fb("unitMsg","已報到："+s.unitName+"。",1);save();render();return;
+  }
+  if(s.year<u[3]||s.xp<u[4])return fb("unitMsg","條件不足：需年資 "+u[3]+" 年、XP "+u[4]+"。",0);
+  if(u[0]==="station"){
+    if(!DIRECTORY_READY&&s.county!=="臺北市")return fb("unitMsg","全國派出所名錄仍在載入，請稍候幾秒再選擇。",0);
+    if(stationList().length){s.pendingStationPick=true;s.selectedStation="";units();return}
+    return fb("unitMsg","目前這個分局在來源資料中沒有解析到分駐／派出／駐在所，請改選其他單位或至全國名錄確認。",0);
+  }
+  s.unit=u[0];
+  s.unitName=(u[0]==="traffic"?localAgencyName()+"交通警察單位":localPrefix()+u[2]);
+  s.assignmentType=u[0];s.stationName="";s.unitSelectionOpen=false;s.careerStage="basic_active";
+  rec("單位報到",[s.county,s.precinct,u[2]].filter(Boolean).join("｜"));
+  fb("unitMsg","已報到："+s.unitName+"。",1);
+  save();render();
+}
+function duty(){
+  if($("shiftChip"))$("shiftChip").textContent=shiftName()+"｜"+rocDateTime();
+  if($("energyChip"))$("energyChip").textContent="體力 "+s.energy;
+  if($("dutyCount"))$("dutyCount").textContent=s.dutyCount+" 件";
+  if($("dutyXp"))$("dutyXp").textContent=s.xp+" XP";
+  if($("dutyRep"))$("dutyRep").textContent=s.rep;
+  if($("dutyEnergy"))$("dutyEnergy").textContent=s.energy;
+
+  if(s.retired){
+    if($("dutySubtitle"))$("dutySubtitle").textContent="已退休｜"+(s.retirementReason||"退休")+"｜原職："+(s.lastActivePosition||"—");
+    if($("nextDutyBtn"))$("nextDutyBtn").disabled=true;
+    if($("dutyCase"))$("dutyCase").innerHTML="<b>生涯勤務已結束</b><br>退休後不再接受勤務派案。";
+    if($("dutyChoices"))$("dutyChoices").innerHTML="";
+    return;
+  }
+
+  if($("nextDutyBtn"))$("nextDutyBtn").disabled=false;
+  if($("dutySubtitle"))$("dutySubtitle").textContent=s.unit?[s.name,s.county||"",s.precinct||"",s.unitName,s.position||s.rank,s.officialRank||"—"].filter(Boolean).join("｜"):"完成分發後即可上勤。";
+}
+function cases(){ $("caseList").innerHTML=s.cases.length?s.cases.map(c=>'<div class="case-item"><h3>#'+c.id+"｜"+c.type+'</h3><div class="case-meta">'+c.date+"｜"+c.xp+' XP</div><p><b>處置：</b>'+c.action+'<br><b>結果：</b>'+c.result+"</p></div>").join(""):'<div class="empty-state">目前沒有案件卷宗。</div>'}
+function career(){document.querySelectorAll(".career-node").forEach((n,i)=>n.classList.toggle("current",i===s.promo))}
+$("specialUnitBtn").onclick=()=>{
+  if(s.retired)return fb("careerMsg","已退休，不能再參加職務甄選。",0);
+  if(!s.unit)return fb("careerMsg","尚未正式任職。",0);
+  if(isOfficerTrack()){
+    if(s.rotationEligible){go("unit");return}
+    return fb("careerMsg","警官線的專業職務以輪調缺額方式開放；目前尚未產生新的輪調缺額。",0);
+  }
+  if(s.year<2||s.xp<180)return fb("careerMsg","遊戲化甄選門檻：需一定年資與勤務資績；目前尚未達標。",0);
+  s.unitSelectionOpen=true;rec("取得專業職務申請資格","可到職務輪調頁查看偵查隊、交通分隊或分局組室等可用單位");
+  fb("careerMsg","已取得本次專業職務申請資格，請到「職務輪調」查看可用單位。",1);
+  go("unit");
+}
+$("transferBtn").onclick=()=>{
+  if(s.retired)return fb("careerMsg","已退休，不能再申請調任。",0);
+  if(s.year<3)return fb("careerMsg","跨機關調任至少需一定年資；本遊戲以3年作為模擬門檻。",0);
+  const currentKey=s.county==="臺北市"&&s.precinct?("taipei:"+s.precinct):("local:"+s.county);
+  const choices=DISTRIBUTION_POSTS.filter(p=>p.id!==currentKey);
+  const post=choices[Math.floor(Math.random()*choices.length)];
+  const ok=Math.random()<.42+s.rep/260;
+  if(!ok){fb("careerMsg","本次跨機關調任申請未獲核定。",0);save();render();return}
+
+  const oldLabel=[s.county,s.precinct].filter(Boolean).join("｜");
+  const oldPosition=s.position,oldOfficialRank=s.officialRank,oldSeq=isOfficerTrack()?effectiveOfficerSequence():Number(s.careerSequenceNo||11);
+  s.county=post.county;s.localAgency=post.agency;s.precinct=post.precinct||"";s.stationName="";s.selectedStation="";s.selectedUnit="";s.initialOffers=[];s.rotationOffers=[];
+
+  if(isOfficerTrack()){
+    s.careerSequenceNo=oldSeq;s.sequence=oldSeq===0?"最高職務層級":"第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][oldSeq]+"序列";
+    s.officialRank=oldOfficialRank;s.position=oldPosition;s.rank=oldPosition;s.unit="";s.unitName="";s.assignmentType="";s.careerStage="officer_rotation";s.rotationEligible=true;s.rotationCycleDays=0;s.rotationCycleMonths=0;s.rotationMonths=0;s.rotationOffers=officerRotationOffers();
+    rec("全國警察機關調任",oldLabel+" → "+post.label+"｜保留 "+s.sequence+"／"+oldPosition+" 層級");
+    fb("careerMsg","調任核定："+post.label+"。官階與職務序列不變，請選擇相當職務。",1);save();render();go("unit");return;
+  }
+  s.unit="";s.unitName="";s.assignmentType="";s.unitSelectionOpen=true;rec("全國警察機關調任",oldLabel+" → "+post.label);fb("careerMsg","調任成功："+post.label+"。",1);save();render();go("unit");
+}
+function renderRetirement(){
+  const box=$("retirementStatus");
+  if(!box)return;
+  const p=retirementProfile();
+  const yrs=serviceYearsExact();
+  if($("retirementAgeStat"))$("retirementAgeStat").textContent=s.age+" 歲";
+  if($("retirementClassStat"))$("retirementClassStat").textContent=p.kind;
+  if($("retirementMandatoryStat"))$("retirementMandatoryStat").textContent=p.mandatory+" 歲";
+  if($("retirementServiceStat"))$("retirementServiceStat").textContent=yrs.toFixed(1)+" 年";
+  const btn=$("voluntaryRetireBtn");
+  if(s.retired){
+    box.className="info-banner good";
+    box.innerHTML="<b>已退休</b>｜"+(s.retirementReason||"退休")+"<br>退休年齡："+(s.retirementAge??s.age)+" 歲｜原職："+(s.lastActivePosition||"—")+"｜原單位："+(s.lastActiveUnit||"—");
+    if(btn)btn.style.display="none";
+  }else{
+    const remain=Math.max(0,p.mandatory-s.age);
+    box.className="info-banner";
+    box.innerHTML="<b>"+p.kind+"</b>｜自願退休參考年齡 "+p.voluntary+" 歲｜屆齡退休 "+p.mandatory+" 歲<br>"+p.note+"。距屆齡約 "+remain+" 年；任職滿25年亦可依一般自願退休條件申請。";
+    if(btn){
+      btn.style.display="";
+      btn.disabled=!canVoluntaryRetire();
+      btn.textContent=canVoluntaryRetire()?"申請自願退休":"尚未符合自願退休條件";
+    }
+  }
+}
+function life(){ $("salaryStat").textContent=cash(s.salary);$("savingsStat").textContent=cash(s.savings);$("lifeStress").textContent=s.stress;$("healthStat").textContent=s.health;let A=s.retired?[["rent","🏠 支付生活費","退休後生活支出"],["rest","🛌 休息","壓力 -15、體力 +25"],["exercise","🏋️ 運動","健康 +3、體能 +2"],["social","👥 社交活動","溝通 +2、聲望 +1"]]:[["salary","💵 領取月薪","加入本月薪資"],["rent","🏠 支付生活費","扣除生活成本"],["rest","🛌 完整休假","壓力 -15、體力 +25"],["exercise","🏋️ 運動","健康 +3、體能 +2"],["study","📘 在職進修","法學 +2、英文 +2"],["social","👥 同事聚餐","溝通 +2、聲望 +1"]];$("lifeActions").innerHTML=A.map(a=>'<div class="action-card" data-l="'+a[0]+'"><strong>'+a[1]+'</strong><p>'+a[2]+'</p></div>').join("");document.querySelectorAll("[data-l]").forEach(e=>e.onclick=()=>live(e.dataset.l))}
+function live(a){if(a==="salary"){if(!s.salary)return toast("尚未任職");s.savings+=s.salary;advanceDays(30);rec("領取薪資",cash(s.salary))}if(a==="rent"){s.savings-=s.family==="與家人同住"?9000:s.family==="自行租屋"?18000:14000;advanceDays(30)}if(a==="rest"){s.stress=cl(s.stress-15);s.energy=cl(s.energy+25);advanceDays(1)}if(a==="exercise"){s.health=cl(s.health+3);s.fit=cl(s.fit+2);s.stress=cl(s.stress-4);advanceDays(1)}if(a==="study"){s.savings-=1500;s.law=cl(s.law+2);s.eng=cl(s.eng+2);advanceDays(7)}if(a==="social"){s.savings-=800;s.comm=cl(s.comm+2);s.rep=cl(s.rep+1);advanceDays(1)}save();render()}
+function records(){ $("historyList").innerHTML=s.history.length?s.history.map(h=>'<div class="timeline-item"><b>'+h.title+'</b><span>'+h.detail+"｜"+h.time+"</span></div>").join(""):'<div class="empty-state">尚無生涯紀錄。</div>'}
+function safeRenderPart(name,fn){
+  try{fn()}catch(err){
+    console.error("[render:"+name+"]",err);
+    try{localStorage.setItem("twPoliceLastError",name+"｜"+(err&&err.message?err.message:String(err)))}catch(_){}
+  }
+}
+function render(){
+  const parts=[
+    ["normalize",()=>normalizeState()],
+    ["clock",()=>syncClock()],
+    ["retirement-check",()=>checkMandatoryRetirement()],
+    ["dashboard",()=>dashboard()],
+    ["character",()=>character()],
+    ["routes",()=>routes()],
+    ["study",()=>study()],
+    ["exam",()=>exam()],
+    ["distribution",()=>dist()],
+    ["units",()=>units()],
+    ["duty",()=>duty()],
+    ["cases",()=>cases()],
+    ["career",()=>career()],
+    ["life",()=>life()],
+    ["records",()=>records()],
+    ["precinct-org",()=>{if(typeof renderPrecinctOrg==="function")renderPrecinctOrg()}],
+    ["station-directory",()=>{if(typeof renderStationDirectory==="function")renderStationDirectory()}],
+    ["rank-insignia",()=>{if(typeof renderRankInsignia==="function")renderRankInsignia()}],
+    ["retirement",()=>{if(typeof renderRetirement==="function")renderRetirement()}],
+    ["exam-actions",()=>{if(typeof syncExamActionButtons==="function")syncExamActionButtons()}],
+    ["core-ui-repair",()=>{if(typeof ensureCoreUI==="function")ensureCoreUI()}]
+  ];
+  parts.forEach(([name,fn])=>safeRenderPart(name,fn));
+}
+$("continueBtn").onclick=()=>go(next());["saveBtn","manualSaveBtn"].forEach(id=>$(id).onclick=save);["loadBtn","manualLoadBtn"].forEach(id=>$(id).onclick=load);
+$("resetBtn").onclick=()=>{if(confirm("確定清除目前生涯存檔並重新開始？")){localStorage.removeItem("twPoliceCareerSaveV1");localStorage.removeItem(CLOCK_KEY);s=NEW();migrateClock();render();go("dashboard");toast("已重新開始")}};
+window.addEventListener("beforeunload",()=>{migrateClock();localStorage.setItem(CLOCK_KEY,String(s.maxSimEpoch||s.simEpoch||0));localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s))});
+let raw=localStorage.getItem("twPoliceCareerSaveV1");if(raw){try{s=Object.assign(NEW(),JSON.parse(raw))}catch(e){console.error(e)}}
+normalizeState();
+render();
+
+document.addEventListener("click",e=>{
+  const routeCard=e.target.closest&&e.target.closest("[data-r]");
+  if(routeCard&&$("routeCards")?.contains(routeCard)&&typeof routeCard.onclick!=="function"){
+    s.selectedRoute=routeCard.dataset.r;routes();return;
+  }
+  const studyCard=e.target.closest&&e.target.closest("[data-a]");
+  if(studyCard&&$("studyActions")?.contains(studyCard)&&typeof studyCard.onclick!=="function"){
+    train(studyCard.dataset.a);return;
+  }
+});
+ensureCoreUI();
+
+const retireBtn=$("voluntaryRetireBtn");if(retireBtn)retireBtn.onclick=voluntaryRetire;
+const directoryCountySelect=$("directoryCountySelect");
+if(directoryCountySelect)directoryCountySelect.onchange=renderNationalDirectory;
+const directorySearch=$("directorySearch");
+if(directorySearch)directorySearch.oninput=renderNationalDirectory;
+
+function runSelfCheck(){
+  normalizeState();
+  const issues=[];
+  if(s.county&&s.county!=="中央"&&!C.includes(s.county))issues.push("地方警察機關資料無效");
+  if(s.county==="臺北市"&&s.precinct&&!P.some(p=>p[0]===s.precinct))issues.push("臺北市分局資料無效");
+  if(s.stationName&&!stationList().includes(s.stationName))issues.push("派出所不屬於目前分局");
+  if(s.unit==="station"&&!s.stationName)issues.push("派出所勤務缺少實際派出所");if(s.stationName&&!stationList().includes(s.stationName))issues.push("目前派出所與分局不一致");
+  if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"&&s.unit)issues.push("警官初任待選階段卻已有單位");if(isOfficerTrack()&&s.rotationOffers?.some(o=>Number(o.seq)!==effectiveOfficerSequence()))issues.push("輪調職缺序列與目前職務不一致");if(isOfficerTrack()&&/警務正/.test(String(s.position))&&effectiveOfficerSequence()>6)issues.push("警務正不應被降回第七至第九序列");
+  if((s.simEpoch||0)<(Number(localStorage.getItem(CLOCK_KEY)||0)))issues.push("遊戲時間落後歷史最晚時間");if(!s.retired&&s.unit&&s.age>=retirementProfile().mandatory)issues.push("已達屆齡退休年齡但尚未退休");
+  const result=issues.length?"發現 "+issues.length+" 項問題："+issues.join("；"):"自我檢查通過：全國警察機關、分局／派出所、職務狀態與時間資料目前一致。";
+  if($("selfCheckResult")){$("selfCheckResult").textContent=result;$("selfCheckResult").className="info-banner "+(issues.length?"bad":"good")}
+  if(!issues.length)save();
+  return issues;
+}
+const sc=$("selfCheckBtn");if(sc)sc.onclick=runSelfCheck;
+
+function applyTheme(name){
+  const allowed=["warroom","police","game"];
+  const theme=allowed.includes(name)?name:"warroom";
+  document.documentElement.dataset.theme=theme;
+  localStorage.setItem("twPoliceTheme",theme);
+  const sel=document.getElementById("themeSelect");
+  if(sel&&sel.value!==theme)sel.value=theme;
+}
+const themeSel=document.getElementById("themeSelect");
+if(themeSel){
+  themeSel.value=localStorage.getItem("twPoliceTheme")||"warroom";
+  themeSel.onchange=()=>applyTheme(themeSel.value);
+}
+applyTheme(localStorage.getItem("twPoliceTheme")||"warroom");
+
+const advDay=document.getElementById("advanceDayBtn");
+if(advDay){
+  advDay.textContent="⏩ 推進30天";
+  advDay.onclick=()=>{
+    advanceDays(30);
+    s.energy=cl(Math.min(100,s.energy+15));
+    s.stress=cl(Math.max(0,s.stress-5));
+    rec("時間推進","跳過約一個月，日期前進至 "+rocDateTime());
+    save();
+    render();
+  };
+}
+
+
+window.addEventListener("error",e=>{
+  console.error("[global]",e.error||e.message);
+  syncExamActionButtons();
+});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncExamActionButtons()});
+loadPoliceDirectory();
+
+</script>
+<script id="standaloneSystems">
+// Advanced police-system modules: unit-specific duties, learning, discipline/appraisal, and supervisor gameplay.
+(function(){
+  function migrate(){
+    const d={
+      goodNotes:0,badNotes:0,commend:0,merit:0,greatMerit:0,admonition:0,demerit:0,greatDemerit:0,
+      quality:50,service:50,discipline:100,disciplineLog:[],appraisals:[],
+      knowledge:0,quizCorrect:0,quizTotal:0,positionLevel:null,commandScore:50,morale:70,
+      publicSatisfaction:65,staff:8,paperwork:3,commandHistory:[],lastAppraisalYear:null,lastAppraisalDutyCount:0,appraisalRounds:0,dutyMode:"patrol",promotionReviews:[],promotionScore:0,seq10Days:0,promotionExamPassed:false,promotionExamAttempts:0,officerEducationQualified:false,policeZhengQualified:false,sergeantClassPassed:"",promotionTrainingPassed:false,thirdGradeUpgradePassed:false
+    };
+    Object.keys(d).forEach(k=>{ if(s[k]===undefined||s[k]===null) s[k]=d[k]; });
+    if(s.positionLevel===null) s.positionLevel=Math.max(0,Number(s.promo||0));
+    if(["cpu","g3"].includes(s.route)&&s.passed){s.officerEducationQualified=true;s.policeZhengQualified=true}
+    if(s.seq10Days===0&&currentSequenceNo?.()===10&&typeof serviceYearsExact==="function"){
+      s.seq10Days=Math.min(1095,Math.max(0,Math.round((serviceYearsExact()-3)*365)));
+    }
+  }
+
+  window.onGameDaysAdvanced=function(days){
+    if(s.retired)return;
+    if(!Number.isFinite(Number(days))||Number(days)<=0)return;
+
+    if(typeof currentSequenceNo==="function"&&currentSequenceNo()===10){
+      s.seq10Days=(Number(s.seq10Days)||0)+Number(days);
+      if(s.seq10Days>=1095){
+        const rankOrderLocal={"警佐三階":1,"警佐二階":2,"警佐一階":3,"警正四階":4,"警正三階":5,"警正二階":6,"警正一階":7};
+        if((rankOrderLocal[s.officialRank]||0)<3)s.officialRank="警佐一階";
+      }
+    }
+
+    if(typeof isOfficerTrack!=="function"||!isOfficerTrack())return;
+    if(!["officer_initial","officer_rotation"].includes(s.careerStage))return;
+    s.rotationCycleDays=(Number(s.rotationCycleDays)||0)+Number(days);
+    s.rotationCycleMonths=Math.floor(s.rotationCycleDays/30);
+    s.rotationMonths=s.rotationCycleMonths;
+    const needDays=s.careerStage==="officer_initial"?360:540;
+    if(s.rotationCycleDays>=needDays&&!s.rotationEligible){
+      s.rotationEligible=true;
+      s.rotationOffers=typeof officerRotationOffers==="function"?officerRotationOffers():[];
+      rec(s.careerStage==="officer_initial"?"初任歷練完成":"輪調資格開放","完成約"+Math.round(needDays/30)+"個月職務歷練，開放下一輪模擬職缺選填");
+      toast("已開放新一輪職務缺額，可到「職務輪調」查看");
+    }
+  };
+
+  const sequenceInfo={
+    11:{range:"警佐三階至一階或警正四階",examples:["警員","隊員"]},
+    10:{range:"警佐二階至警正四階",examples:["巡佐","小隊長","警務佐","教育班長","偵查佐"]},
+    9:{range:"警佐一階至警正三階",examples:["巡官","分隊長","偵查員"]},
+    8:{range:"警佐一階至警正三階",examples:["警務員","偵查員","組員","調查員","課員"]},
+    7:{range:"警正四階至三階",examples:["第七序列警務員","督察員","警備隊長","偵查隊副隊長等"]},
+    6:{range:"警正二階為主",examples:["警務正","分局組長","偵查隊長","主任","專員等"]},
+    5:{range:"警正二階至一階為主",examples:["縣市警局科長／隊長","部分分局長","直轄市警局專員等"]},
+    4:{range:"警正一階至警監四階",examples:["直轄市警局分局長／大隊長","縣市警局副局長等"]},
+    3:{range:"警監三階至二階",examples:["警政署組長","警政署勤務指揮中心主任","直轄市警局副局長","刑事警察局副局長"]},
+    2:{range:"警監三階至二階",examples:["警政署主任秘書","警政署督察室主任","警政委員","航空／國道警察局局長","保一／保二總隊長"]},
+    1:{range:"警監一階等高階職務",examples:["警政署副署長","直轄市警察局局長","刑事警察局局長","警專校長"]},
+    0:{range:"最高職務層級",examples:["警政署署長","中央警察大學校長"]}
+  };
+  const metroCities=["臺北市","新北市","桃園市","臺中市","臺南市","高雄市"];
+  function currentSequenceNo(){
+    if(typeof effectiveOfficerSequence==="function"&&["cpu","g3"].includes(s.route))return effectiveOfficerSequence();
+    if(s.careerSequenceNo!==null&&s.careerSequenceNo!==""&&Number.isFinite(Number(s.careerSequenceNo)))return Number(s.careerSequenceNo);
+    const seq=Number(String(s.sequence||"").match(/\d+/)?.[0]);
+    if(seq)return seq;
+    return (s.route==="cpu"||s.route==="g3")?9:11;
+  }
+  function sequenceLabel(n){return Number(n)===0?"最高職務層級":"第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][n]+"序列"}
+  function positionName(){return s.position||s.rank||"警員"}
+  function isSupervisor(){return currentSequenceNo()<=10}
+  function isSeniorSupervisor(){return currentSequenceNo()<=7}
+  function targetPositions(nextSeq){
+    if(nextSeq===3){
+      const metroAgency=metroCities.includes(s.county)?localAgencyName():LOCAL_POLICE_AGENCIES.find(x=>x[4])?.[1]||"臺北市政府警察局";
+      return ["內政部警政署｜組長","內政部警政署勤務指揮中心｜主任","內政部警政署刑事警察局｜副局長",metroAgency+"｜副局長"];
+    }
+    if(nextSeq===2){
+      return ["內政部警政署｜主任秘書","內政部警政署督察室｜主任","內政部警政署｜警政委員","內政部警政署航空警察局｜局長","內政部警政署國道公路警察局｜局長","內政部警政署保安警察第一總隊｜總隊長","內政部警政署保安警察第二總隊｜總隊長"];
+    }
+    if(nextSeq===1){
+      const metros=LOCAL_POLICE_AGENCIES.filter(x=>x[4]).map(x=>x[1]);
+      const metro=metros[Math.floor(Math.random()*metros.length)]||"臺北市政府警察局";
+      return ["內政部警政署｜副署長","內政部警政署刑事警察局｜局長",metro+"｜局長","臺灣警察專科學校｜校長"];
+    }
+    if(nextSeq===0)return ["內政部警政署｜署長","中央警察大學｜校長"];
+
+    const metro=metroCities.includes(s.county);
+    const byUnit={
+      station:{
+        10:["巡佐","警務佐"],9:["巡官","分隊長"],8:["警務員"],7:["第七序列警務員","督察員","警備隊長"],
+        6:metro?["警務正","分局行政組長","分局督察組長","分局交通組長"]:["警務正","分局副分局長","分局組長"],
+        5:metro?["警察局專員","直屬大隊副大隊長"]:["分局長","警察局科長","警察局隊長"],
+        4:metro?["分局長","大隊長"]:["副局長","分局長"]
+      },
+      detective:{
+        10:["小隊長","偵查佐"],9:["偵查員","巡官"],8:["偵查員","警務員"],7:["第七序列警務員","偵查隊副隊長","督察員"],
+        6:["警務正","偵查正","偵查隊長","刑事組長","股長"],5:["刑事警察大隊副大隊長","刑事警察大隊長"],4:["分局長","高階刑事主管"]
+      },
+      traffic:{
+        10:["小隊長","巡佐"],9:["分隊長","巡官"],8:["警務員"],7:["第七序列警務員","督察員","交通業務主管"],
+        6:["警務正","交通組長","交通隊副隊長"],5:["交通隊長","警察局科長"],4:["分局長","大隊長"]
+      }
+    };
+    const generic={
+      10:["巡佐","小隊長","警務佐","偵查佐"],9:["巡官","分隊長","偵查員"],8:["警務員","偵查員","組員"],
+      7:["第七序列警務員","督察員","警備隊長","偵查隊副隊長"],6:["警務正","組長","主任","偵查隊長","專員"],5:["科長","隊長","副主管職","專員"],4:["分局長","大隊長","副局長"]
+    };
+    const arr=(byUnit[s.unit]&&byUnit[s.unit][nextSeq])||generic[nextSeq]||["較高序列職務"];
+    return [...new Set(arr)];
+  }
+  function applyCareerTarget(target,nextSeq){
+    if(nextSeq>3){s.position=target;s.rank=target;return}
+    const parts=String(target).split("｜");
+    if(parts.length>=2){
+      s.unitName=parts[0];
+      s.position=parts.slice(1).join("｜");
+      s.rank=s.position;
+      s.unit="central";
+      s.assignmentType=/刑事警察局/.test(s.unitName)?"central_cib":/警政署/.test(s.unitName)?"central_command":"central_high";
+      s.precinct="";
+      if(/政府警察局|縣警察局|市警察局/.test(s.unitName)){
+        const local=LOCAL_POLICE_AGENCIES.find(x=>x[1]===s.unitName);
+        if(local){s.county=local[0];s.localAgency=local[1]}
+      }else{
+        s.county="中央";
+        s.localAgency=s.unitName;
+      }
+    }else{s.position=target;s.rank=target}
+  }
+  const rankOrder={"警佐三階":1,"警佐二階":2,"警佐一階":3,"警正四階":4,"警正三階":5,"警正二階":6,"警正一階":7,"警監四階":8,"警監三階":9,"警監二階":10,"警監一階":11,"警監特階":12};
+  const minRankForSeq={11:"警佐三階",10:"警佐二階",9:"警佐一階",8:"警佐一階",7:"警正四階",6:"警正二階",5:"警正二階",4:"警正一階",3:"警監三階",2:"警監三階",1:"警監一階",0:"警監特階"};
+  function ensureOfficialRankForSequence(seq){
+    const min=minRankForSeq[seq]; if(!min)return;
+    const cur=rankOrder[s.officialRank]||0;
+    if(cur<(rankOrder[min]||0)){s.officialRank=min;rec("官階銓敘","配合較高序列職務任用，模擬銓敘至 "+min)}
+  }
+
+  function annualAppraisals(n=3){
+    return (s.appraisals||[]).filter(x=>x.type==="年度考績").slice(0,n);
+  }
+  function gradeValue(g){return g==="甲等"?85:g==="乙等"?75:g==="丙等"?60:0}
+  function rewardPoints(){return (s.commend||0)+(s.merit||0)*3+(s.greatMerit||0)*9}
+  function penaltyPoints(){return (s.admonition||0)+(s.demerit||0)*3+(s.greatDemerit||0)*9}
+  function rewardsOutweighPenalties(){return rewardPoints()>penaltyPoints()&&(s.greatDemerit||0)===0}
+  function recentTwoYearAppraisalOK(){
+    const a=annualAppraisals(2);
+    return a.length>=2&&a.some(x=>x.grade==="甲等")&&a.every(x=>x.grade==="甲等"||x.grade==="乙等");
+  }
+  function recentThreeYearExamBonus(){
+    const a=annualAppraisals(3);
+    const eligible=a.length>=3&&a.some(x=>x.grade==="甲等")&&a.every(x=>x.grade==="甲等"||x.grade==="乙等");
+    const avg=eligible?a.reduce((sum,x)=>sum+gradeValue(x.grade),0)/3:0;
+    return {eligible,avg};
+  }
+  function patrolOfficerPerformanceGate(){
+    const score=promotionScore();
+    const latest=(s.appraisals||[])[0]?.grade;
+    const ok=score>=50&&rewardsOutweighPenalties()&&(s.discipline||0)>=80&&latest!=="丙等";
+    return {ok,score,latest:latest||"尚無",reward:rewardPoints(),penalty:penaltyPoints()};
+  }
+  function class1Eligibility(){
+    const pos=/巡佐|小隊長|警務佐|教育班長|偵查佐/.test(positionName());
+    const yrs=typeof serviceYearsExact==="function"?serviceYearsExact():Number(s.year||0);
+    const ok=pos&&yrs>=10&&(s.seq10Days||0)>=1095&&recentTwoYearAppraisalOK()&&rewardsOutweighPenalties()&&s.age<56&&(s.fit||0)>=60&&(s.discipline||0)>=80;
+    return {ok,yrs};
+  }
+  function class3Eligibility(){
+    const criminal=/偵查佐|刑事小隊長/.test(positionName())||s.unit==="detective"||s.assignmentType==="detective";
+    const yrs=typeof serviceYearsExact==="function"?serviceYearsExact():Number(s.year||0);
+    const ok=criminal&&yrs>=6&&(s.seq10Days||0)>=1095&&recentTwoYearAppraisalOK()&&rewardsOutweighPenalties()&&s.age<56&&(s.fit||0)>=60&&(s.discipline||0)>=80;
+    return {ok,yrs};
+  }
+  function class2Eligibility(){
+    const exam=!!(s.promotionExamPassed||s.thirdGradeUpgradePassed);
+    const degree=/大學|研究所/.test(String(s.education||""))||s.route==="tpa"||s.promotionTrainingPassed;
+    const ok=exam&&degree&&rewardsOutweighPenalties()&&s.age<56&&(s.fit||0)>=60&&(s.discipline||0)>=80;
+    return {ok,exam,degree};
+  }
+  function promotionExamEligibility(){
+    const seq=currentSequenceNo()===10;
+    const tenure=(s.seq10Days||0)>=1095;
+    const rankOK=["警佐一階","警正四階","警正三階","警正二階","警正一階"].includes(s.officialRank);
+    return {ok:seq&&tenure&&rankOK&&(s.discipline||0)>=80,seq,tenure,rankOK};
+  }
+  function patrolOfficerQualified(){
+    const p=patrolOfficerPerformanceGate();
+    return !!(s.policeZhengQualified&&s.officerEducationQualified&&p.ok);
+  }
+  function qualificationStatusHTML(){
+    const p=patrolOfficerPerformanceGate();
+    const a1=class1Eligibility(),a2=class2Eligibility(),a3=class3Eligibility(),pe=promotionExamEligibility();
+    return '<div class="qualification-grid">'+
+      '<div><span>績效／資績</span><b class="'+(p.ok?"ok":"no")+'">'+(p.ok?"符合":"未符合")+'</b><small>資績 '+p.score+'｜獎 '+p.reward+'／懲 '+p.penalty+'｜紀律 '+(s.discipline||0)+'</small></div>'+
+      '<div><span>警正官等資格</span><b class="'+(s.policeZhengQualified?"ok":"no")+'">'+(s.policeZhengQualified?"已取得":"未取得")+'</b><small>'+(s.promotionExamPassed?"警正升官等考試及格":s.promotionTrainingPassed?"晉升警正官等訓練及格":s.thirdGradeUpgradePassed?"三等警察特考／訓練完成":"可經升官等考試、晉升訓練或三等考試取得")+'</small></div>'+
+      '<div><span>警大教育／訓練資格</span><b class="'+(s.officerEducationQualified?"ok":"no")+'">'+(s.officerEducationQualified?"已取得":"未取得")+'</b><small>'+(s.sergeantClassPassed?("警佐班"+s.sergeantClassPassed+"完成"):["cpu","g3"].includes(s.route)?"原警官任用路線":"可走警佐班第1、2、3類等管道")+'</small></div>'+
+      '<div><span>巡官甄審資格</span><b class="'+(patrolOfficerQualified()?"ok":"no")+'">'+(patrolOfficerQualified()?"可參加":"尚未具備")+'</b><small>須同時具備官等資格、警大教育資格、績效與獎懲條件</small></div>'+
+      '</div>'+
+      '<div class="qualification-notes">警佐班第1類：'+(a1.ok?"符合":"未符合")+'｜第2類：'+(a2.ok?"符合":"未符合")+'｜第3類（刑事）：'+(a3.ok?"符合":"未符合")+'｜警正升官等考試：'+(pe.ok?"可報考":"尚未符合")+'</div>';
+  }
+  function renderOfficerQualification(){
+    if(!$("officerQualificationBox"))return;
+    const seq=currentSequenceNo();
+    $("officerQualificationPanel").style.display=(seq===10||seq===9||s.policeZhengQualified||s.officerEducationQualified)?"block":"none";
+    $("officerQualificationBox").innerHTML=qualificationStatusHTML();
+    const buttons=[
+      ["promotionExamBtn",promotionExamEligibility().ok&&!s.promotionExamPassed],
+      ["sergeantClass1Btn",class1Eligibility().ok&&!s.sergeantClassPassed],
+      ["sergeantClass2Btn",class2Eligibility().ok&&!s.sergeantClassPassed],
+      ["sergeantClass3Btn",class3Eligibility().ok&&!s.sergeantClassPassed],
+      ["promotionTrainingBtn",currentSequenceNo()===10&&recentTwoYearAppraisalOK()&&rewardsOutweighPenalties()&&!s.promotionTrainingPassed],
+      ["thirdGradeUpgradeBtn",currentSequenceNo()===10&&!s.thirdGradeUpgradePassed]
+    ];
+    buttons.forEach(([id,ok])=>{if($(id))$(id).disabled=!ok});
+  }
+  function takePromotionExam(){
+    const e=promotionExamEligibility();
+    if(!e.ok)return fb("careerMsg","尚未符合警正警察官升官等考試的遊戲化應考條件：需第十序列歷練、警佐一階條件與紀律門檻。",0);
+    s.promotionExamAttempts=(s.promotionExamAttempts||0)+1;
+    const exam=Math.round(Math.min(100,25+(s.law||0)*.3+(s.eng||0)*.1+(s.knowledge||0)*.15+Math.random()*20));
+    const bonus=recentThreeYearExamBonus();
+    const total=Math.round(bonus.eligible&&bonus.avg>exam?exam*.7+bonus.avg*.3:exam);
+    const pass=total>=50&&Math.random()<(total>=70?.9:total>=60?.72:.5);
+    if(pass){s.promotionExamPassed=true;s.policeZhengQualified=true;rec("警正警察官升官等考試","及格｜總成績 "+total);fb("careerMsg","警正警察官升官等考試及格：已取得警正官等任用資格之一；仍須具備警大教育／訓練資格及巡官職缺甄審。",1)}
+    else{rec("警正警察官升官等考試","未錄取｜總成績 "+total);fb("careerMsg","本次升官等考試未錄取，總成績 "+total+"。可累積法學、考績與資績後再報考。",0)}
+    save();render();
+  }
+  function takeSergeantClass(type){
+    const elig=type==="第1類"?class1Eligibility():type==="第2類"?class2Eligibility():class3Eligibility();
+    if(!elig.ok)return fb("careerMsg","目前不符合警佐班"+type+"的模擬報考條件。請檢查職務年資、考績、獎懲、體能及既有考試資格。",0);
+    const score=Math.round(Math.min(100,35+(s.law||0)*.22+(s.knowledge||0)*.18+(s.fit||0)*.08+(promotionScore())*.12+Math.random()*15));
+    const pass=score>=60&&Math.random()<(score>=75?.92:.72);
+    if(pass){
+      s.sergeantClassPassed=type;s.officerEducationQualified=true;
+      rec("中央警察大學警佐班"+type,"錄取並完成訓練｜模擬成績 "+score);
+      fb("careerMsg","警佐班"+type+"完成：已取得遊戲中的警大教育／訓練資格。若尚未取得警正官等資格，仍需完成升官等考試、晉升訓練或其他合格管道。",1);
+    }else{
+      rec("中央警察大學警佐班"+type,"未錄取｜模擬成績 "+score);
+      fb("careerMsg","警佐班"+type+"本次未錄取，模擬成績 "+score+"。",0);
+    }
+    save();render();
+  }
+  function takePromotionTraining(){
+    if(!(currentSequenceNo()===10&&recentTwoYearAppraisalOK()&&rewardsOutweighPenalties()))return fb("careerMsg","尚未達晉升警正官等訓練之遊戲化遴選門檻。",0);
+    const chance=Math.min(.9,.25+promotionScore()/120);
+    if(Math.random()<chance){s.promotionTrainingPassed=true;s.policeZhengQualified=true;rec("晉升警正官等訓練","薦送並訓練及格");fb("careerMsg","晉升警正官等訓練及格：取得警正官等資格之一。",1)}
+    else fb("careerMsg","本次未獲薦送／錄取，請繼續累積資績與考績。",0);
+    save();render();
+  }
+  function takeThirdGradeUpgrade(){
+    if(currentSequenceNo()!==10)return fb("careerMsg","目前不是基層幹部升巡官階段。",0);
+    const score=Math.round(Math.min(100,30+(s.law||0)*.28+(s.eng||0)*.12+(s.fit||0)*.08+(s.knowledge||0)*.12+Math.random()*15));
+    if(score>=65){s.thirdGradeUpgradePassed=true;s.policeZhengQualified=true;s.officerEducationQualified=true;rec("三等警察特考／訓練","完成｜模擬成績 "+score);fb("careerMsg","完成三等警察特考及相應教育／實務訓練：遊戲中視為同時具備警正官等與警官教育資格。",1)}
+    else{rec("三等警察特考","未通過｜模擬成績 "+score);fb("careerMsg","本次三等警察特考未通過，模擬成績 "+score+"。",0)}
+    save();render();
+  }
+
+  const systemTopics=[
+    ["警察任務","警察依法維持公共秩序、保護社會安全、防止危害並促進人民福利。遊戲中會反映為治安、交通、為民服務與危害防止。"],
+    ["共同勤務","共同勤務常見方式包含巡邏、臨檢、守望、值班、備勤等；不同勤務會改變事件類型與體力消耗。"],
+    ["警察體系","中央由內政部警政署辦理全國警察行政；地方警察局下設科、室、中心、直屬隊、分局、分駐（派出）所與警勤區。"],
+    ["官等與職務","警察官等分警監、警正、警佐；實際領導層級以職務配階與職位為核心，職務與官等不是完全相同概念。"],["基層幹部內陞巡官","巡佐等基層幹部不是資績到了就直接變巡官。遊戲加入警正官等資格、警大教育／訓練資格、考績與獎懲門檻；可透過警正升官等考試、晉升警正官等訓練、三等警察特考及中央警察大學警佐班第1、2、3類等管道累積資格。"],
+    ["勤務指揮中心","勤務指揮中心處理重大治安、交通、災害、聚眾活動與110報案之接報、指揮、派遣、管制與通報。"],
+    ["刑事警察","刑事警察核心包含犯罪預防、偵查、情資分析、鑑識支援及重大刑案、組織犯罪、科技犯罪等偵防工作。"],
+    ["督察與考核","督察體系涉及勤務督導、風紀、考核與特種勤務；主管職也須承擔部屬考核監督責任。"],
+    ["全國警察組織","遊戲已擴展至全臺22個地方警察機關；直轄市及縣市警察局下設科、室、中心、直屬隊、分局或警察所、分駐（派出）所等。臺北市保留較完整的14分局與派出所資料。"],["警官初任與歷練","警大／三等警官線分發至地方警察機關後，會先在地方組、室、中心、隊或分局體系歷練；高階後可跨機關歷練，進入警政署、刑事警察局、航空警察局、國道公路警察局、保安警察總隊等中央體系。"],["派出所層級","派出所不是抽象單位。臺北市各分局轄內有不同派出所／駐在所；遊戲會保存實際派出所名稱，並讓110、值班、巡邏、失蹤、家暴、詐欺、竊盜、交通事故與為民服務等勤務跟著該所生涯紀錄走。"]
+  ];
+  const crimeTopics=[
+    ["日常活動理論","犯罪風險可從「有動機者、合適標的、缺乏有效監控」同時出現理解。遊戲中加強照明、巡邏與守望可降低部分事件機率。"],
+    ["差別接觸理論","偏差與犯罪行為可經由與他人互動、學習態度與技巧而形成；少年與團體犯罪事件會出現相關選項。"],
+    ["緊張理論","個人面對目標與合法手段落差、壓力與挫折時，可能增加偏差風險；處置上需注意社會背景而非只看表面行為。"],
+    ["社會解組理論","社區凝聚、非正式控制與環境穩定度會影響犯罪；不同縣市、區域與社區設定可呈現不同案件結構。"],
+    ["嚇阻理論","法律制裁的確定性、迅速性與適度性會影響行為選擇。遊戲不以『越重越好』，而重視合法、可預期與一致執法。"],
+    ["破窗理論","環境失序與輕微違序可能影響居民安全感與公共秩序，但政策運用仍須兼顧比例、人權與避免過度執法。"]
+  ];
+  const quizzes=[
+    ["下列何者最接近警察共同勤務中的「守望」？",["在固定衝要地點警戒、受理報告並協助交通","只在辦公室批公文","專門進行刑事鑑識"],0],
+    ["日常活動理論強調犯罪事件較可能在何種條件聚合時出現？",["有動機者、合適標的、缺乏有效監控","只有高失業率","只有刑罰過輕"],0],
+    ["警察官等主要區分為？",["警監、警正、警佐","甲、乙、丙","署、局、分局"],0],
+    ["勤務指揮中心的核心功能之一是？",["110報案接報、派遣與管制","審理刑事判決","核發大學學位"],0],
+    ["主管面對部屬疑似違紀，較適當的管理方向是？",["保全事證、依程序查處並避免包庇或預斷","先公開羞辱部屬","完全不留下紀錄"],0],
+    ["社會解組理論較關注哪一層面的犯罪條件？",["社區結構、凝聚與非正式社會控制","單一基因因素","純粹刑罰長度"],0],
+    ["刑事警察工作較接近下列何者？",["犯罪偵查、情資、鑑識與重大刑案偵防","只負責道路標線","只負責戶籍登記"],0],
+    ["警察職務配階的主要目的之一是？",["形成層級領導並利於指揮監督","取消所有主管職","讓所有職務工作完全相同"],0]
+  ];
+  let currentQuiz=null;
+
+  const dutyModes=[
+    ["patrol","🚓 巡邏","機動巡視、處理臨時事故與110派案"],
+    ["inspection","🔎 臨檢","依法對場所、交通工具或人員實施查察；合法性與比例原則影響考核"],
+    ["watch","👁️ 守望","在治安要點、交通衝要或特定處所警戒與受理報告"],
+    ["desk","☎️ 值班","派出所值班台受理報案、民眾求助、通報與案件初處"],
+    ["standby","🧭 備勤","保持機動警力，支援重大事故、聚眾、災害與臨時勤務"]
+  ];
+  const modeDuties={
+    patrol:[
+      ["巡邏發現可疑機車","深夜巡邏發現無牌機車反覆繞行住宅區。",[["保持觀察並依具體事實依法攔查",16,4,-7],["沒有任何理由直接搜索車廂",3,-7,-6],["完全忽略民眾報案",2,-5,-1]]],
+      ["巡邏遇民眾路倒","路旁有人倒地，無法立即確認是否酒醉或身體不適。",[["先確認安全與生命徵象並通知救護",18,5,-8],["直接認定酒醉後離開",3,-6,-2],["拍照後上網嘲諷",1,-10,-1]]]
+    ],
+    inspection:[
+      ["夜間場所臨檢","治安熱點場所依勤務計畫實施臨檢。",[["說明勤務、依法查察並記錄異常情形",17,4,-8],["無差別翻查所有私人隨身物品",3,-8,-9],["未到場卻填寫已完成",1,-10,-1]]],
+      ["車輛攔查","客觀跡象顯示前車可能有危險駕駛情形。",[["選安全地點攔停並依程序查證",17,4,-7],["在高速車流中突然逼停",3,-8,-12],["沒有任何紀錄就放棄",5,-3,-2]]]
+    ],
+    watch:[
+      ["金融機構守望","詐騙高風險時段於金融機構周邊執行守望。",[["主動注意異常提領與民眾求助並保持通報",15,4,-5],["離開守望點處理私人事情",2,-8,-1],["看到疑似被害人也不詢問",4,-4,-2]]],
+      ["校園周邊守望","放學時段學生與家長人車混雜。",[["兼顧交通安全與可疑狀況，必要時協助疏導",15,5,-5],["只站在遠處滑手機",3,-6,-1],["任意盤查所有學生",4,-5,-4]]]
+    ],
+    desk:[
+      ["值班受理詐騙報案","民眾到所稱網路購物遭騙並攜帶轉帳紀錄。",[["完整受理、保全資料並提供必要防詐協助",17,6,-5],["嫌金額太小拒絕受理",2,-9,-1],["要求民眾自己找賣家",3,-7,-1]]],
+      ["值班台民眾求助","失智長者被熱心民眾帶至派出所，但身上無證件。",[["先安置照護並透過系統與家屬協尋",16,6,-4],["要求長者自己離開",1,-10,-1],["放在門口不處理",2,-9,-1]]]
+    ],
+    standby:[
+      ["重大事故支援","轄區發生大型事故，勤務中心要求備勤警力立即支援。",[["依指揮快速整備並到場執行分工",18,5,-10],["不回應無線電",1,-10,-1],["未經協調自行改變任務",5,-5,-5]]],
+      ["聚眾事件備勤","大型活動現場人數快速增加，需要機動警力待命。",[["整備裝備、保持通聯並依現場指揮機動支援",17,5,-8],["擅自脫隊",2,-9,-2],["散布未證實消息造成恐慌",2,-8,-2]]]
+    ]
+  };
+
+  const unitDuties={
+    station:[
+      ["110糾紛派遣","勤務中心通報轄內住宅有人爭吵並有摔物聲，現場情況尚未明確。",[["先確認安全、分隔當事人並依現場事實處置",18,5,-8],["未查明就直接認定一方違法",4,-6,-5],["以私人糾紛為由拒不到場",1,-10,-1]]],
+      ["銀行疑似詐騙","銀行行員通報長者準備提領大額現金，說詞疑似受到投資話術影響。",[["到場查證、了解資金用途並進行防詐關懷",18,6,-6],["嫌麻煩請行員自行處理",3,-8,-1],["未經同意公開當事人資料",2,-8,-2]]],
+      ["失蹤人口協尋","家屬到所報案，成年失智家人外出後失去聯繫。",[["完整受理、確認特徵與可能動線並啟動協尋",19,6,-7],["請家屬隔天再來",2,-9,-1],["只口頭記下姓名不建資料",3,-7,-1]]],
+      ["交通事故初處","轄內巷口發生碰撞，有一方主訴頭暈且車流受阻。",[["先確認傷勢、通知救護並保全現場與疏導",18,5,-8],["先爭論肇責才決定是否救護",4,-6,-5],["要求雙方自行離開",3,-7,-2]]],
+      ["通緝犯查獲","巡邏盤查時系統顯示對方疑似為通緝人口。",[["保持安全、再次確認身分並依法處理與通報",19,6,-9],["未確認身分就放人",4,-7,-2],["在無必要情況公開拍攝嘲諷",2,-8,-2]]],
+
+      ["噪音陳情","深夜住宅區多次陳情樓上持續喧鬧，雙方鄰居已互相叫罵。",[["先分開雙方、確認事實並依法勸止與紀錄",15,4,-6],["要求報案人自己忍耐",3,-5,-2],["未確認事實就對其中一方開罰",5,-4,-4]]],
+      ["超商竊盜","店員發現商品遭竊，監視器拍到可疑男子離店。",[["保全影像、確認時間線、詢問店員與通報特徵",17,5,-7],["直接上網公開嫌疑人照片",4,-6,-3],["請店家自行處理",2,-7,-1]]],
+      ["精神危機協助","民眾在路旁情緒極度不穩，家屬表示近期狀況反覆。",[["先確保現場安全、降低刺激並聯繫必要醫療或支援",18,6,-9],["嘲諷對方要他冷靜",2,-8,-2],["只要求家屬帶走，不做安全評估",5,-5,-3]]],
+      ["可疑車輛","住宅巷內有陌生車輛長時間停留，居民擔心遭勘查住宅。",[["先查明合理事實、觀察情況並依法處理",14,3,-5],["無理由直接搜索車內",3,-7,-6],["完全不理會報案",2,-5,-1]]]
+    ],
+    traffic:[
+      ["A2交通事故","兩車路口碰撞無人當場送醫，但雙方對號誌說法不同。",[["保全現場資料、疏導交通並依程序紀錄",17,5,-8],["替熟識駕駛直接判定肇責",2,-9,-4],["只交換電話就離開",4,-6,-2]]],
+      ["大型活動交管","演唱會散場造成大量人車潮，公車與行人動線衝突。",[["依交維計畫分流並保留救護通道",18,5,-10],["臨時封路但不通報任何單位",5,-5,-7],["放任車流自行消化",4,-4,-3]]],
+      ["疑似危險駕駛","快速道路有車輛多次急切車道，引發多名用路人報案。",[["通報位置、保持安全距離並協調前方警力",16,4,-9],["為追上目標不顧安全高速穿梭",4,-6,-12],["不紀錄直接結案",2,-6,-1]]],
+      ["施工路段壅塞","道路施工造成尖峰回堵並影響救護車通行。",[["立即調整交通疏導並與施工單位協調動線",16,4,-8],["只開單不處理壅塞",6,-2,-5],["自行離開責任區",2,-7,-2]]]
+    ],
+    detective:[
+      ["連續住宅竊盜","轄區近期發生多起手法相似住宅竊案。",[["建立案件關聯、比對時空與影像並依法調查",19,6,-9],["只看單一案件不做串聯",7,-2,-5],["先向媒體公布未確認嫌疑人姓名",2,-8,-3]]],
+      ["詐欺機房線索","多起被害案件指向同一批通訊與金流線索。",[["整合被害資料、金流與數位線索，依法聲請必要程序",20,6,-10],["未核實就衝往私人處所搜索",3,-9,-9],["只處理其中一名被害人",7,-2,-4]]],
+      ["重大傷害案","深夜鬥毆造成重傷，現場證人說法不一且監視器很多。",[["先保全證據、分流訪談證人並建立時間線",19,5,-10],["讓所有證人一起討論後再做筆錄",4,-6,-5],["只採信第一個人的說法",5,-5,-4]]],
+      ["網路交易詐欺","被害人提供對話、匯款與平台帳號資料。",[["完整保存數位資料並串聯相關帳號與被害案件",18,5,-7],["要求被害人刪除所有聊天紀錄",1,-9,-1],["直接認定平台一定有責任",5,-4,-2]]]
+    ],
+    security:[
+      ["大型陳情活動","群眾於政府機關前集結，現場情緒升高但尚未發生暴力。",[["區隔安全空間、保持溝通並依比例原則處置",18,6,-10],["因口號刺耳立即強制驅離所有人",3,-8,-12],["完全取消警力配置",4,-5,-2]]],
+      ["重要設施警戒","重要設施收到可疑威脅訊息，真偽未明。",[["提升警戒、協調專業單位並維持必要通報",18,5,-9],["公開未核實細節造成恐慌",3,-7,-4],["完全忽略威脅",2,-8,-1]]],
+      ["大型賽事維安","球賽散場雙方球迷互嗆，有零星推擠。",[["分隔人流、調整出口並派機動警力注意衝突點",17,5,-9],["把全部球迷視為嫌疑人盤查",4,-6,-10],["撤離所有警力",2,-7,-1]]]
+    ],
+    cyber:[
+      ["釣魚網站通報","多名民眾反映收到偽冒銀行簡訊並輸入帳密。",[["彙整網址、時間、受害資料並啟動跨單位通報",19,6,-7],["要求民眾不要報案",2,-8,-1],["直接刪除民眾手機所有資料",2,-8,-2]]],
+      ["帳號遭接管","被害人社群帳號遭接管後向親友借款。",[["保全登入與對話證據、確認金流並協助防止擴大",18,5,-7],["只叫被害人換手機",4,-4,-2],["公開被害人帳密協助查案",1,-10,-2]]],
+      ["企業勒索軟體報案","公司多台電腦無法使用並收到勒索訊息。",[["先隔離受影響系統、保全數位跡證並協調專業處理",20,6,-8],["立即刪除所有紀錄",2,-9,-2],["要求直接付款就好",1,-10,-1]]]
+    ],
+    admin:[
+      ["民眾陳情逾期","分局有數件人民陳情即將超過回覆期限。",[["盤點案件、分派承辦並追蹤時效與品質",16,4,-4],["把日期改掉避免逾期",1,-10,-1],["不管時效",3,-6,-1]]],
+      ["勤務統計異常","本月勤務統計與各所回報數字不一致。",[["比對原始資料、確認差異原因再修正",15,3,-3],["直接挑最好看的數字上報",1,-10,-1],["刪除異常資料不說明",2,-8,-1]]],
+      ["教育訓練規劃","新制上路，需要安排第一線同仁教育訓練。",[["整理重點、安排梯次並蒐集實務問題回饋",16,4,-4],["只寄一封信就當完成訓練",5,-3,-1],["完全不通知外勤",2,-7,-1]]]
+    ],
+    highway:[
+      ["國道連環事故","尖峰時段多車追撞，部分車道受阻。",[["先建立安全緩衝、救援、交管並持續回報",20,6,-12],["直接走進車流中不做警示",2,-9,-15],["只處理最前方一車",5,-5,-7]]],
+      ["掉落物通報","國道路段有大型掉落物，後方車流快速接近。",[["先警示與減速車流，再協調安全排除",18,5,-9],["徒手立即衝入車道搬運",2,-8,-15],["等待自然被撞走",1,-10,-2]]]
+    ],
+    rail:[
+      ["月台糾紛","旅客因排隊爭執推擠，列車即將進站。",[["先將衝突人員帶離月台邊緣並分隔處理",18,5,-7],["讓雙方繼續在月台邊爭論",3,-7,-4],["要求整個月台所有人離站",5,-4,-6]]],
+      ["列車遺失物","旅客稱重要物品遺留列車，列車已駛往下一站。",[["確認車次、座位與特徵並協調站點查找",14,4,-4],["直接說找不到",2,-5,-1],["要求旅客自行上軌道找",1,-10,-1]]]
+    ],
+    airport:[
+      ["航廈可疑行李","航廈公共區域出現長時間無人認領行李。",[["建立安全範圍並通知專業安檢單位處理",19,6,-8],["自行打開翻找",2,-9,-8],["完全不理會",1,-10,-1]]],
+      ["旅客證件爭議","旅客因證件問題與航空公司人員激烈爭執。",[["先隔離衝突、確認身分與權責並協調相關單位",16,4,-6],["未查明就拘捕",3,-7,-7],["只叫航空公司自行處理",5,-4,-2]]]
+    ]
+  };
+
+
+  // Expanded scenario deck: 18 work/community categories × 10 situations + 10 family/life events.
+  const scenarioBank=[
+    {pool:"station",kind:"民眾服務",scenes:[
+      ["遺失手機協尋","民眾在轉乘途中遺失手機，提供最近定位與聯絡資料"],["住家噪音反覆陳情","住戶稱深夜噪音已持續多日，雙方都提出不同說法"],["停車糾紛","民眾稱車輛遭堵住，現場雙方情緒逐漸升高"],["拾得物交付","民眾拾獲皮夾送到派出所，內有證件與現金"],["店家求助","店員表示顧客疑似身體不適，同行者已離開"],["鄰里界址爭執","鄰居因公共空間使用問題互相指責並要求警方主持公道"],["公車站口角","候車民眾因排隊發生推擠，雙方要求警方處理"],["街頭物品遭竊","民眾稱停放在騎樓的物品不見，附近店家有監視器"],["長者迷途","熱心民眾陪同一名無法清楚說明住址的長者到所"],["外籍旅客求助","旅客表示證件與錢包遺失，語言溝通不易"]]},
+    {pool:"station",kind:"詐欺防制",scenes:[
+      ["假投資面交","長者準備將存款交給自稱投資顧問的人，家屬來電求助"],["假檢警來電","民眾接獲假冒公務機關電話，對方要求交付金融卡"],["ATM提領異常","銀行通報有人頻繁提領，身旁另有可疑人士指示操作"],["網購付款爭議","買家匯款後賣家失聯，聊天紀錄與交易資料仍保存完整"],["假交友投資","被害人稱網友鼓吹匯款投資，已分多次轉帳"],["解除分期詐騙","民眾依陌生來電指示操作網銀，帳戶出現不明交易"],["冒名親友借款","長者收到熟人帳號訊息要求緊急匯款，尚未付款"],["疑似車手取款","超商店員發現有人反覆提領並依電話指示交付現金"],["求職帳戶遭利用","青年稱求職時交出帳戶，後收到銀行警示通知"],["假客服遠端操控","被害人依指示安裝遠端軟體，手機畫面出現轉帳操作"]]},
+    {pool:"station",kind:"家庭與婦幼",scenes:[
+      ["家庭暴力通報","鄰居通報屋內有呼救聲，當事人表示不想讓家人知道"],["兒少疑似受傷","學校通報學生身上有不明傷勢，家長說法與孩子不一致"],["親權交接衝突","家長在約定交接地點爭吵，孩子在場受到驚嚇"],["高風險家暴追蹤","既有高風險家庭未依約回覆，訪查時屋內有人但拒絕開門"],["長者照顧疏忽","鄰居反映獨居長者多日未出門且送餐未領取"],["校園霸凌求助","學生與家長到所反映網路及校園持續遭排擠"],["疑似跟蹤騷擾","民眾稱前伴侶近期多次在住處附近等候並傳訊"],["家屬失聯爭執","家人因照顧安排起爭執，其中一人情緒激動摔物"],["兒少離家未歸","家長報案稱孩子與家人爭吵後離家，尚未聯繫上"],["保護令諮詢","民眾詢問保護令與安全協助，擔心返家後再受威脅"]]},
+    {pool:"station",kind:"失蹤與關懷",scenes:[
+      ["失智長者走失","家屬提供照片與衣著，長者離家後已數小時未返"],["學生放學未歸","家長報案稱學生未依平日路線返家，手機暫時關機"],["身心障礙者迷途","民眾陪同一名需要協助者到所，對方無法說明聯絡方式"],["登山者逾時未返","家屬稱親友未按計畫下山，最後定位在山區步道"],["失聯友人安全確認","友人收到令人擔心的訊息後失去聯絡，提供可能地址"],["醫院病患離院","醫療院所通報需協助照護的病患自行離院"],["走失幼童","賣場人員發現幼童獨自徘徊，暫時找不到同行家人"],["外籍移工失聯","雇主與同住者均無法聯繫一名近日失聯的移工"],["家屬不知去向","家人爭執後離家，親友擔心其身心安全"],["疑似落水通報","民眾通報河岸遺留衣物與個人物品，未見當事人"]]},
+    {pool:"traffic",kind:"交通事故",scenes:[
+      ["行人路口事故","行人遭車輛擦撞倒地，尖峰車流影響救護動線"],["機車自摔","雨天路面濕滑，騎士受傷且後方車流接近"],["肇事逃逸","目擊者提供部分車牌，傷者已由救護人員送醫"],["酒後駕車疑慮","駕駛行車不穩並有酒味，同行者要求警方不要處理"],["無照駕駛事故","事故當事人無法提出有效駕照，車輛停在主要道路"],["路口號誌故障","號誌全黑造成車流混亂，已有民眾差點發生碰撞"],["大型車視線死角事故","大型車轉彎與機車發生碰撞，現場有人受困"],["校門口擦撞","上放學時段兩車碰撞，家長與學生聚集路旁"],["道路障礙物","民眾通報車道散落貨物，車輛緊急閃避"],["事故雙方爭執","雙方對號誌與車速說法不一，圍觀民眾持續增加"]]},
+    {pool:"traffic",kind:"道路與疏導",scenes:[
+      ["救護車受阻","尖峰車陣阻礙救護車通行，前方路口正在回堵"],["施工告示不足","道路施工標示遭風吹倒，駕駛突然煞車造成險象"],["校園周邊違停","接送車輛占用通學步道，學生被迫走入車道"],["活動散場壅塞","大型活動散場人車交織，行人穿越處秩序混亂"],["鐵路平交道故障","平交道警示設備異常，駕駛仍持續接近"],["淹水封路","豪雨造成路面積水加深，民眾試圖駕車通過"],["路樹倒塌","強風吹倒路樹占用車道，附近仍有電線垂落"],["遊覽車故障","載有乘客的遊覽車停在路肩，周邊車速很快"],["違規競速陳情","居民多次通報深夜疑似競速，路口有監視器"],["公車站人潮","臨時改道使候車人潮聚集到狹窄路段"]]},
+    {pool:"station",kind:"現場治安",scenes:[
+      ["住宅竊盜現場","住戶返家發現門窗遭破壞，尚不確定是否仍有人在內"],["超商竊盜爭議","店員攔下疑似未付款顧客，雙方對商品狀況各執一詞"],["街頭鬥毆","公園傳出多人打架，報案人稱有人受傷"],["持刀威脅通報","店家稱顧客疑似持刀叫囂，店內仍有民眾"],["夜市推擠衝突","攤商與顧客發生爭執，周圍人群開始聚集"],["公共設施破壞","民眾目擊有人破壞公園設備並提供方向"],["疑似通緝對象","查證資料顯示對象可能遭通緝，身分仍待核對"],["恐嚇訊息報案","民眾提供近期收到的威脅訊息與發送帳號"],["住宅可疑徘徊","居民提供具體時間與影像，陌生人多次查看門鎖"],["槍響疑似通報","多名民眾稱聽到疑似爆裂聲，來源與傷亡尚不明"]]},
+    {pool:"detective",kind:"刑事偵查",scenes:[
+      ["連續住宅竊案","數個街區發生相似侵入手法，時間集中在夜間"],["機車失竊追查","失竊車輛定位曾短暫出現在另一行政區"],["搶奪案目擊資料","被害人與目擊者對嫌疑人衣著描述略有出入"],["詐欺金流串查","多名被害人匯款至關聯帳戶，部分款項仍在流動"],["毒品案件情資","多項線索指向同一處所，來源可信度需要分級確認"],["重大傷害案","現場有多名目擊者與多支監視器，說法彼此矛盾"],["偽造文書報案","公司發現文件簽名疑似遭冒用，原始文件已封存"],["網路販售贓物","平台上出現疑似失竊物品，帳號資料尚待依法調取"],["人口販運求助","當事人表示證件遭扣留且行動受限制，需要安全評估"],["冷案線索重啟","新檢體比對結果與多年未破案件可能相關"]]},
+    {pool:"cyber",kind:"數位犯罪",scenes:[
+      ["釣魚簡訊擴散","多名民眾收到相同偽冒銀行網址並輸入帳密"],["社群帳號遭盜","被害人帳號遭接管後向親友散布借款訊息"],["勒索軟體通報","公司多台電腦遭加密，仍保有部分系統紀錄"],["網路跟蹤騷擾","當事人提供多個帳號傳送的持續威脅訊息"],["兒少不當影像通報","平台通報疑似違法影像，需依法保全並轉專業處理"],["遊戲點數詐欺","被害人購買點數後遭誘導交出序號"],["假冒求職平台","求職者先繳費後發現公司資料遭冒用"],["深偽影像勒索","民眾收到偽造影像及勒索訊息，擔心內容擴散"],["帳戶大量登入異常","企業發現多地登入與資料外傳跡象"],["網路拍賣冒名","賣家身分遭盜用，買家已匯款並提出對話紀錄"]]},
+    {pool:"security",kind:"大型活動維安",scenes:[
+      ["大型陳情活動","群眾於政府機關前集結，現場情緒升高但尚無暴力"],["球賽散場推擠","不同球迷在出口互嗆，通道逐漸壅塞"],["跨年人潮管制","主要道路人潮接近容量，部分出入口受阻"],["宗教遶境交管","隊伍通過狹窄道路，救護車動線需要保持"],["重要人士維安","活動路線臨時變動，現場單位須同步更新資訊"],["活動失散兒童","大型活動服務台通報孩童與家長走散"],["舞台設備異常","工作人員發現舞台周邊設備鬆動且觀眾仍在靠近"],["觀眾身體不適","場內有人昏倒，周遭人群阻礙救護人員進入"],["場外衝突升高","活動外圍發生口角，有人開始推擠"],["未證實危安訊息","網路流傳活動遭威脅消息，尚未確認真偽"]]},
+    {pool:"station",kind:"災害與救援",scenes:[
+      ["颱風撤離協助","低窪地區水位上升，仍有居民拒絕離開"],["地震建物受損","民眾通報大樓外牆剝落，住戶仍持續進出"],["土石流警戒","山區道路收到警戒通知，部分居民尚未完成撤離"],["淹水受困","地下室有人受困，水位持續上升且電力不穩"],["停電交通混亂","大範圍停電使主要路口號誌失效"],["火災周邊封鎖","消防人員正在救災，圍觀民眾靠近現場"],["避難所糾紛","安置居民因物資分配發生爭執"],["災後失聯查訪","災區住戶無法聯絡，家屬提供可能居住地址"],["道路坍方","山路坍方阻斷通行，附近仍有車輛等待通過"],["急需藥物送達","道路中斷，慢性病患者急需藥物與醫療協助"]]},
+    {pool:"admin",kind:"內部勤務管理",scenes:[
+      ["勤務表人力不足","同時有同仁請假，轄區大型活動與例行勤務都需支援"],["裝備盤點短少","交接時發現裝備數量與紀錄不符"],["新人帶教安排","新進同仁即將獨立輪值，近期尚未完成情境訓練"],["資料回覆期限","分局收到限期彙整資料，需要向各單位查核"],["系統故障通報","報案資料系統短暫無法登入，現場仍有民眾等候"],["跨所支援協調","鄰近單位突發勤務請求支援，本所人力也偏緊"],["勤務紀律提醒","抽查發現巡簽紀錄有缺漏，需確認事實與補正程序"],["教育訓練規劃","新規定即將實施，需要安排輪班同仁完成訓練"],["公務車保養逾期","車輛排定保養時間已到，近期派車需求增加"],["同仁過勞反映","同仁反映連續夜勤後精神不濟，仍有勤務待執行"]]},
+    {pool:"admin",kind:"民眾申訴與媒體",scenes:[
+      ["執法影片上網","影片只呈現執法片段，留言已出現不同版本說法"],["民眾具名申訴","民眾申訴受理過程遭不當對待，並提出錄音"],["案件處理逾期","民眾多次詢問案件進度，承辦紀錄顯示尚待補件"],["新聞詢問案情","記者詢問偵查中案件細節與嫌疑人資料"],["網路不實傳言","社群流傳未證實治安消息，引發居民恐慌"],["申訴人情緒激動","民眾在服務台提高音量並要求立刻見主管"],["執勤影像調閱","民眾要求取得執法影像，需先確認申請與個資程序"],["同仁疑似違紀","督察通知有勤務紀律疑義，需要保全資料釐清"],["個資誤傳通報","案件資料疑似寄錯對象，承辦人立即回報"],["公開資訊更正","官方貼文出現時間錯誤，民眾已截圖轉傳"]]},
+    {pool:"station",kind:"毒品與公共安全",scenes:[
+      ["公共場所疑似施用","公園巡查發現民眾身體不適，旁有不明物品"],["校園周邊疑似販售","校方提供具體時間地點與影像，希望警方協助查證"],["疑似毒駕事故","駕駛反應遲緩且車輛擦撞路邊設施"],["危險化學物品","倉庫外有不明容器破損，附近居民反映刺鼻氣味"],["爆裂物可疑通報","車站附近發現可疑包裹，尚未確認內容物"],["槍械情資查證","線報稱有人持有槍械，來源與時效仍待研判"],["非法賭博陳情","居民反映住宅出入複雜且深夜噪音頻繁"],["違禁品包裹","物流業者發現包裹內容疑似違禁品並通報"],["工地危險物品","工地發現疑似未妥善保存的危險物質"],["公共場所疑似販毒","民眾反映某處短暫接觸頻繁，尚無明確違法事證"]]},
+    {pool:"station",kind:"社區安全與弱勢",scenes:[
+      ["獨居長者未應門","送餐志工多日未見長者，門內電話持續響鈴"],["遊民身體不適","民眾通報街友倒臥騎樓，天候寒冷"],["精神危機求助","家屬表示親友情緒失控並有自傷言語"],["街友與店家糾紛","店家反映有人長期停留，現場雙方互相指責"],["聽語障人士報案","當事人以文字表示遭人騷擾，需要溝通協助"],["身障者交通受阻","施工占用無障礙通道，輪椅使用者無法通行"],["寒流避寒協助","低溫期間發現長者衣著不足且無家屬陪同"],["疑似自傷危機","親友通報收到告別訊息，提供可能所在位置"],["動物傷人通報","民眾遭犬隻咬傷，飼主與目擊者說法不同"],["社區反覆報案","同一地點頻繁發生糾紛，居民要求固定巡守"]]},
+    {pool:"highway",kind:"國道勤務",scenes:[
+      ["國道多車追撞","尖峰時段多車事故占用車道，有人受傷且後方回堵"],["路肩故障車","故障車輛停在視線不佳路段，乘客仍在車內"],["國道掉落物","大型物品落在車道上，後方車流快速接近"],["國道逆向通報","駕駛通報前方疑似有車輛逆向行駛"],["隧道車輛故障","隧道內車輛停駛並冒煙，後方車流尚未減速"],["連假壅塞事故","長途車潮中發生擦撞，車道可用空間有限"],["危險變換車道","多名駕駛通報同一車輛連續危險切換車道"],["施工區事故","施工緩撞車附近發生碰撞，工作人員仍在路面"],["國道行人通報","路肩發現行人行走，周邊車速很快"],["大型車輪胎脫落","貨車輪胎脫落後滾入車道，事故風險升高"]]},
+    {pool:"rail",kind:"鐵路與車站勤務",scenes:[
+      ["月台推擠糾紛","旅客因排隊爭執，列車即將進站"],["列車遺失物","旅客稱重要物品留在已駛離的列車上"],["車站旅客迷途","長者在車站徘徊，無法說明目的地"],["月台跌落通報","站務人員通報有人跌落月台，列車仍在接近"],["車廂口角","列車乘客因座位問題爭執並影響其他旅客"],["閘門逃票爭議","旅客與站務員對票卡紀錄有不同說法"],["站外人潮壅塞","活動散場人群回堵到道路與公車站"],["疑似跟蹤求助","旅客表示離站後持續被陌生人尾隨"],["車站可疑包裹","候車區發現無人看管包裹"],["列車延誤衝突","列車延誤引發旅客與服務人員口角"]]},
+    {pool:"airport",kind:"航空警察勤務",scenes:[
+      ["航廈可疑行李","公共區域出現長時間無人認領行李"],["旅客證件爭議","旅客因證件與航空公司人員發生激烈爭執"],["登機門衝突","旅客因登機順序推擠，登機通道逐漸壅塞"],["失聯旅客求助","家屬在航廈找不到同行長者，班機即將登機"],["行李疑似遭竊","旅客稱託運行李物品短少，提供行李與航班資料"],["航班延誤糾紛","旅客聚集服務櫃台要求說明，現場情緒升高"],["禁區闖入警示","管制區門禁警示響起，原因尚未確認"],["旅客身體不適","旅客在候機區昏倒，周圍人潮妨礙救護"],["冒名接機糾紛","接機人與旅客對身分關係說法不一"],["外籍旅客求援","旅客護照遺失並錯過轉機，溝通需要協助"]]}
+  ];
+  const responseByKind={
+    "民眾服務":["先確認人身安全與實際需求，分別聽取陳述、查證資料並留下處理紀錄","先說明可協助範圍，聯繫相關窗口並回報處理進度","未查明就替一方下結論並結束受理"],
+    "詐欺防制":["先確認是否仍在轉帳、保全對話與金流資料，聯繫金融機構並協助被害人","查明時間、帳戶與聯絡方式，依程序通報並說明後續","責怪被害人自行受騙，拒絕受理"],
+    "家庭與婦幼":["先確保當事人與兒少安全，分開訪談、評估風險並依規定通報及紀錄","聯繫適當支援單位，說明安全資源並依現場狀況回報","把事件當成家務事，未確認安全便離開"],
+    "失蹤與關懷":["立即整理特徵、最後出現時間地點與風險，啟動協尋並持續更新通報","聯繫家屬、醫療院所及相關單位核對線索，完整留下紀錄","要求報案人等候數日，未做初步查詢"],
+    "交通事故":["先設置安全警示、確認傷者並通知救護，再保全現場資料與疏導車流","分工確認當事人與目擊者資料，依流程完成紀錄與通報","先爭論肇責或要求傷者自行離開"],
+    "道路與疏導":["依風險建立安全動線、即時通報並協調權責單位排除危害","先處理最迫切的交通瓶頸，持續回報並保留救援通道","未通報就離開現場或任意改變管制"],
+    "現場治安":["先評估現場危險與傷者需求，呼叫必要支援並依法蒐證、記錄","保持安全距離、確認人員身分與事實後再採取適當措施","未查證就使用強制手段或公開當事人個資"],
+    "刑事偵查":["保全原始證據、分別訪談並交叉比對線索，依法完成後續程序","整理時間線與關聯資料，請主管檢視調查方向","未核實即認定嫌疑人或採取未經許可的搜索"],
+    "數位犯罪":["保留原始裝置與數位紀錄、記下時間及帳號，依程序通報專業單位","先協助止付、改密碼或隔離受影響設備，再整理證據","刪除紀錄、公開帳密或要求被害人自行處理"],
+    "大型活動維安":["依現場指揮分隔人流、保留救護通道並持續與主辦及勤務中心通聯","先處理局部壅塞與安全疑慮，再回報調整警力","未評估就全面驅離或擅自撤除警力"],
+    "災害與救援":["先確認生命安全、通報災情並依指揮協助疏散、封路或救援","核對危險區域與替代動線，聯繫消防、區公所及相關單位","忽略警戒資訊或讓民眾進入危險區域"],
+    "內部勤務管理":["核對原始資料、依法定程序分工並顧及同仁安全與勤務負荷","先完成期限內的必要回覆，再追蹤缺漏與後續資源","隱匿錯誤、虛報勤務或要求同仁違規超時"],
+    "民眾申訴與媒體":["保存原始資料、聽取各方說法並依權責統一回覆，保護個資與偵查資訊","先確認事實與回覆期限，將案件交由適當窗口追蹤","未調查就刪除資料、公開個資或對外猜測案情"],
+    "毒品與公共安全":["先確保周遭安全、辨識是否有立即危害並呼叫專業支援，依法保全資料","保持適當距離、核實線索與權責後依指揮處理","未確認就接觸危險物品、公開線報或放任風險"],
+    "社區安全與弱勢":["先確認身體與心理安全，以合宜方式溝通並聯繫家屬、醫療或社福支援","安排同仁陪同、記錄需求並轉介適當資源","嘲諷當事人、強迫離開或未評估安全便結案"],
+    "國道勤務":["先建立警示與安全緩衝，通報位置並與相關單位分工救援及管制","保持安全位置回報車流，等待支援後協調排除","徒步進入高速車道或未設警示即處理"],
+    "鐵路與車站勤務":["先將人員帶離月台邊緣或危險區，通知站務並分隔處理","與站務確認車次、位置及當事人需求後依流程協調","讓衝突持續在危險區或擅自進入管制區"],
+    "航空警察勤務":["先維持安全範圍並通知航警、航站或專業安檢窗口協同處理","確認旅客與航空公司資料，協調權責單位並持續說明","自行開啟可疑物品或未查證就限制旅客行動"]
+  };
+  const expandedDuties=[];
+  scenarioBank.forEach(group=>group.scenes.forEach(([title,detail],i)=>{
+    const r=responseByKind[group.kind];
+    expandedDuties.push([group.kind+"｜"+title,detail+"。",[
+      [r[0],18+(i%3),5+(i%2),-6-(i%5)],
+      [r[1],11+(i%4),1,-3-(i%3)],
+      [r[2],2+(i%3),-7,-2-(i%4)],
+      ["回報勤務中心或主管，請求支援並依指揮分工",16,4,-7]
+    ]]);
+  }));
+  const unitForKind={"民眾服務":"station","詐欺防制":"station","家庭與婦幼":"station","失蹤與關懷":"station","交通事故":"traffic","道路與疏導":"traffic","現場治安":"station","刑事偵查":"detective","數位犯罪":"cyber","大型活動維安":"security","災害與救援":"station","內部勤務管理":"admin","民眾申訴與媒體":"admin","毒品與公共安全":"station","社區安全與弱勢":"station","國道勤務":"highway","鐵路與車站勤務":"rail","航空警察勤務":"airport"};
+  scenarioBank.forEach(group=>{
+    const key=unitForKind[group.kind];
+    if(!unitDuties[key])unitDuties[key]=[];
+    unitDuties[key].push(...expandedDuties.filter(row=>row[0].startsWith(group.kind+"｜")));
+  });
+  const lifeEvents=[
+    ["孩子生日撞上臨時加班","家人提醒今天是孩子生日；勤務中心同時詢問是否能延長值勤。",[["先確認勤務急迫性並與主管協調交接，安排事後補過家庭時間",12,3,-4,0,1],["說明人力狀況，請同事接手非急迫工作後準時返家",10,5,3,-500,2],["不告知家人也不交接，直接失聯離勤",1,-8,-2,0,-4]],"life"],
+    ["連續夜勤睡眠不足","連續夜勤後你注意力下降，隔日仍排有勤務。",[["向主管如實反映疲勞，依規定調整休息與勤務",11,3,6,0,3],["補充休息並確認自身狀況後再執勤",9,1,4,0,2],["隱瞞狀況繼續疲勞駕駛",1,-8,-10,0,-8]],"life"],
+    ["家人突然生病","家人來電表示身體不適，需要你協助安排就醫。",[["先確認是否有急迫危險並聯繫可支援的家人或醫療資源",11,4,3,-1200,3],["依勤務狀況請假或協調代理，妥善交接後陪同就醫",12,5,2,-1800,4],["完全不回覆且不安排任何協助",1,-6,-2,0,-3]],"life"],
+    ["租屋處突發漏水","休假時房東通知住處漏水，可能影響鄰戶與財物。",[["先聯繫房東與鄰戶止損，再保留修繕紀錄",8,2,2,-2500,1],["安排可信任的人先查看，自己完成必要勤務",8,1,1,-800,0],["置之不理造成損害擴大",1,-4,-2,-6000,-3]],"life"],
+    ["同事喪親需要換班","同事家中有喪事，詢問能否協助調整班表。",[["檢視人力後協調互換並完成正式交接",12,6,-3,0,1],["在不影響最低勤務人力下提供替班",10,5,-5,0,0],["私下改班且不通知主管或值班人員",2,-6,-6,0,-2]],"life"],
+    ["休假仍被聯繫","休假期間收到工作訊息，內容是非急迫的例行事項。",[["確認是否急迫，非急件安排上班後依流程處理",9,2,6,0,2],["交代可聯繫的值班窗口後好好休息",10,3,8,0,3],["疲勞中自行處理並漏掉重要細節",3,-3,-5,0,-3]],"life"],
+    ["家庭支出突然增加","家中收到一筆必要醫療支出，近期存款吃緊。",[["盤點收支、使用合法補助或保險並安排預算",9,1,1,-3000,1],["和家人討論分期或延後非必要支出",8,3,1,-1500,1],["借用高利貸或挪用公款",0,-10,-2,-10000,-5]],"life"],
+    ["輪班影響重要約定","輪班表與先前安排的家庭重要活動撞期。",[["提早和主管、同事協調合規換班並完成交接",11,3,4,0,2],["向家人說明勤務變動並另約補行活動",8,4,5,-500,2],["未辦交接就擅離勤務",0,-10,-8,0,-5]],"life"],
+    ["同仁情緒低落","搭檔近期沉默寡言並表示睡眠不好，仍有工作待完成。",[["關心對方狀況，提供支持並協助尋找適當諮詢資源",11,5,-2,0,3],["先確認搭檔能否安全執勤，必要時向主管反映調整",10,3,1,0,2],["公開嘲笑或把私下談話傳給其他人",1,-8,-3,0,-4]],"life"],
+    ["準備考試與勤務衝突","你正在準備升官等考試，但近期加班使讀書時間不足。",[["和主管討論可行的排班安排，固定休息與讀書時段",10,3,3,-500,2],["調整讀書計畫並優先維持睡眠與勤務品質",9,2,5,0,2],["熬夜讀書後帶著疲勞執行高風險勤務",2,-5,-8,0,-6]],"life"]
+  ];
+  lifeEvents.forEach(e=>e[2].push(["先與家人及主管溝通，依現有資源協調安排",10,3,2,0,1]));
+
+  const supervisorEvents=[
+    ["勤務缺員","今晚臨時有2名同仁請假，但轄區仍有大型活動與一般巡邏勤務。",[
+      ["重新評估風險、調整勤務優先順序並協調支援",8,5,4,1],
+      ["要求所有人無條件超時工作且不說明",2,-7,-4,-1],
+      ["取消所有巡邏只保留辦公室人力",3,-5,-5,-1]
+    ]],
+    ["民眾申訴員警態度","民眾具名申訴同仁執法過程態度不佳，並提供部分錄影。",[
+      ["保全資料、聽取雙方說法並依程序查處與回覆",9,4,5,1],
+      ["為保護同仁直接把申訴丟掉",1,-10,-8,-2],
+      ["未調查就先公開處分同仁",3,-6,-4,-1]
+    ]],
+    ["重大案件指揮","轄區同時發生重大事故與群眾聚集，需要跨單位協調。",[
+      ["開設指揮機制、分工警力、保持通報與資源調度",10,6,5,2],
+      ["所有決策都自己做且禁止回報",3,-7,-3,-1],
+      ["離開現場不指定代理人",1,-10,-7,-2]
+    ]],
+    ["部屬疑似違紀","督察單位通知有同仁疑似違反勤務紀律，需要主管配合釐清。",[
+      ["依程序保全資料、迴避偏袒並配合調查",9,2,6,1],
+      ["先通知部屬刪除相關資料",0,-12,-12,-3],
+      ["完全不做任何紀錄",2,-8,-8,-2]
+    ]],
+    ["勤務績效壓力","上級要求改善治安績效，但同仁反映現有勤務已接近負荷上限。",[
+      ["分析案件與勤務成效，調整重點而非只追求數字",8,5,4,1],
+      ["要求同仁灌水數字",0,-12,-10,-3],
+      ["完全拒絕檢討任何績效",3,-5,-4,-1]
+    ]],
+    ["新人帶教","單位分發一批新人，實務經驗不足。",[
+      ["安排資深同仁帶教、案例檢討與漸進式任務",8,7,3,1],
+      ["直接讓新人獨自處理高風險案件",2,-8,-5,-1],
+      ["只要求新人自己看舊資料",4,-3,-2,0]
+    ]],
+    ["媒體關切案件","重大案件引發媒體關注，但偵查仍在進行且資訊尚未完整。",[
+      ["統一窗口、確認可公開資訊並避免影響偵查與隱私",9,3,6,1],
+      ["為搶版面公開未證實細節",1,-9,-8,-2],
+      ["讓不同同仁各自對外說法",3,-5,-6,-1]
+    ]]
+  ];
+  let commandActive=null;
+
+  function addGood(n,reason){
+    s.goodNotes+=n;s.quality=cl(s.quality+n*2);s.disciplineLog.unshift({type:"優蹟",reason,date:rocDateTime()});
+    while(s.goodNotes>=6){s.goodNotes-=6;s.commend++;s.disciplineLog.unshift({type:"嘉獎",reason:"優蹟累積達遊戲獎勵門檻",date:rocDateTime()});rec("獎勵","嘉獎一次")}
+  }
+  function addBad(n,reason){
+    s.badNotes+=n;s.quality=cl(s.quality-n*2);s.discipline=cl(s.discipline-n*4);s.disciplineLog.unshift({type:"劣蹟",reason,date:rocDateTime()});
+    while(s.badNotes>=6){s.badNotes-=6;s.admonition++;s.disciplineLog.unshift({type:"申誡",reason:"劣蹟累積達遊戲懲處門檻",date:rocDateTime()});rec("懲處","申誡一次")}
+  }
+  function exceptionalMerit(reason){
+    s.merit++;s.disciplineLog.unshift({type:"記功",reason,date:rocDateTime()});rec("獎勵","記功一次｜"+reason);
+  }
+
+  function renderAcademy(){
+    if(!$("systemKnowledge"))return;
+    $("knowledgeChip").textContent="知識 "+s.knowledge;
+    $("quizChip").textContent="測驗 "+s.quizCorrect+"/"+s.quizTotal;
+    $("systemKnowledge").innerHTML=systemTopics.map((x,i)=>'<div class="choice-card knowledge-card" data-know="'+i+'"><h3>'+x[0]+'</h3><p>'+x[1]+'</p><div class="meta"><span class="tag">閱讀 +1 知識</span></div></div>').join("");
+    document.querySelectorAll("[data-know]").forEach(e=>e.onclick=()=>{s.knowledge++;e.querySelector(".tag").textContent="✓ 已閱讀";save();renderEnhancements()});
+    $("criminologyCards").innerHTML=crimeTopics.map(x=>'<div class="choice-card"><h3>'+x[0]+'</h3><p>'+x[1]+'</p></div>').join("");
+  }
+  function newQuiz(){
+    currentQuiz=quizzes[Math.floor(Math.random()*quizzes.length)];
+    $("quizQuestion").innerHTML="<b>"+currentQuiz[0]+"</b>";
+    $("quizChoices").innerHTML=currentQuiz[1].map((x,i)=>'<div class="action-card" data-q="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+x+'</strong></div>').join("");
+    $("quizResult").textContent="";$("quizResult").className="feedback";
+    document.querySelectorAll("[data-q]").forEach(e=>e.onclick=()=>answerQuiz(Number(e.dataset.q)));
+  }
+  function answerQuiz(i){
+    if(!currentQuiz)return;
+    s.quizTotal++;
+    if(i===currentQuiz[2]){s.quizCorrect++;s.knowledge+=3;fb("quizResult","答對了，知識 +3。",1)}
+    else fb("quizResult","答錯了，建議回上方資料複習。",0);
+    $("quizChoices").innerHTML="";save();renderEnhancements();
+  }
+
+  function appraisalScore(){
+    let reward=s.commend*1.5+s.merit*4+s.greatMerit*10;
+    let penalty=s.admonition*3+s.demerit*7+s.greatDemerit*18;
+    return cl(Math.round(s.quality*.28+s.service*.22+s.discipline*.28+s.rep*.15+s.commandScore*.07+reward-penalty));
+  }
+  function appraisalGrade(sc){
+    if(sc>=80&&s.greatDemerit===0)return"甲等";
+    if(sc>=65)return"乙等";
+    return"丙等";
+  }
+  function appraisalProgress(){
+    const done=Math.max(0,(s.dutyCount||0)-(s.lastAppraisalDutyCount||0));
+    const needed=Math.max(0,4-done);
+    const d=simNow(),yr=d.getFullYear();
+    const annualReady=d.getMonth()===11&&s.lastAppraisalYear!==yr;
+    return {done,needed,annualReady,yr};
+  }
+  function renderPerformance(){
+    if(!$("commendStat"))return;
+    let score=appraisalScore(),grade=appraisalGrade(score),p=appraisalProgress();
+    $("commendStat").textContent=s.commend;$("meritStat").textContent=s.merit;$("admonitionStat").textContent=s.admonition;$("demeritStat").textContent=s.demerit;
+    $("goodNoteStat").textContent=s.goodNotes;$("badNoteStat").textContent=s.badNotes;$("qualityStat").textContent=s.quality;$("serviceStat").textContent=s.service;$("disciplineStat").textContent=s.discipline;
+    $("appraisalChip").textContent="目前預估："+grade+"（"+score+"）";$("disciplineChip").textContent="紀律分數："+s.discipline;
+
+    let status="";
+    if(!s.unit) status="尚未任職。";
+    else if(p.annualReady) status="已進入12月，可直接辦理 <b>年度考績</b>。";
+    else if(p.done>=4) status="已完成 "+p.done+" 件勤務，可立即辦理一次 <b>階段考績</b>。";
+    else status="快速考績進度："+p.done+"/4 件勤務。再完成 <b>"+p.needed+"</b> 件即可辦理階段考績（約 "+(p.needed*30)+" 個遊戲日）。";
+
+    $("appraisalBox").innerHTML=s.unit?
+      ("依目前資料預估 <b>"+grade+"</b>，綜合分數 "+score+"。<br>"+status+"<br><span class='muted'>為加快遊戲節奏，每4件勤務可辦一次「階段考績」；12月仍保留年度考績。此為遊戲機制，不等同官方考績週期。</span>"):
+      status;
+
+    if($("closeYearBtn")){
+      $("closeYearBtn").textContent=p.annualReady?"辦理年度考績":(p.done>=4?"辦理階段考績":"尚未達考績門檻");
+      $("closeYearBtn").disabled=!p.annualReady&&p.done<4;
+    }
+    if($("appraisalProgress")){
+      $("appraisalProgress").textContent=p.annualReady?"年度考績已開放":("階段考績 "+Math.min(p.done,4)+"/4 件");
+    }
+    $("disciplineHistory").innerHTML=s.disciplineLog.length?s.disciplineLog.slice(0,20).map(x=>'<div class="timeline-item"><b>'+x.type+'</b><span>'+x.reason+"｜"+x.date+'</span></div>').join(""):'<div class="empty-state">目前沒有獎懲紀錄。</div>';
+  }
+  function closeYear(){
+    if(s.retired)return fb("appraisalBox","已退休，不再辦理現職考績。",0);
+    if(!s.unit)return fb("appraisalBox","尚未任職，無法辦理考績。",0);
+    const p=appraisalProgress();
+    if(!p.annualReady&&p.done<4)return fb("appraisalBox","目前尚未達考績門檻，再完成 "+p.needed+" 件勤務即可辦理階段考績。",0);
+
+    let score=appraisalScore(),grade=appraisalGrade(score);
+    const isAnnual=p.annualReady;
+    const type=isAnnual?"年度考績":"階段考績";
+    s.appraisalRounds=(s.appraisalRounds||0)+1;
+    s.appraisals.unshift({year:p.yr-1911,grade,score,type,round:s.appraisalRounds,date:rocDateTime()});
+    s.lastAppraisalDutyCount=s.dutyCount||0;
+
+    if(isAnnual){
+      s.lastAppraisalYear=p.yr;
+      if(grade==="甲等"){s.savings+=s.salary;addGood(2,"年終考績甲等");}
+      else if(grade==="乙等"){s.savings+=Math.round(s.salary*.5);}
+      else {s.reputation=cl(s.reputation-5);}
+    }else{
+      if(grade==="甲等"){addGood(1,"階段考績甲等");s.rep=cl(s.rep+2);}
+      else if(grade==="乙等"){s.rep=cl(s.rep+1);}
+      else {s.rep=cl(s.rep-2);}
+    }
+
+    rec(type,(p.yr-1911)+"年 "+grade+"｜"+score+"分");
+    fb("appraisalBox",type+"完成："+grade+"（"+score+"分）。",grade!=="丙等");
+    save();render();
+  }
+
+  function getDutyPool(){
+    const pool=(unitDuties[s.unit]||[]).slice();
+    // Supervisors receive fewer direct calls and more command decisions.
+    if((s.positionLevel||0)>=3) return pool.slice(0,Math.max(1,Math.ceil(pool.length/2)));
+    return pool.length?pool:D;
+  }
+  function renderDutyModes(){
+    if(!$("dutyModeCards"))return;
+    $("dutyModeCards").innerHTML=dutyModes.map(m=>'<div class="choice-card '+(s.dutyMode===m[0]?"selected":"")+'" data-dmode="'+m[0]+'"><h3>'+m[1]+'</h3><p>'+m[2]+'</p></div>').join("");
+    document.querySelectorAll("[data-dmode]").forEach(e=>e.onclick=()=>{s.dutyMode=e.dataset.dmode;save();render()});
+  }
+  const officeDuties={
+    administration:[
+      ["勤務規劃調整","分局下月巡邏線需要重新規劃，近期陳情與治安熱點有所變化。",[["比對案件、陳情與警力資料後調整勤務",17,4,-5],["沿用舊表不檢查",5,-3,-2],["只看單一陳情就大幅改動所有勤務",6,-3,-4]]],
+      ["議會與陳情資料","分局收到議員索資與市民陳情，需要在期限內彙整回覆。",[["查核承辦單位、時程與法規後完整彙整",16,4,-5],["未查證直接回覆",4,-5,-2],["放到逾期再處理",3,-6,-1]]]
+    ],
+    prevention:[
+      ["失蹤人口協尋管制","轄區新增高風險失蹤人口案件，需要跨所追蹤查尋。",[["彙整資料、確認通報並協調派出所持續查尋",18,5,-6],["只登記不追蹤",4,-5,-2],["把未查證個資公開上網",2,-8,-2]]],
+      ["婦幼安全案件","家暴高風險個案需要檢視訪查與保護措施執行情形。",[["依風險資料協調相關單位並追蹤處置",18,6,-7],["認為只是家務事不處理",2,-9,-1],["未確認就任意揭露當事人資料",2,-8,-2]]]
+    ],
+    security_affairs:[
+      ["重要安全維護任務","轄內重要活動前需完成安全防護與情資彙整。",[["依權責查核風險、彙整情資並完成通報",17,5,-6],["自行散布未證實情資",2,-8,-2],["完全不做前置查核",4,-5,-2]]],
+      ["社會治安調查","近期公共安全事件引發多項情資，需要研判與分類。",[["區分已查證事實與待查情資並依法處理",17,5,-5],["把傳聞當成事實上報",3,-7,-2],["私下保存無關個資作私人用途",1,-10,-2]]]
+    ],
+    civil_defense:[
+      ["城鎮韌性演習整備","分局需要整合民防、義警與防空避難相關演練。",[["核對人力、通聯、避難設施與應變分工",17,5,-6],["只做紙上簽到",4,-5,-2],["未通知協力單位就臨時更改計畫",5,-4,-3]]],
+      ["災害防救協調","豪雨可能造成轄內積淹水，需要預先盤點警民力與封路點。",[["整合災情資訊、警民力與交通替代路線",18,5,-7],["等災情發生才開始找資料",5,-4,-3],["忽略勤務中心通報",2,-7,-1]]]
+    ],
+    traffic_office:[
+      ["大型活動交維計畫","轄內大型活動將造成大量人車潮，需要規劃交維。",[["依道路容量、人流與救護需求規劃分流",18,5,-7],["只增加取締不做動線規劃",6,-3,-4],["未協調就任意封路",4,-6,-5]]],
+      ["交通申訴案件","民眾對交通違規舉發提出申訴，需要調閱資料審核。",[["調閱影像、告發資料與法規後審核",16,4,-4],["因申訴人態度差就直接駁回",2,-8,-2],["不看資料直接撤單",3,-7,-2]]]
+    ]
+  };
+
+  function newAdvancedDuty(){
+    if(s.retired)return toast("已退休，勤務系統已關閉");
+    if(!s.unit)return toast("請先完成單位分發");
+    const unitPool=((officeDuties[s.assignmentType])||(unitDuties[s.unit])||D).slice();
+    const modePool=(modeDuties[s.dutyMode]||modeDuties.patrol).slice();
+    const pool=Math.random()<0.55?modePool.concat(unitPool.slice(0,2)):unitPool.concat(modePool.slice(0,1));
+    active=Math.random()<0.08?lifeEvents[Math.floor(Math.random()*lifeEvents.length)]:pool[Math.floor(Math.random()*pool.length)];
+    $("dutyCase").innerHTML="<b>"+active[0]+"</b><br>"+active[1]+"<br><span class='muted'>"+(s.stationName?("勤務單位："+s.stationName+"｜"):"")+"本月主要勤務："+(dutyModes.find(x=>x[0]===s.dutyMode)?.[1]||"巡邏")+"</span>";
+    $("dutyChoices").innerHTML=active[2].map((c,i)=>'<button type="button" class="action-card" data-advd="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+c[0]+'</strong><p>依安全、合法性、程序與完整性判定。</p></button>').join("");
+    $("dutyResult").textContent="";$("dutyResult").className="feedback";
+    // duty choice click is handled by one stable delegated listener below
+  }
+  function advancedResolve(i){
+    if(s.retired)return toast("已退休，無法繼續勤務");
+    if(!active)return;
+    const c=active[2][i],xp=c[1],rep=c[2],en=c[3];
+    const isLife=active[3]==="life";
+    s.xp+=xp;s.rep=cl(s.rep+rep);s.energy=cl(s.energy+en);s.stress=cl(s.stress+Math.max(0,Math.round(-en*.3)));
+    let healthChange=0;
+    if(isLife){s.savings=Math.max(0,(s.savings||0)+(c[4]||0));healthChange=c[5]||0;}
+    else if((s.energy||0)<=15&&en<=-9)healthChange=-2;
+    else if(xp<=4&&en<=-11)healthChange=-1;
+    s.health=cl((s.health||100)+healthChange);
+    s.dutyCount++;advanceDays(30);
+
+    if(xp>=18){addGood(2,active[0]+"處置優良");s.service=cl(s.service+2)}
+    else if(xp>=14){addGood(1,active[0]+"處置良好");s.service=cl(s.service+1)}
+    else if(xp<=4){addBad(2,active[0]+"處置有重大缺失");s.service=cl(s.service-3)}
+    else if(xp<=7){addBad(1,active[0]+"處置不完整");s.service=cl(s.service-1)}
+    if(xp>=20&&rep>=6&&active[0].includes("重大")) exceptionalMerit(active[0]);
+    const cid=String(Date.now()).slice(-7);
+    s.cases.unshift({id:cid,type:active[0],action:c[0],result:xp>=18?"優良":xp>=14?"良好":xp<=4?"重大缺失":"尚可",xp,date:rocDateTime()});
+    rec(isLife?"人生事件":"完成勤務",active[0]+"｜+"+xp+" XP｜"+positionName());
+    fb("dutyResult",(isLife?"人生事件處理完成：":"勤務完成：")+"+"+xp+" XP，聲望 "+(rep>=0?"+":"")+rep+(isLife?"；家庭收支與健康已更新。":(healthChange<0?"；疲勞或現場風險使健康下降。":"；獎懲考核已同步更新。"))+"遊戲時間前進約 30 天。",xp>=14);
+    $("dutyChoices").innerHTML="";active=null;
+    save();render();
+    // Answering any option immediately advances to the next duty; no extra button press required.
+    setTimeout(()=>{if(s.unit)newAdvancedDuty()},120);
+  }
+
+  function managerRoleText(){
+    const L=s.positionLevel||0;
+    if(L===0)return"基層警員以直接執行勤務、受理案件與現場處置為主。";
+    if(L===1)return"巡佐／小隊長開始負責帶班、現場協調、新進同仁指導與勤務品質。";
+    if(L===2)return"基層主管須兼顧人力調度、案件覆核、部屬考核與突發事件協調。";
+    if(L===3)return"所長／隊主管要管理整個單位的勤務、風紀、民眾陳情、資源與績效。";
+    if(L===4)return"分局業務主管著重跨所隊協調、政策執行、督導、數據與重大專案。";
+    if(L===5)return"副分局長協助分局長統籌多個業務單位，處理重大治安、交通、風紀與行政決策。";
+    return"分局長以整體轄區治安、警力配置、重大事件指揮、跨機關協調、民意與組織管理為核心。";
+  }
+  function renderCommand(){
+    if(!$("commandLocked"))return;
+    const sup=isSupervisor();
+    $("commandLocked").style.display=sup?"none":"block";
+    $("commandContent").style.display=sup?"block":"none";
+    $("positionChip").textContent="職位："+positionName();$("commandScoreChip").textContent="主管評價："+s.commandScore;
+    if(!sup)return;
+    $("staffStat").textContent=s.staff;$("paperworkStat").textContent=s.paperwork;$("moraleStat").textContent=s.morale;$("publicStat").textContent=s.publicSatisfaction;
+    $("positionDescription").innerHTML="<b>"+positionName()+"</b><br>"+managerRoleText();
+    const acts=[
+      ["roster","排定勤務表","警力配置、士氣與疲勞管理"],
+      ["review","覆核案件紀錄","降低程序缺失並提升品質"],
+      ["coach","帶教部屬","提升士氣與單位品質"],
+      ["inspection","裝備／勤務抽查","提升紀律但可能增加壓力"],
+      ["meeting","召開勤前教育","提升溝通與重大事件應變"]
+    ];
+    $("managerActions").innerHTML=acts.map(a=>'<div class="action-card" data-ma="'+a[0]+'"><strong>'+a[1]+'</strong><p>'+a[2]+'</p></div>').join("");
+    document.querySelectorAll("[data-ma]").forEach(e=>e.onclick=()=>managerAction(e.dataset.ma));
+  }
+  function managerAction(a){
+    if(a==="roster"){s.morale=cl(s.morale+2);s.paperwork=Math.max(0,s.paperwork-1);s.commandScore=cl(s.commandScore+1)}
+    if(a==="review"){s.quality=cl(s.quality+2);s.paperwork=Math.max(0,s.paperwork-1);s.commandScore=cl(s.commandScore+1)}
+    if(a==="coach"){s.morale=cl(s.morale+4);s.service=cl(s.service+1);s.commandScore=cl(s.commandScore+2)}
+    if(a==="inspection"){s.discipline=cl(s.discipline+2);s.morale=cl(s.morale-1);s.commandScore=cl(s.commandScore+1)}
+    if(a==="meeting"){s.comm=cl(s.comm+1);s.morale=cl(s.morale+2);s.commandScore=cl(s.commandScore+1)}
+    s.paperwork=Math.min(20,s.paperwork+1);advanceHours(2);rec("主管勤務",positionName()+"｜"+a);save();render();
+  }
+  function newCommand(){
+    if(!isSupervisor())return toast("尚未取得主管職");
+    commandActive=supervisorEvents[Math.floor(Math.random()*supervisorEvents.length)];
+    $("commandCase").innerHTML="<b>"+commandActive[0]+"</b><br>"+commandActive[1];
+    $("commandChoices").innerHTML=commandActive[2].map((c,i)=>'<div class="action-card" data-cmd="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+c[0]+'</strong></div>').join("");
+    $("commandResult").textContent="";$("commandResult").className="feedback";
+    document.querySelectorAll("[data-cmd]").forEach(e=>e.onclick=()=>resolveCommand(Number(e.dataset.cmd)));
+  }
+  function resolveCommand(i){
+    const c=commandActive[2][i];
+    s.commandScore=cl(s.commandScore+c[1]);s.morale=cl(s.morale+c[2]);s.publicSatisfaction=cl(s.publicSatisfaction+c[3]);
+    if(c[4]>0)addGood(c[4],commandActive[0]); else if(c[4]<0)addBad(-c[4],commandActive[0]);
+    s.paperwork=Math.min(20,s.paperwork+1);advanceHours(3);
+    if(commandActive[0]==="重大案件指揮"&&c[1]>=10) exceptionalMerit("重大案件指揮得當");
+    rec("主管決策",commandActive[0]+"｜"+c[0]);fb("commandResult","決策完成。主管評價 "+(c[1]>=0?"+":"")+c[1]+"，士氣 "+(c[2]>=0?"+":"")+c[2]+"。",c[1]>=5);
+    $("commandChoices").innerHTML="";commandActive=null;save();render();
+  }
+
+  function latestAppraisalPoints(){
+    const a=(s.appraisals||[]).slice(0,3);
+    if(!a.length)return 4;
+    return a.reduce((sum,x)=>sum+(x.grade==="甲等"?3:x.grade==="乙等"?2:0),0);
+  }
+  function promotionScore(){
+    const edu={"高中畢業":8,"大學在學":10,"大學畢業":14,"研究所畢業":16}[s.education]||8;
+    const exam=String(s.officialRank||"").startsWith("警正")?20:String(s.officialRank||"").startsWith("警佐")?14:0;
+    const seniority=Math.min(20,Math.max(0,s.year||0)*2);
+    const appraisal=Math.min(12,latestAppraisalPoints()*2);
+    const reward=(s.commend||0)*0.1+(s.merit||0)*0.3+(s.greatMerit||0);
+    const penalty=(s.admonition||0)*0.1+(s.demerit||0)*0.3+(s.greatDemerit||0);
+    const conduct=Math.max(0,Math.min(10,(s.discipline||100)/10));
+    return Math.max(0,Math.round((edu+exam+seniority+appraisal+reward-penalty+conduct)*10)/10);
+  }
+  function renderCareerUpgrade(){
+    if(!$("careerMsg"))return;
+    const seq=currentSequenceNo();
+    s.careerSequenceNo=seq;s.sequence=sequenceLabel(seq);s.promotionScore=promotionScore();
+    if($("careerQualification"))$("careerQualification").textContent=s.qualification||"—";
+    if($("careerOfficialRank"))$("careerOfficialRank").textContent=s.officialRank||"—";
+    if($("careerPosition"))$("careerPosition").textContent=positionName();
+    if($("careerSequence"))$("careerSequence").textContent=sequenceLabel(seq);
+    if($("promotionScoreBox"))$("promotionScoreBox").textContent="資績模擬分："+s.promotionScore+"｜最近考績："+((s.appraisals&&s.appraisals[0]?.grade)||"尚無")+"｜獎懲："+(s.commend||0)+"嘉獎／"+(s.merit||0)+"記功／"+(s.admonition||0)+"申誡／"+(s.demerit||0)+"記過";
+    const nextSeq=seq>0?seq-1:null;
+    if($("promotionRuleText"))$("promotionRuleText").textContent=nextSeq!==null?(seq===10?"目前第十序列；升任第九序列巡官等警官職務前，須先完成官等、警大教育／訓練、績效與獎懲資格。":"目前 "+sequenceLabel(seq)+"；可依缺額與資格參加 "+sequenceLabel(nextSeq)+" 職務甄審。"):"目前已到最高職務層級。";
+    if($("careerPath")){
+      const seqs=[11,10,9,8,7,6,5,4,3,2,1,0];
+      $("careerPath").className="sequence-grid";
+      $("careerPath").innerHTML=seqs.map(n=>{
+        const info=sequenceInfo[n],state=n===seq?" current":n>seq?" passed":"";
+        return '<div class="sequence-card'+state+'"><div class="seq-head"><strong>'+sequenceLabel(n)+'</strong><span>'+info.range+'</span></div><p>'+info.examples.join("、")+'</p>'+(n===seq?'<em>目前所在序列</em>':'')+'</div>';
+      }).join("");
+    }
+    renderOfficerQualification();
+    if($("promotionTarget")){
+      const opts=nextSeq!==null?targetPositions(nextSeq):[];
+      $("promotionTarget").innerHTML=opts.length?opts.map(x=>'<option>'+x+'</option>').join(""):'<option>目前無更高序列</option>';
+      $("promotionTarget").disabled=nextSeq===null;
+    }
+  }
+  function enhancedPromotion(){
+    if(s.retired)return fb("careerMsg","已退休，不能再參加陞遷甄審。",0);
+    if(!s.unit)return fb("careerMsg","尚未正式任職。",0);if(isOfficerTrack()&&s.rotationEligible)return fb("careerMsg","目前已有職務輪調缺額待選，請先完成「職務輪調」再參加陞遷甄審。",0);
+    const seq=currentSequenceNo(),nextSeq=seq>0?seq-1:null;
+    if(nextSeq===null)return fb("careerMsg","已達最高職務層級。",1);
+    if(seq===10&&nextSeq===9&&!patrolOfficerQualified()){
+      return fb("careerMsg","巡佐／第十序列不能只靠資績直接升巡官。請先完成「警正官等資格」與「警大教育／訓練資格」，且績效、考績及獎懲須符合門檻。",0);
+    }
+    const score=promotionScore();
+    const threshold={11:38,10:44,9:50,8:56,7:64,6:72,5:80,4:86,3:91,2:95,1:98}[seq]||50;
+    const grade=s.appraisals?.[0]?.grade||appraisalGrade(appraisalScore());
+    if(grade==="丙等"||s.greatDemerit>0)return fb("careerMsg","本次不具甄審條件：考績或重大懲處不符。",0);
+    if(score<threshold)return fb("careerMsg","資績分數不足：目前 "+score+"，本次模擬甄審參考門檻 "+threshold+"。",0);
+    const target=$("promotionTarget")?.value||targetPositions(nextSeq)[0];
+    const vacancyChance=Math.max(.08,Math.min(nextSeq<=3?.42:.88,(nextSeq<=3?.12:.32)+score/(nextSeq<=3?420:160)));
+    if(Math.random()>vacancyChance){
+      s.promotionReviews.unshift({date:rocDateTime(),result:"未獲陞任",score,target,sequence:sequenceLabel(nextSeq)});
+      rec("陞遷甄審","申請 "+sequenceLabel(nextSeq)+" "+target+"｜資績 "+score+"｜本次因缺額／排序未獲陞任");
+      fb("careerMsg","符合基本資格，但本次因缺額或排序未獲陞任。",0);save();render();return;
+    }
+    s.careerSequenceNo=nextSeq;s.sequence=sequenceLabel(nextSeq);applyCareerTarget(target,nextSeq);
+    ensureOfficialRankForSequence(nextSeq);
+    if(seq===10&&nextSeq===9){
+      const ro={"警佐三階":1,"警佐二階":2,"警佐一階":3,"警正四階":4,"警正三階":5,"警正二階":6,"警正一階":7};
+      if((ro[s.officialRank]||0)<4)s.officialRank="警正四階";
+      s.careerStage="officer_rotation";s.rotationEligible=false;s.rotationCycleDays=0;s.rotationCycleMonths=0;s.rotationMonths=0;
+    }
+    s.salary+=4500+Math.max(0,(11-nextSeq))*900;s.commandScore=cl(s.commandScore+3);
+    s.promotionReviews.unshift({date:rocDateTime(),result:"陞任",score,target,sequence:sequenceLabel(nextSeq)});
+    rec("職務陞遷","經甄審陞任 "+sequenceLabel(nextSeq)+" "+target+"｜資績 "+score);
+    fb("careerMsg","甄審通過：陞任 "+sequenceLabel(nextSeq)+"「"+target+"」。這是職務陞遷；官階另依任官與銓敘條件處理。",1);save();render();
+  }
+
+  function renderEnhancements(){
+    try{
+      migrate();
+      const parts=[["academy",renderAcademy],["performance",renderPerformance],["command",renderCommand],["career-upgrade",renderCareerUpgrade],["officer-qualification",renderOfficerQualification],["duty-modes",renderDutyModes]];
+      parts.forEach(([name,fn])=>{try{fn()}catch(err){console.error("[enhancement:"+name+"]",err)}});
+      if($("dutySubtitle")&&s.unit)$("dutySubtitle").textContent=[s.name,s.county||"",s.precinct||"",s.unitName,positionName(),s.officialRank||"—"].filter(Boolean).join("｜");
+      if($("miniStatus"))$("miniStatus").textContent=positionName()+(s.stationName?("｜"+s.stationName):"");
+      if($("rankChip"))$("rankChip").textContent="職位："+positionName();
+      if($("dashRank"))$("dashRank").textContent=positionName();
+      if($("dashQualification"))$("dashQualification").textContent=s.qualification||"尚未取得";
+      if($("dashOfficialRank"))$("dashOfficialRank").textContent=s.officialRank||"—";
+      if($("dashSequence"))$("dashSequence").textContent=sequenceLabel(currentSequenceNo());
+      if(typeof renderRotationForecast==="function")renderRotationForecast();
+      if(typeof renderRankInsignia==="function")renderRankInsignia();
+      if(typeof syncExamActionButtons==="function")syncExamActionButtons();
+    }catch(err){console.error("[enhancements]",err)}
+  }
+
+  migrate();
+  if($("newQuizBtn"))$("newQuizBtn").onclick=newQuiz;
+  if($("closeYearBtn"))$("closeYearBtn").onclick=closeYear;
+  if($("nextCommandBtn"))$("nextCommandBtn").onclick=newCommand;
+  if($("nextDutyBtn")){$("nextDutyBtn").textContent="開始／換一題";$("nextDutyBtn").onclick=newAdvancedDuty;}
+  const dutyChoicesEl=$("dutyChoices");
+  if(dutyChoicesEl)dutyChoicesEl.addEventListener("click",e=>{
+    const card=e.target.closest&&e.target.closest("[data-advd]");
+    if(!card||!dutyChoicesEl.contains(card))return;
+    e.preventDefault();
+    advancedResolve(Number(card.dataset.advd));
+  });
+  window.__policeNewDuty=newAdvancedDuty;
+  window.__policeResolveDuty=advancedResolve;
+  if($("promotionBtn"))$("promotionBtn").onclick=enhancedPromotion;
+  if($("promotionExamBtn"))$("promotionExamBtn").onclick=takePromotionExam;
+  if($("sergeantClass1Btn"))$("sergeantClass1Btn").onclick=()=>takeSergeantClass("第1類");
+  if($("sergeantClass2Btn"))$("sergeantClass2Btn").onclick=()=>takeSergeantClass("第2類");
+  if($("sergeantClass3Btn"))$("sergeantClass3Btn").onclick=()=>takeSergeantClass("第3類");
+  if($("promotionTrainingBtn"))$("promotionTrainingBtn").onclick=takePromotionTraining;
+  if($("thirdGradeUpgradeBtn"))$("thirdGradeUpgradeBtn").onclick=takeThirdGradeUpgrade;
+
+  // Wrap the base render so all advanced systems remain synchronized.
+  const baseRender=render;
+  render=function(){baseRender();renderEnhancements();};
+  renderEnhancements();
+})();
+
+</script>
 </body>
 </html>
