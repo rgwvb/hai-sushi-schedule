@@ -24,6 +24,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Build nationwide police directory
+        shell: bash
+        run: |
+          python -m pip install --disable-pip-version-check requests beautifulsoup4
+          python scripts/build_police_directory.py || echo "Police directory refresh failed; deploying checked-in fallback."
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
