@@ -58,7 +58,7 @@
   const metroCities=["臺北市","新北市","桃園市","臺中市","臺南市","高雄市"];
   function currentSequenceNo(){
     if(typeof effectiveOfficerSequence==="function"&&["cpu","g3"].includes(s.route))return effectiveOfficerSequence();
-    if(Number.isFinite(Number(s.careerSequenceNo)))return Number(s.careerSequenceNo);
+    if(s.careerSequenceNo!==null&&s.careerSequenceNo!==""&&Number.isFinite(Number(s.careerSequenceNo)))return Number(s.careerSequenceNo);
     const seq=Number(String(s.sequence||"").match(/\d+/)?.[0]);
     if(seq)return seq;
     return (s.route==="cpu"||s.route==="g3")?9:11;
