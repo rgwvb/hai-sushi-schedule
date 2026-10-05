@@ -40,8 +40,10 @@ function click(el){
 }
 
 try{
-  window.eval(app);
-  window.eval(systems);
+  // Execute both classic scripts in one global lexical environment so top-level
+  // let/const bindings from app are visible to the advanced system script, as
+  // they are when loaded by sequential <script> tags in a browser.
+  window.eval(app+"\n;"+systems);
   await wait(20);
 
   assert(window.document.querySelectorAll("#charHomeCounty option").length===22,"county select should contain 22 options");
