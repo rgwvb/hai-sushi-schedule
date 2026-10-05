@@ -22,15 +22,12 @@ const R=[
 ["g3","📚","一般警察特考三等","大學以上學歷路線；通過三等一般警察特考後接受較長教育與實務訓練，再依類科分發。",5,270,"警正四階任官資格","警正四階","巡官","第九序列",720,9]
 ];
 const U=[
-["station","🏢","派出所",0,0,"值班、巡邏、110、家暴、失蹤、詐騙與一般治安案件。"],
-["traffic","🏍️","交通分隊",1,80,"交通事故、酒駕、疏導與違規勤務。"],
-["detective","🔎","偵查隊",2,180,"刑案偵查、筆錄、監視器與案件追查。"],
-["security","🛡️","保安警察",1,120,"大型活動、重要設施與支援勤務。"],
-["cyber","💻","科技偵查",2,220,"網路犯罪、數位跡證與詐欺資料分析。"],
-["admin","🗂️","內勤行政",1,100,"勤務規劃、行政業務與資料彙整。"],
-["highway","🚓","國道公路警察",3,260,"高速公路交通執法與重大道路事件。"],
-["rail","🚆","鐵路警察",2,200,"車站、列車與鐵路設施治安勤務。"],
-["airport","✈️","航空警察",3,280,"機場安全、旅客秩序與航空治安勤務。"]];
+["station","🏢","派出所",0,0,"該分局轄內派出所：值班、巡邏、110、家暴、失蹤、詐騙與一般治安案件。"],
+["security","🛡️","警備隊",0,60,"分局警備隊支援機動、重大事故、聚眾與臨時勤務。"],
+["traffic","🏍️","交通分隊",1,80,"交通警察大隊配賦分隊：事故、酒駕、疏導與交通執法。"],
+["detective","🔎","偵查隊",2,180,"分局偵查隊：刑案偵查、筆錄、監視器與案件追查。"],
+["admin","🗂️","分局組室",2,150,"分局行政、保防、防治、督察等內勤業務職務。"]
+];
 const D=[
 ["110 民眾糾紛","超商兩名男子爭吵，其中一人疑似酒後情緒激動。",[["確認安全、分隔雙方並詢問店員",16,4,-8],["只要求雙方離開",6,-2,-4],["查詢紀錄並呼叫支援共同到場",13,3,-7]]],
 ["交通事故","路口兩車碰撞，一名駕駛頸部不適，車流快速回堵。",[["先確認傷者、通知救護並疏導交通",18,5,-10],["先爭論肇責再決定救護",5,-4,-6],["只拍照後請雙方自行協調",3,-5,-3]]],
@@ -193,7 +190,7 @@ function units(){
   }
   $("confirmUnitBtn").style.display="";
   $("unitBanner").textContent=s.precinct?"目前分發：臺北市 "+s.precinct+"。":"尚未完成臺北市分局分發。";
-  $("unitCards").innerHTML=U.map(u=>{let l=s.year<u[3]||s.xp<u[4];return '<div class="choice-card '+((s.selectedUnit===u[0]||s.unit===u[0])?"selected":"")+'" data-u="'+u[0]+'"><h3>'+u[1]+" "+u[2]+'</h3><p>'+u[5]+'</p><div class="meta"><span class="tag">年資 '+u[3]+' 年</span><span class="tag">XP '+u[4]+'</span><span class="tag">'+(l?"🔒 尚未解鎖":"可申請")+'</span></div></div>'}).join("");
+  $("unitCards").innerHTML=U.map(u=>{let l=s.year<u[3]||s.xp<u[4];let label=(u[0]==="traffic"?"臺北市政府警察局交通警察大隊"+String(s.precinct||"").replace("分局","")+"分隊":"臺北市政府警察局"+(s.precinct||"")+u[2]);return '<div class="choice-card '+((s.selectedUnit===u[0]||s.unit===u[0])?"selected":"")+'" data-u="'+u[0]+'"><h3>'+u[1]+" "+label+'</h3><p>'+u[5]+'</p><div class="meta"><span class="tag">遊戲年資 '+u[3]+' 年</span><span class="tag">XP '+u[4]+'</span><span class="tag">'+(l?"🔒 尚未解鎖":"可申請")+'</span></div></div>'}).join("");
   document.querySelectorAll("[data-u]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.u;units()});
 }
 $("confirmUnitBtn").onclick=()=>{
