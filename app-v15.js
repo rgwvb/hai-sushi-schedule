@@ -99,7 +99,8 @@ function effectiveOfficerSequence(){
   if(!Number.isFinite(seq)||seq<4||seq>9)seq=9;
   const pos=String((s&&s.position)||(s&&s.rank)||"");
   if(/警務員/.test(pos))seq=Math.min(seq,8);
-  if(/警務正|偵查正|分局.*組長|偵查隊長/.test(pos))seq=Math.min(seq,6);\n  else if(/第七序列警務員|督察員|警備隊長|偵查隊副隊長/.test(pos))seq=Math.min(seq,7);
+  if(/警務正|偵查正|分局.*組長|偵查隊長/.test(pos))seq=Math.min(seq,6);
+  else if(/第七序列警務員|督察員|警備隊長|偵查隊副隊長/.test(pos))seq=Math.min(seq,7);
   if(/組長|偵查隊長|主任/.test(pos))seq=Math.min(seq,6);
   if(/副分局長|科長|大隊長|專員/.test(pos))seq=Math.min(seq,5);
   if(/分局長/.test(pos))seq=Math.min(seq,4);
