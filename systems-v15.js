@@ -660,7 +660,7 @@
     if($("careerSequence"))$("careerSequence").textContent=sequenceLabel(seq);
     if($("promotionScoreBox"))$("promotionScoreBox").textContent="資績模擬分："+s.promotionScore+"｜最近考績："+((s.appraisals&&s.appraisals[0]?.grade)||"尚無")+"｜獎懲："+(s.commend||0)+"嘉獎／"+(s.merit||0)+"記功／"+(s.admonition||0)+"申誡／"+(s.demerit||0)+"記過";
     const nextSeq=seq>0?seq-1:null;
-    if($("promotionRuleText"))$("promotionRuleText").textContent=nextSeq?(seq===10?"目前第十序列；升任第九序列巡官等警官職務前，須先完成官等、警大教育／訓練、績效與獎懲資格。":"目前 "+sequenceLabel(seq)+"；可依缺額與資格參加 "+sequenceLabel(nextSeq)+" 職務甄審。"):"目前已到最高職務層級。";
+    if($("promotionRuleText"))$("promotionRuleText").textContent=nextSeq!==null?(seq===10?"目前第十序列；升任第九序列巡官等警官職務前，須先完成官等、警大教育／訓練、績效與獎懲資格。":"目前 "+sequenceLabel(seq)+"；可依缺額與資格參加 "+sequenceLabel(nextSeq)+" 職務甄審。"):"目前已到最高職務層級。";
     if($("careerPath")){
       const seqs=[11,10,9,8,7,6,5,4,3,2,1,0];
       $("careerPath").className="sequence-grid";
@@ -671,16 +671,19 @@
     }
     renderOfficerQualification();
     if($("promotionTarget")){
-      const opts=nextSeq?targetPositions(nextSeq):[];
+      const opts=nextSeq!==null?targetPositions(nextSeq):[];
       $("promotionTarget").innerHTML=opts.length?opts.map(x=>'<option>'+x+'</option>').join(""):'<option>目前無更高序列</option>';
-      $("promotionTarget").disabled=!nextSeq;
+      $("promotionTarget").disabled=nextSeq===null;
     }
   }
   function enhancedPromotion(){
     if(s.retired)return fb("careerMsg","已退休，不能再參加陞遷甄審。",0);
     if(!s.unit)return fb("careerMsg","尚未正式任職。",0);if(isOfficerTrack()&&s.rotationEligible)return fb("careerMsg","目前已有職務輪調缺額待選，請先完成「職務輪調」再參加陞遷甄審。",0);
-    const seq=currentSequenceNo(),nextSeq=seq>4?seq-1:null;
-    if(!nextSeq)return fb("careerMsg","已達目前版本最高序列。",1);
+    const seq=currentSequenceNo(),nextSeq=seq>0?seq-1:null;
+    if(nextSeq===null)return fb("careerMsg","已達最高職務層級。",1);
+    if(seq===10&&nextSeq===9&&!patrolOfficerQualified()){
+      return fb("careerMsg","巡佐／第十序列不能只靠資績直接升巡官。請先完成「警正官等資格」與「警大教育／訓練資格」，且績效、考績及獎懲須符合門檻。",0);
+    }
     const score=promotionScore();
     const threshold={11:38,10:44,9:50,8:56,7:64,6:72,5:80,4:86,3:91,2:95,1:98}[seq]||50;
     const grade=s.appraisals?.[0]?.grade||appraisalGrade(appraisalScore());
