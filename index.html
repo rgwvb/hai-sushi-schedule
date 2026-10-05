@@ -2426,7 +2426,7 @@ applyTheme(localStorage.getItem("twPoliceTheme")||"police");
 
 const advDay=document.getElementById("advanceDayBtn");
 if(advDay){
-  advDay.textContent="⏩ 推進30天";
+  advDay.textContent="推進30天";
   advDay.onclick=()=>{
     advanceDays(30);
     s.energy=cl(Math.min(100,s.energy+15));
