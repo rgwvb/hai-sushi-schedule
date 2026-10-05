@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>TW 台灣警察生涯模擬器</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v3.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v4.css">
 </head>
 <body>
 <div class="app-shell">
@@ -15,7 +15,7 @@
       <p>從入警考試、受訓、縣市分發，到單位勤務、調任與升遷的完整生涯模擬。</p>
     </div>
     <div class="header-actions">
-      <span class="version">制度重構 v2.0</span>
+      <span class="version">制度重構 v2.1</span>
       <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
       <button id="saveBtn" class="ghost-btn">💾 儲存</button>
       <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
@@ -262,9 +262,9 @@
             <div><span>陞遷序列</span><b id="careerSequence">—</b></div>
           </div>
         </div>
-        <div class="career-path" id="careerPath"></div>
+        <div id="careerPath" class="sequence-grid"></div>
         <div class="three-col">
-          <div class="panel"><h3>職務陞遷甄審</h3><p class="muted" id="promotionRuleText">依缺額、陞遷序列、資績評分、考績與獎懲模擬。</p><div class="info-banner" id="promotionScoreBox">資績分數：—</div><button class="primary-btn" id="promotionBtn">參加甄審</button></div>
+          <div class="panel"><h3>職務陞遷甄審</h3><p class="muted" id="promotionRuleText">依缺額、陞遷序列、資績評分、考績與獎懲模擬。</p><label class="promotion-target-label">本次申請職務<select id="promotionTarget"></select></label><div class="info-banner" id="promotionScoreBox">資績分數：—</div><button class="primary-btn" id="promotionBtn">參加甄審</button></div>
           <div class="panel"><h3>專業甄選</h3><p class="muted">可申請偵查、交通、科技偵查等單位。</p><button class="secondary-btn" id="specialUnitBtn">參加甄選</button></div>
           <div class="panel"><h3>跨縣市調任</h3><p class="muted">依年資、聲望與模擬缺額判定。</p><button class="secondary-btn" id="transferBtn">申請調任</button></div>
         </div>
@@ -389,7 +389,7 @@
 </div>
 <script src="backend-config.js"></script>
 <script src="backend.js"></script>
-<script src="app-v3.js"></script>
-<script src="systems-v3.js"></script>
+<script src="app-v4.js"></script>
+<script src="systems-v4.js"></script>
 </body>
 </html>
