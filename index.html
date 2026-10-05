@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>TW 台灣警察生涯模擬器</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v15.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v16.css">
 </head>
 <body>
 <div class="app-shell">
   <header class="app-header">
     <div>
       <h1>TW 台灣警察生涯模擬器</h1>
-      <p>從入警考試、受訓、分局分發，到單位勤務、調任與升遷的完整生涯模擬。</p>
+      <p>從入警考試、受訓、全國分發，到地方警察局、警政署與署屬機關的完整警察生涯模擬。</p>
     </div>
     <div class="header-actions">
-      <span class="version">臺北市版 v4.4</span>
+      <span class="version">全國版 v5.0</span>
       <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
       <button id="saveBtn" class="ghost-btn">💾 儲存</button>
       <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
@@ -37,7 +37,7 @@
         <button class="nav-btn" data-page="route">🎓 教育／任用</button>
         <button class="nav-btn" data-page="study">📚 備考與受訓</button>
         <button class="nav-btn" data-page="exam">📝 考試中心</button>
-        <button class="nav-btn" data-page="distribution">🗺️ 臺北市分局分發</button>
+        <button class="nav-btn" data-page="distribution">🗺️ 全國分發</button>
         <button class="nav-btn" data-page="unit">🏢 職務輪調</button>
         <button class="nav-btn" data-page="duty">📻 勤務中心</button>
         <button class="nav-btn" data-page="cases">📁 案件卷宗</button>
@@ -49,7 +49,7 @@
         <button class="nav-btn" data-page="records">📊 生涯紀錄</button>
         <button class="nav-btn" data-page="settings">⚙️ 系統設定</button>
       </nav>
-      <div class="sidebar-note">本作目前聚焦臺北市政府警察局14個分局；制度與勤務為遊戲化模擬，不是官方人事或勤務系統。<div class="rank-license-note">階級識別圖採 Wikimedia Commons「TW-Police-Rank」系列（Akira123，CC BY-SA 4.0），與中文維基百科表格使用之圖檔相同。</div></div>
+      <div class="sidebar-note">本作已擴展至全臺地方警察機關，並加入警政署、刑事警察局等中央高階職涯；臺北市仍保留較完整的分局與派出所資料。制度與缺額屬遊戲化模擬。<div class="rank-license-note">階級識別圖採 Wikimedia Commons「TW-Police-Rank」系列（Akira123，CC BY-SA 4.0），與中文維基百科表格使用之圖檔相同。</div></div>
     </aside>
 
     <main class="main">
@@ -96,7 +96,7 @@
               <div><span>現敘官階</span><b id="dashOfficialRank">—</b></div>
               <div><span>現任職務</span><b id="dashRank">考生</b></div>
               <div><span>陞遷序列</span><b id="dashSequence">—</b></div><div class="rank-row"><span>階級識別</span><b id="dashInsignia" class="rank-insignia-wrap">—</b></div>
-              <div><span>服務分局</span><b id="dashCounty">—</b></div>
+              <div><span>服務地區／機關</span><b id="dashCounty">—</b></div>
               <div><span>服務單位</span><b id="dashUnit">—</b></div>
             </div>
           </div>
@@ -115,7 +115,7 @@
             <label>起始年齡<input id="charAge" type="number" min="18" max="45" value="18"></label>
             <label>性別<select id="charGender"><option>男</option><option>女</option><option>不設定</option></select></label>
             <label>學歷<select id="charEducation"><option>高中畢業</option><option>大學在學</option><option>大學畢業</option><option>研究所畢業</option></select></label>
-            <label>遊戲城市<select id="charHomeCounty"><option>臺北市</option></select></label>
+            <label>居住縣市<select id="charHomeCounty"></select></label>
             <label>家庭狀況<select id="charFamily"><option>與家人同住</option><option>自行租屋</option><option>外地求學</option></select></label>
           </div>
           <div class="button-row"><button class="primary-btn" id="createCharacterBtn">建立角色</button></div>
@@ -181,14 +181,14 @@
             <button class="primary-btn" id="writtenExamBtn">參加筆試</button>
             <button class="secondary-btn" id="physicalExamBtn" style="display:none">參加體測</button>
             <button class="secondary-btn" id="trainingBtn" style="display:none">完成受訓</button>
-            <button class="secondary-btn" id="examNextPageBtn" style="display:none">前往臺北市分局分發 →</button>
+            <button class="secondary-btn" id="examNextPageBtn" style="display:none">前往全國分發 →</button>
           </div>
           <div id="examMsg" class="feedback"></div>
         </div>
       </section>
 
       <section id="distribution" class="page">
-        <div class="page-head"><div><h2>臺北市分局志願分發</h2><p>本遊戲目前只模擬臺北市。依總成績、志願序與遊戲化缺額，分發至臺北市14個分局之一。</p></div></div>
+        <div class="page-head"><div><h2>全國警察機關志願分發</h2><p>依總成績、志願序與遊戲化缺額，分發至全臺直轄市、縣市警察局；臺北市可進一步選到14個分局。</p></div></div>
         <div class="panel">
           <div class="toolbar">
             <label>第一志願<select id="pref1"></select></label>
@@ -199,26 +199,26 @@
           <div id="distributionResult" class="feedback"></div>
         </div>
         <div class="panel">
-          <div class="panel-head"><h3>臺北市14個分局</h3><span>缺額與門檻為遊戲數值；分局名稱依臺北市政府警察局現行外勤單位</span></div>
+          <div class="panel-head"><h3>全國地方警察機關</h3><span>缺額與門檻為遊戲數值；機關架構依警政署公開組織資料建模</span></div>
           <div id="countyCards" class="county-grid"></div>
         </div>
       </section>
 
       <section id="unit" class="page">
-        <div class="page-head"><div><h2>職務輪調／缺額選填</h2><p>警官線分發到臺北市各分局後，不固定進警備隊。系統會從行政、防治、保防、民防、交通、偵查、警備等實際單位型態中產生3個初任巡官缺額；完成歷練後再依缺額與資格輪調。</p></div></div>
+        <div class="page-head"><div><h2>職務輪調／缺額選填</h2><p>地方警察機關初任後，依所在地組織、職務序列與缺額輪調；高階後可跨入警政署、刑事警察局、航空、國道、鐵路、保安與港務警察等中央體系。</p></div></div>
         <div class="panel">
-          <div class="info-banner" id="unitBanner">尚未完成臺北市分局分發。</div><div class="vacancy-forecast"><span>📅 下一輪職缺預估</span><b id="rotationForecast">完成派職後開始計算</b></div>
+          <div class="info-banner" id="unitBanner">尚未完成分發。</div><div class="vacancy-forecast"><span>📅 下一輪職缺預估</span><b id="rotationForecast">完成派職後開始計算</b></div>
           <div id="unitCards" class="choice-grid"></div>
           <div class="button-row"><button class="primary-btn" id="confirmUnitBtn">確認單位</button></div>
           <div id="unitMsg" class="feedback"></div>
         </div>
         <div class="panel" id="precinctOrgDirectory">
-          <div class="panel-head"><h3 id="precinctOrgTitle">分局組織概覽</h3><span>六組、三室、一中心＋偵查隊、警備隊</span></div>
+          <div class="panel-head"><h3 id="precinctOrgTitle">服務機關組織概覽</h3><span>依地方警察局／分局層級顯示</span></div>
           <div id="precinctOrgCards" class="station-directory-grid"></div>
           <p class="muted station-note">這裡顯示分局常見組織架構；實際職缺不代表每次都會開放給玩家。</p>
         </div>
         <div class="panel" id="stationDirectory">
-          <div class="panel-head"><h3 id="stationDirectoryTitle">轄內派出所</h3><span>依臺北市政府警察局公開聯絡資料整理</span></div>
+          <div class="panel-head"><h3 id="stationDirectoryTitle">轄內派出所</h3><span>目前臺北市提供較完整實際派出所名錄</span></div>
           <div id="stationDirectoryCards" class="station-directory-grid"></div>
           <p class="muted station-note">派出所名稱採現行公開資料；實際警勤區、人力、主管職缺及案件量會隨人事與勤務調整。</p>
         </div>
@@ -274,11 +274,27 @@
             <div><span>陞遷序列</span><b id="careerSequence">—</b></div><div><span>階級識別</span><b id="careerInsignia" class="rank-insignia-wrap">—</b></div><div class="wide"><span>下一輪職缺預估</span><b id="careerVacancyForecast">—</b></div>
           </div>
         </div>
+        <div class="panel officer-qualification-panel" id="officerQualificationPanel" style="display:none">
+          <div class="panel-head">
+            <h3>巡佐／基層幹部 → 巡官資格</h3>
+            <span>官等資格 × 警大教育 × 考績獎懲 × 職缺甄審</span>
+          </div>
+          <div id="officerQualificationBox" class="info-banner">尚未進入基層幹部升巡官階段。</div>
+          <div class="qualification-actions">
+            <button class="secondary-btn" id="promotionExamBtn">警正警察官升官等考試</button>
+            <button class="secondary-btn" id="sergeantClass1Btn">警大警佐班第1類</button>
+            <button class="secondary-btn" id="sergeantClass2Btn">警大警佐班第2類</button>
+            <button class="secondary-btn" id="sergeantClass3Btn">警大警佐班第3類（刑事）</button>
+            <button class="secondary-btn" id="promotionTrainingBtn">申請晉升警正官等訓練</button>
+            <button class="secondary-btn" id="thirdGradeUpgradeBtn">三等警察特考／訓練</button>
+          </div>
+          <p class="muted qualification-disclaimer">遊戲會依現行制度概念檢查職務年資、最近考績、獎懲、體能與考試／警大教育資格；部分年資與名額以遊戲節奏近似模擬，實際資格仍依當年度法規及招生簡章。</p>
+        </div>
         <div id="careerPath" class="sequence-grid"></div>
         <div class="three-col">
           <div class="panel"><h3>職務陞遷甄審</h3><p class="muted" id="promotionRuleText">依缺額、陞遷序列、資績評分、考績與獎懲模擬。</p><label class="promotion-target-label">本次申請職務<select id="promotionTarget"></select></label><div class="info-banner" id="promotionScoreBox">資績分數：—</div><button class="primary-btn" id="promotionBtn">參加甄審</button></div>
           <div class="panel"><h3>專業甄選</h3><p class="muted">可申請偵查、交通、科技偵查等單位。</p><button class="secondary-btn" id="specialUnitBtn">參加甄選</button></div>
-          <div class="panel"><h3>臺北市分局間調任</h3><p class="muted">只在臺北市14個分局之間模擬調任。調任不會自動降低既有官階／職務序列，只重新選擇新分局的相當職務。</p><button class="secondary-btn" id="transferBtn">申請分局間調任</button></div>
+          <div class="panel"><h3>全國警察機關調任</h3><p class="muted">可在全臺地方警察機關間調任；官階與既有職務序列不因換機關自動降低。高階職涯另可進入中央警察機關。</p><button class="secondary-btn" id="transferBtn">申請跨機關調任</button></div>
         </div>
         <div id="careerMsg" class="feedback"></div>
       </section>
@@ -415,7 +431,7 @@
 </div>
 <script src="backend-config.js"></script>
 <script src="backend.js"></script>
-<script src="app-v18.js"></script>
-<script src="systems-v13.js"></script>
+<script src="app-v20.js"></script>
+<script src="systems-v15.js"></script>
 </body>
 </html>
