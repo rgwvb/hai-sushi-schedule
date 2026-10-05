@@ -3181,12 +3181,12 @@ loadPoliceDirectory();
     const minPositionDays=seq>=10?730:548;
     if(positionDays<minPositionDays)return fb("careerMsg","目前職務年資尚未達甄審門檻；本序列至少需任職 "+Math.ceil(minPositionDays/30)+" 個月。",0);
     const score=promotionScore();
-    const threshold={11:40,10:45,9:50,8:56,7:62,6:68,5:72,4:75,3:82,2:89,1:95}[seq]||55;
+    const threshold={11:30,10:34,9:39,8:44,7:49,6:53,5:56,4:58,3:60,2:68,1:76}[seq]||45;
     const grade=s.appraisals?.[0]?.grade||appraisalGrade(appraisalScore());
     if(grade==="丙等"||s.greatDemerit>0)return fb("careerMsg","本次不具甄審條件：考績或重大懲處不符。",0);
     if(score<threshold)return fb("careerMsg","資績分數不足：目前 "+score+"，本次模擬甄審參考門檻 "+threshold+"。",0);
     const target=$("promotionTarget")?.value||targetPositions(nextSeq)[0];
-    const vacancyChance=Math.max(.06,Math.min(nextSeq<=3?.30:.65,(nextSeq<=3?.10:.20)+score/(nextSeq<=3?500:230)));
+    const vacancyChance=Math.max(.10,Math.min(nextSeq<=3?.55:.85,(nextSeq<=3?.25:.35)+score/(nextSeq<=3?320:250)));
     if(Math.random()>vacancyChance){
       s.promotionReviews.unshift({date:rocDateTime(),result:"未獲陞任",score,target,sequence:sequenceLabel(nextSeq)});
       rec("陞遷甄審","申請 "+sequenceLabel(nextSeq)+" "+target+"｜資績 "+score+"｜本次因缺額／排序未獲陞任");
