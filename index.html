@@ -3139,8 +3139,6 @@ loadPoliceDirectory();
     const positionDays=Math.max(0,Math.floor((simNow().getTime()-started.getTime())/86400000));
     const minPositionDays=seq>=10?730:548;
     if(positionDays<minPositionDays)return fb("careerMsg","目前職務年資尚未達甄審門檻；本序列至少需任職 "+Math.ceil(minPositionDays/30)+" 個月。",0);
-    const recentAppraisals=recentTwoYearAppraisals();
-    if(!recentTwoYearAppraisalOK())return fb("careerMsg","近兩年度考績資料不足或不符（目前讀取："+(recentAppraisals.map(x=>x.year+"年"+x.grade).join("、")||"0筆")+"）。需兩年度均為甲／乙等，且至少一年度甲等。",0);
     const score=promotionScore();
     const threshold={11:40,10:45,9:50,8:56,7:62,6:68,5:72,4:75,3:82,2:89,1:95}[seq]||55;
     const grade=s.appraisals?.[0]?.grade||appraisalGrade(appraisalScore());
