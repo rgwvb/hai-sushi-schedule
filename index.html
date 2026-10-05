@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>TW 台灣警察生涯模擬器</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v16.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v17.css">
 </head>
 <body>
 <div class="app-shell">
@@ -15,7 +15,7 @@
       <p>從入警考試、受訓、全國分發，到地方警察局、警政署與署屬機關的完整警察生涯模擬。</p>
     </div>
     <div class="header-actions">
-      <span class="version">全國版 v5.0</span>
+      <span class="version">全國版 v5.1</span>
       <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
       <button id="saveBtn" class="ghost-btn">💾 儲存</button>
       <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
@@ -188,7 +188,7 @@
       </section>
 
       <section id="distribution" class="page">
-        <div class="page-head"><div><h2>全國警察機關志願分發</h2><p>依總成績、志願序與遊戲化缺額，分發至全臺直轄市、縣市警察局；臺北市可進一步選到14個分局。</p></div></div>
+        <div class="page-head"><div><h2>全國警察機關志願分發</h2><p>依總成績、志願序與遊戲化缺額，分發至全臺地方警察局的實際分局／警察所；下方可展開查看各分局所屬分駐所、派出所與駐在所。</p></div></div>
         <div class="panel">
           <div class="toolbar">
             <label>第一志願<select id="pref1"></select></label>
@@ -201,6 +201,24 @@
         <div class="panel">
           <div class="panel-head"><h3>全國地方警察機關</h3><span>缺額與門檻為遊戲數值；機關架構依警政署公開組織資料建模</span></div>
           <div id="countyCards" class="county-grid"></div>
+        </div>
+        <div class="panel nationwide-directory-panel">
+          <div class="panel-head">
+            <h3>全國分局＋派出所名錄</h3>
+            <span id="directorySourceStatus">正在載入警政署全國警察單位資料…</span>
+          </div>
+          <div class="directory-toolbar">
+            <label>縣市
+              <select id="directoryCountySelect"></select>
+            </label>
+            <label class="directory-search-label">搜尋分局／派出所
+              <input id="directorySearch" type="search" placeholder="例如：板橋分局、文化派出所">
+            </label>
+          </div>
+          <div id="policeDirectoryTree" class="police-directory-tree">
+            <div class="empty-state">全國名錄載入中…</div>
+          </div>
+          <p class="muted directory-source-note">單位名稱、地址與電話取自內政部警政署「各縣(市)警察(分)局暨所屬分駐(派出)所地址資料」。名錄會在網站部署時重新整理；若來源資料未能明確判定上下層，會列在「尚待來源層級確認」，不會硬塞到錯誤分局。</p>
         </div>
       </section>
 
@@ -218,9 +236,9 @@
           <p class="muted station-note">這裡顯示分局常見組織架構；實際職缺不代表每次都會開放給玩家。</p>
         </div>
         <div class="panel" id="stationDirectory">
-          <div class="panel-head"><h3 id="stationDirectoryTitle">轄內派出所</h3><span>目前臺北市提供較完整實際派出所名錄</span></div>
+          <div class="panel-head"><h3 id="stationDirectoryTitle">轄內分駐／派出／駐在所</h3><span>依警政署全國開放資料顯示</span></div>
           <div id="stationDirectoryCards" class="station-directory-grid"></div>
-          <p class="muted station-note">派出所名稱採現行公開資料；實際警勤區、人力、主管職缺及案件量會隨人事與勤務調整。</p>
+          <p class="muted station-note">分駐所、派出所與駐在所名稱採警政署公開資料；實際警勤區、人力、主管職缺及案件量仍會隨組織與勤務調整。</p>
         </div>
       </section>
 
@@ -431,7 +449,7 @@
 </div>
 <script src="backend-config.js"></script>
 <script src="backend.js"></script>
-<script src="app-v20.js"></script>
+<script src="app-v21.js"></script>
 <script src="systems-v15.js"></script>
 </body>
 </html>
