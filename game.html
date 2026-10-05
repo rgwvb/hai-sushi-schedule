@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>TW 台灣警察生涯模擬器</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v5.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v6.css">
 </head>
 <body>
 <div class="app-shell">
@@ -15,7 +15,7 @@
       <p>從入警考試、受訓、縣市分發，到單位勤務、調任與升遷的完整生涯模擬。</p>
     </div>
     <div class="header-actions">
-      <span class="version">制度重構 v2.2</span>
+      <span class="version">臺北市版 v3.0</span>
       <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
       <button id="saveBtn" class="ghost-btn">💾 儲存</button>
       <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
@@ -37,7 +37,7 @@
         <button class="nav-btn" data-page="route">🎓 教育／任用</button>
         <button class="nav-btn" data-page="study">📚 備考與受訓</button>
         <button class="nav-btn" data-page="exam">📝 考試中心</button>
-        <button class="nav-btn" data-page="distribution">🗺️ 縣市分發</button>
+        <button class="nav-btn" data-page="distribution">🗺️ 臺北市分局分發</button>
         <button class="nav-btn" data-page="unit">🏢 職務輪調</button>
         <button class="nav-btn" data-page="duty">📻 今日勤務</button>
         <button class="nav-btn" data-page="cases">📁 案件卷宗</button>
@@ -49,7 +49,7 @@
         <button class="nav-btn" data-page="records">📊 生涯紀錄</button>
         <button class="nav-btn" data-page="settings">⚙️ 系統設定</button>
       </nav>
-      <div class="sidebar-note">本作為遊戲化模擬，不是官方招生、考試或警察勤務系統。</div>
+      <div class="sidebar-note">本作目前聚焦臺北市政府警察局14個分局；制度與勤務為遊戲化模擬，不是官方人事或勤務系統。</div>
     </aside>
 
     <main class="main">
@@ -96,7 +96,7 @@
               <div><span>現敘官階</span><b id="dashOfficialRank">—</b></div>
               <div><span>現任職務</span><b id="dashRank">考生</b></div>
               <div><span>陞遷序列</span><b id="dashSequence">—</b></div>
-              <div><span>服務縣市</span><b id="dashCounty">—</b></div>
+              <div><span>服務分局</span><b id="dashCounty">—</b></div>
               <div><span>服務單位</span><b id="dashUnit">—</b></div>
             </div>
           </div>
@@ -115,7 +115,7 @@
             <label>起始年齡<input id="charAge" type="number" min="18" max="45" value="18"></label>
             <label>性別<select id="charGender"><option>男</option><option>女</option><option>不設定</option></select></label>
             <label>學歷<select id="charEducation"><option>高中畢業</option><option>大學在學</option><option>大學畢業</option><option>研究所畢業</option></select></label>
-            <label>居住縣市<select id="charHomeCounty"></select></label>
+            <label>遊戲城市<select id="charHomeCounty"><option>臺北市</option></select></label>
             <label>家庭狀況<select id="charFamily"><option>與家人同住</option><option>自行租屋</option><option>外地求學</option></select></label>
           </div>
           <div class="button-row"><button class="primary-btn" id="createCharacterBtn">建立角色</button></div>
@@ -186,7 +186,7 @@
       </section>
 
       <section id="distribution" class="page">
-        <div class="page-head"><div><h2>縣市志願分發</h2><p>依模擬總成績、志願序與年度缺額分發。缺額與門檻為遊戲數值。</p></div></div>
+        <div class="page-head"><div><h2>臺北市分局志願分發</h2><p>本遊戲目前只模擬臺北市。依總成績、志願序與遊戲化缺額，分發至臺北市14個分局之一。</p></div></div>
         <div class="panel">
           <div class="toolbar">
             <label>第一志願<select id="pref1"></select></label>
@@ -197,7 +197,7 @@
           <div id="distributionResult" class="feedback"></div>
         </div>
         <div class="panel">
-          <div class="panel-head"><h3>本年度模擬缺額</h3><span>點選縣市可查看特色</span></div>
+          <div class="panel-head"><h3>臺北市14個分局</h3><span>缺額與門檻為遊戲數值；分局名稱依臺北市政府警察局現行外勤單位</span></div>
           <div id="countyCards" class="county-grid"></div>
         </div>
       </section>
@@ -205,7 +205,7 @@
       <section id="unit" class="page">
         <div class="page-head"><div><h2>職務輪調／缺額選填</h2><p>警官線先在分局體系完成初任歷練，再依缺額、職務配階與資格選填下一階段職務；基層警員線則依分發與甄選選擇服務單位。</p></div></div>
         <div class="panel">
-          <div class="info-banner" id="unitBanner">尚未完成縣市分發。</div>
+          <div class="info-banner" id="unitBanner">尚未完成臺北市分局分發。</div>
           <div id="unitCards" class="choice-grid"></div>
           <div class="button-row"><button class="primary-btn" id="confirmUnitBtn">確認單位</button></div>
           <div id="unitMsg" class="feedback"></div>
@@ -266,7 +266,7 @@
         <div class="three-col">
           <div class="panel"><h3>職務陞遷甄審</h3><p class="muted" id="promotionRuleText">依缺額、陞遷序列、資績評分、考績與獎懲模擬。</p><label class="promotion-target-label">本次申請職務<select id="promotionTarget"></select></label><div class="info-banner" id="promotionScoreBox">資績分數：—</div><button class="primary-btn" id="promotionBtn">參加甄審</button></div>
           <div class="panel"><h3>專業甄選</h3><p class="muted">可申請偵查、交通、科技偵查等單位。</p><button class="secondary-btn" id="specialUnitBtn">參加甄選</button></div>
-          <div class="panel"><h3>跨縣市調任</h3><p class="muted">依年資、聲望與模擬缺額判定。</p><button class="secondary-btn" id="transferBtn">申請調任</button></div>
+          <div class="panel"><h3>臺北市分局間調任</h3><p class="muted">只在臺北市14個分局之間模擬調任，依年資、資績與缺額判定。</p><button class="secondary-btn" id="transferBtn">申請分局間調任</button></div>
         </div>
         <div id="careerMsg" class="feedback"></div>
       </section>
@@ -389,7 +389,7 @@
 </div>
 <script src="backend-config.js"></script>
 <script src="backend.js"></script>
-<script src="app-v5.js"></script>
-<script src="systems-v5.js"></script>
+<script src="app-v6.js"></script>
+<script src="systems-v6.js"></script>
 </body>
 </html>
