@@ -684,9 +684,9 @@ button:hover{transform:none!important}
 #dashboard .chips #rankChip{border:0;background:none;padding:0;color:#eff6ff}
 #dashboard .chips .rank-status{gap:8px;background:#173456;border-color:#386398}
 #dashboard .rank-chip-visual{padding:0!important;border:0!important;background:transparent!important}
-#life .stat-grid.four:first-of-type .stat-card{position:relative;overflow:hidden;padding:18px;border-color:#294667;background:linear-gradient(145deg,#12263e,#101c2f)}
-#life .stat-grid.four:first-of-type .stat-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#4b91e2}
-#life .stat-grid.four:first-of-type .stat-card strong{font-size:23px;color:#f5f9ff}
+#life>.stat-grid.four .stat-card{position:relative;overflow:hidden;padding:18px;border-color:#294667;background:linear-gradient(145deg,#12263e,#101c2f)}
+#life>.stat-grid.four .stat-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#4b91e2}
+#life>.stat-grid.four .stat-card strong{font-size:23px;color:#f5f9ff}
 #life .retirement-panel{border-color:#304762;background:linear-gradient(145deg,#111f32,#0f1929)}
 #life .retirement-panel .panel-head{padding-bottom:12px;border-bottom:1px solid #273a53}
 #life .retirement-panel .compact-stats .stat-card{background:#0d192a;box-shadow:none}
@@ -2381,7 +2381,7 @@ function renderRetirement(){
 function life(){ $("salaryStat").textContent=cash(s.salary);$("savingsStat").textContent=cash(s.savings);$("lifeStress").textContent=s.stress;$("healthStat").textContent=s.health;let A=s.retired?[["rent","支付生活費","退休後生活支出"],["rest","完整休息","壓力 -15、體力 +25"],["exercise","規律運動","健康 +3、體能 +2"],["social","社交活動","溝通 +2、聲望 +1"]]:[["salary","領取月薪","加入本月薪資"],["rent","支付生活費","扣除生活成本"],["rest","完整休息","壓力 -15、體力 +25"],["exercise","規律運動","健康 +3、體能 +2"],["study","在職進修","法學 +2、英文 +2"],["social","同事聚餐","溝通 +2、聲望 +1"]];$("lifeActions").innerHTML=A.map(a=>'<div class="action-card" data-l="'+a[0]+'"><strong>'+a[1]+'</strong><p>'+a[2]+'</p></div>').join("");document.querySelectorAll("[data-l]").forEach(e=>e.onclick=()=>live(e.dataset.l))}
 function live(a){if(a==="salary"){if(!s.salary)return toast("尚未任職");s.savings+=s.salary;advanceDays(30);rec("領取薪資",cash(s.salary))}if(a==="rent"){s.savings-=s.family==="與家人同住"?9000:s.family==="自行租屋"?18000:14000;advanceDays(30)}if(a==="rest"){s.stress=cl(s.stress-15);s.energy=cl(s.energy+25);advanceDays(1)}if(a==="exercise"){s.health=cl(s.health+3);s.fit=cl(s.fit+2);s.stress=cl(s.stress-4);advanceDays(1)}if(a==="study"){s.savings-=1500;s.law=cl(s.law+2);s.eng=cl(s.eng+2);advanceDays(7)}if(a==="social"){s.savings-=800;s.comm=cl(s.comm+2);s.rep=cl(s.rep+1);advanceDays(1)}save();render()}
 function careerYearFromStamp(v){const m=String(v||"").match(/(\d{2,4})年/);if(!m)return 2010;const y=Number(m[1]);return y<1000?y+1895:y}
-function records(){const milestones=[{year:2011,title:"初任警職",detail:"警佐三階警員"},{year:2016,title:"派任與職務",detail:"XX派出所｜警正四階｜巡官兼副所長"}];const later=(s.history||[]).filter(h=>/初任|派職|任職|輪調|調任|升遷|陞任|考績|退休/.test(String(h.title||""))).map(h=>({year:careerYearFromStamp(h.time),title:h.title||"職涯紀錄",detail:[h.detail,h.time].filter(Boolean).join("｜")}));const rows=milestones.concat(later).sort((a,b)=>a.year-b.year);$("historyList").innerHTML=rows.map((h,i)=>'<article class="career-record"><div class="career-year">'+h.year+'</div><div class="career-record-copy"><span class="career-step">職涯節點 '+String(i+1).padStart(2,"0")+'</span><b>'+h.title+'</b><p>'+h.detail+'</p></div></article>').join("")}
+function records(){const milestones=[{year:2011,title:"初任警職",detail:"警佐三階警員"},{year:2016,title:"派任與職務",detail:"XX派出所｜警正四階｜巡官兼副所長"}];const later=(s.history||[]).filter(h=>careerYearFromStamp(h.time)>2016&&/初任|派職|任職|輪調|調任|升遷|陞任|考績|退休/.test(String(h.title||""))).map(h=>({year:careerYearFromStamp(h.time),title:h.title||"職涯紀錄",detail:[h.detail,h.time].filter(Boolean).join("｜")}));const rows=milestones.concat(later).sort((a,b)=>a.year-b.year);$("historyList").innerHTML=rows.map((h,i)=>'<article class="career-record"><div class="career-year">'+h.year+'</div><div class="career-record-copy"><span class="career-step">職涯節點 '+String(i+1).padStart(2,"0")+'</span><b>'+h.title+'</b><p>'+h.detail+'</p></div></article>').join("")}
 function safeRenderPart(name,fn){
   try{fn()}catch(err){
     console.error("[render:"+name+"]",err);
