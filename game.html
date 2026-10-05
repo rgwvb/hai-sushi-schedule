@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>TW 台灣警察生涯模擬器</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v9.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v10.css">
 </head>
 <body>
 <div class="app-shell">
@@ -15,7 +15,7 @@
       <p>從入警考試、受訓、分局分發，到單位勤務、調任與升遷的完整生涯模擬。</p>
     </div>
     <div class="header-actions">
-      <span class="version">臺北市版 v3.8</span>
+      <span class="version">臺北市版 v3.9</span>
       <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
       <button id="saveBtn" class="ghost-btn">💾 儲存</button>
       <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
@@ -176,10 +176,12 @@
             <div><span>模擬體測</span><b id="examPhysical">—</b></div>
             <div><span>總排名</span><b id="examRank">—</b></div>
           </div>
-          <div class="button-row">
+          <div id="examActionHint" class="exam-action-hint">目前步驟：筆試。完成後會自動切換到下一個按鈕。</div>
+          <div class="button-row exam-progress-actions">
             <button class="primary-btn" id="writtenExamBtn">參加筆試</button>
-            <button class="secondary-btn" id="physicalExamBtn">參加體測</button>
-            <button class="secondary-btn" id="trainingBtn">完成受訓</button>
+            <button class="secondary-btn" id="physicalExamBtn" style="display:none">參加體測</button>
+            <button class="secondary-btn" id="trainingBtn" style="display:none">完成受訓</button>
+            <button class="secondary-btn" id="examNextPageBtn" style="display:none">前往臺北市分局分發 →</button>
           </div>
           <div id="examMsg" class="feedback"></div>
         </div>
@@ -401,7 +403,7 @@
 </div>
 <script src="backend-config.js"></script>
 <script src="backend.js"></script>
-<script src="app-v13.js"></script>
+<script src="app-v14.js"></script>
 <script src="systems-v10.js"></script>
 </body>
 </html>
