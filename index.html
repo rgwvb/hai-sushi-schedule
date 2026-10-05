@@ -2484,8 +2484,19 @@ loadPoliceDirectory();
   function rewardPoints(){return (s.commend||0)+(s.merit||0)*3+(s.greatMerit||0)*9}
   function penaltyPoints(){return (s.admonition||0)+(s.demerit||0)*3+(s.greatDemerit||0)*9}
   function rewardsOutweighPenalties(){return rewardPoints()>penaltyPoints()&&(s.greatDemerit||0)===0}
+  function recentTwoYearAppraisals(){
+    const rows=(s.appraisals||[]).filter(x=>x&&x.grade&&!(String(x.type||"").includes("階段")));
+    const byYear=new Map();
+    rows.forEach((x,i)=>{
+      let year=Number(x.year)||0;
+      if(!year){const m=String(x.date||"").match(/(\d{3,4})年/);if(m)year=Number(m[1]);}
+      const key=year?"year-"+year:"entry-"+i;
+      if(!byYear.has(key))byYear.set(key,x);
+    });
+    return Array.from(byYear.values()).slice(0,2);
+  }
   function recentTwoYearAppraisalOK(){
-    const a=annualAppraisals(2);
+    const a=recentTwoYearAppraisals();
     return a.length>=2&&a.some(x=>x.grade==="甲等")&&a.every(x=>x.grade==="甲等"||x.grade==="乙等");
   }
   function recentThreeYearExamBonus(){
@@ -3128,9 +3139,10 @@ loadPoliceDirectory();
     const positionDays=Math.max(0,Math.floor((simNow().getTime()-started.getTime())/86400000));
     const minPositionDays=seq>=10?730:548;
     if(positionDays<minPositionDays)return fb("careerMsg","目前職務年資尚未達甄審門檻；本序列至少需任職 "+Math.ceil(minPositionDays/30)+" 個月。",0);
-    if(!recentTwoYearAppraisalOK())return fb("careerMsg","需先累積最近兩年合格考績，且至少一年度甲等，才能參加甄審。",0);
+    const recentAppraisals=recentTwoYearAppraisals();
+    if(!recentTwoYearAppraisalOK())return fb("careerMsg","近兩年度考績資料不足或不符（目前讀取："+(recentAppraisals.map(x=>x.year+"年"+x.grade).join("、")||"0筆")+"）。需兩年度均為甲／乙等，且至少一年度甲等。",0);
     const score=promotionScore();
-    const threshold={11:42,10:48,9:55,8:62,7:69,6:76,5:83,4:89,3:93,2:97,1:99}[seq]||55;
+    const threshold={11:40,10:45,9:50,8:56,7:62,6:68,5:72,4:75,3:82,2:89,1:95}[seq]||55;
     const grade=s.appraisals?.[0]?.grade||appraisalGrade(appraisalScore());
     if(grade==="丙等"||s.greatDemerit>0)return fb("careerMsg","本次不具甄審條件：考績或重大懲處不符。",0);
     if(score<threshold)return fb("careerMsg","資績分數不足：目前 "+score+"，本次模擬甄審參考門檻 "+threshold+"。",0);
