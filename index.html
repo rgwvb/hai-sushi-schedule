@@ -2019,7 +2019,7 @@ function officerVacancyCard(o,extraTag=""){
   '</div>';
 }
 function units(){
-  renderStationDirectory();renderPrecinctOrg();renderRotationForecast();renderPoliceMonitorTraining();
+  renderStationDirectory();renderPrecinctOrg();renderRotationForecast();
   if(isOfficerTrack()){
     if(s.careerStage==="officer_initial_offer"){
       $("confirmUnitBtn").style.display="";
@@ -3208,7 +3208,7 @@ loadPoliceDirectory();
   function renderEnhancements(){
     try{
       migrate();
-      const parts=[["academy",renderAcademy],["performance",renderPerformance],["command",renderCommand],["career-upgrade",renderCareerUpgrade],["officer-qualification",renderOfficerQualification],["duty-modes",renderDutyModes]];
+      const parts=[["academy",renderAcademy],["performance",renderPerformance],["command",renderCommand],["career-upgrade",renderCareerUpgrade],["officer-qualification",renderOfficerQualification],["police-monitor-training",renderPoliceMonitorTraining],["duty-modes",renderDutyModes]];
       parts.forEach(([name,fn])=>{try{fn()}catch(err){console.error("[enhancement:"+name+"]",err)}});
       if($("dutySubtitle")&&s.unit)$("dutySubtitle").textContent=[s.name,s.county||"",s.precinct||"",s.unitName,positionName(),s.officialRank||"—"].filter(Boolean).join("｜");
       if($("miniStatus"))$("miniStatus").textContent=positionName()+(s.stationName?("｜"+s.stationName):"");
