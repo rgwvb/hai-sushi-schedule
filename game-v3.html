@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>TW 台灣警察生涯模擬器</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v3.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="app-header">
+    <div>
+      <h1>TW 台灣警察生涯模擬器</h1>
+      <p>從入警考試、受訓、縣市分發，到單位勤務、調任與升遷的完整生涯模擬。</p>
+    </div>
+    <div class="header-actions">
+      <span class="version">制度重構 v2.0</span>
+      <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
+      <button id="saveBtn" class="ghost-btn">💾 儲存</button>
+      <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="profile-mini">
+        <div class="avatar">警</div>
+        <div>
+          <strong id="miniName">尚未建立角色</strong>
+          <span id="miniStatus">考生</span>
+        </div>
+      </div>
+      <nav>
+        <button class="nav-btn active" data-page="dashboard">🏠 生涯首頁</button>
+        <button class="nav-btn" data-page="character">👤 建立角色</button>
+        <button class="nav-btn" data-page="route">🎓 教育／任用</button>
+        <button class="nav-btn" data-page="study">📚 備考與受訓</button>
+        <button class="nav-btn" data-page="exam">📝 考試中心</button>
+        <button class="nav-btn" data-page="distribution">🗺️ 縣市分發</button>
+        <button class="nav-btn" data-page="unit">🏢 單位選擇</button>
+        <button class="nav-btn" data-page="duty">📻 今日勤務</button>
+        <button class="nav-btn" data-page="cases">📁 案件卷宗</button>
+        <button class="nav-btn" data-page="career">⭐ 升遷與調任</button>
+        <button class="nav-btn" data-page="academy">📘 警察學堂</button>
+        <button class="nav-btn" data-page="performance">🏅 獎懲考績</button>
+        <button class="nav-btn" data-page="command">👔 主管中心</button>
+        <button class="nav-btn" data-page="life">💰 個人生活</button>
+        <button class="nav-btn" data-page="records">📊 生涯紀錄</button>
+        <button class="nav-btn" data-page="settings">⚙️ 系統設定</button>
+      </nav>
+      <div class="sidebar-note">本作為遊戲化模擬，不是官方招生、考試或警察勤務系統。</div>
+    </aside>
+
+    <main class="main">
+      <section id="dashboard" class="page active">
+        <div class="page-head">
+          <div>
+            <h2>生涯首頁</h2>
+            <p id="dashboardSub">建立角色後開始你的警察生涯。</p>
+          </div>
+          <div class="chips">
+            <span id="careerYearChip">生涯第 0 年</span>
+            <span id="dateChip">115年1月1日 08:00</span>
+            <span id="rankChip">身分：考生</span>
+            <span id="moneyChip">存款：NT$ 80,000</span>
+            <button id="advanceDayBtn" class="ghost-btn compact-btn">⏩ 推進30天</button>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div>
+            <span class="eyebrow">目前目標</span>
+            <h3 id="goalTitle">先建立角色</h3>
+            <p id="goalText">完成基本資料後，選擇警專、警大或特考等入警路線。</p>
+          </div>
+          <button class="primary-btn" id="continueBtn">繼續生涯 →</button>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card"><span>法學</span><strong id="dashLaw">20</strong><div class="bar"><i id="dashLawBar"></i></div></div>
+          <div class="stat-card"><span>英文</span><strong id="dashEng">40</strong><div class="bar"><i id="dashEngBar"></i></div></div>
+          <div class="stat-card"><span>體能</span><strong id="dashFit">50</strong><div class="bar"><i id="dashFitBar"></i></div></div>
+          <div class="stat-card"><span>溝通</span><strong id="dashComm">50</strong><div class="bar"><i id="dashCommBar"></i></div></div>
+          <div class="stat-card"><span>壓力</span><strong id="dashStress">35</strong><div class="bar danger"><i id="dashStressBar"></i></div></div>
+          <div class="stat-card"><span>聲望</span><strong id="dashRep">50</strong><div class="bar"><i id="dashRepBar"></i></div></div>
+        </div>
+
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head"><h3>官職分立資料</h3><span>官等／官階 ≠ 現任職務</span></div>
+            <div class="info-list">
+              <div><span>姓名</span><b id="dashName">—</b></div>
+              <div><span>教育／任用路線</span><b id="dashRoute">—</b></div>
+              <div><span>任官資格</span><b id="dashQualification">尚未取得</b></div>
+              <div><span>現敘官階</span><b id="dashOfficialRank">—</b></div>
+              <div><span>現任職務</span><b id="dashRank">考生</b></div>
+              <div><span>陞遷序列</span><b id="dashSequence">—</b></div>
+              <div><span>服務縣市</span><b id="dashCounty">—</b></div>
+              <div><span>服務單位</span><b id="dashUnit">—</b></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>最近事件</h3></div>
+            <div id="recentEvents" class="timeline compact"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="character" class="page">
+        <div class="page-head"><div><h2>建立角色</h2><p>設定起始條件，這些資料會影響部分事件與生活成本。</p></div></div>
+        <div class="panel">
+          <div class="form-grid">
+            <label>姓名<input id="charName" value="林子維"></label>
+            <label>起始年齡<input id="charAge" type="number" min="18" max="45" value="18"></label>
+            <label>性別<select id="charGender"><option>男</option><option>女</option><option>不設定</option></select></label>
+            <label>學歷<select id="charEducation"><option>高中畢業</option><option>大學在學</option><option>大學畢業</option><option>研究所畢業</option></select></label>
+            <label>居住縣市<select id="charHomeCounty"></select></label>
+            <label>家庭狀況<select id="charFamily"><option>與家人同住</option><option>自行租屋</option><option>外地求學</option></select></label>
+          </div>
+          <div class="button-row"><button class="primary-btn" id="createCharacterBtn">建立角色</button></div>
+          <div id="characterMsg" class="feedback"></div>
+        </div>
+      </section>
+
+      <section id="route" class="page">
+        <div class="page-head"><div><h2>選擇教育與任用路線</h2><p>警專、警大與一般警察特考是不同教育／考試管道；警校畢業後仍須經相應警察特考與任用程序。</p></div></div>
+        <div id="routeCards" class="choice-grid"></div>
+        <div class="button-row"><button class="primary-btn" id="confirmRouteBtn">確認教育／任用路線</button></div>
+        <div id="routeMsg" class="feedback"></div>
+      </section>
+
+      <section id="study" class="page">
+        <div class="page-head">
+          <div><h2>備考與受訓</h2><p>安排行程、提升能力，也要控制壓力與金錢。</p></div>
+          <span id="studyDaysChip" class="status-chip">距考試 180 天</span>
+        </div>
+        <div class="stat-grid four">
+          <div class="stat-card"><span>法學</span><strong id="studyLaw">20</strong></div>
+          <div class="stat-card"><span>英文</span><strong id="studyEng">40</strong></div>
+          <div class="stat-card"><span>體能</span><strong id="studyFit">50</strong></div>
+          <div class="stat-card"><span>壓力</span><strong id="studyStress">35</strong></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>本週安排</h3><span>每次行動推進 7 天</span></div>
+          <div id="studyActions" class="action-grid"></div>
+        </div>
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head"><h3>準備進度</h3></div>
+            <div class="progress-stack">
+              <div><span>筆試準備</span><div class="bar"><i id="writtenProgress"></i></div></div>
+              <div><span>體能準備</span><div class="bar"><i id="fitnessProgress"></i></div></div>
+              <div><span>整體狀態</span><div class="bar"><i id="overallProgress"></i></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>建議</h3></div>
+            <p id="studyAdvice" class="muted">選好入警路線後，系統會依目前能力給出備考建議。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="exam" class="page">
+        <div class="page-head"><div><h2>考試中心</h2><p>進行模擬筆試、體測、受訓與最終錄取判定。</p></div></div>
+        <div class="exam-stepper">
+          <div class="step active" id="stepWritten"><span>1</span><b>筆試</b></div>
+          <div class="step" id="stepPhysical"><span>2</span><b>體測</b></div>
+          <div class="step" id="stepTraining"><span>3</span><b>受訓</b></div>
+          <div class="step" id="stepResult"><span>4</span><b>錄取</b></div>
+        </div>
+        <div class="panel">
+          <div class="exam-summary">
+            <div><span>目前路線</span><b id="examRoute">尚未選擇</b></div>
+            <div><span>模擬筆試</span><b id="examWritten">—</b></div>
+            <div><span>模擬體測</span><b id="examPhysical">—</b></div>
+            <div><span>總排名</span><b id="examRank">—</b></div>
+          </div>
+          <div class="button-row">
+            <button class="primary-btn" id="writtenExamBtn">參加筆試</button>
+            <button class="secondary-btn" id="physicalExamBtn">參加體測</button>
+            <button class="secondary-btn" id="trainingBtn">完成受訓</button>
+          </div>
+          <div id="examMsg" class="feedback"></div>
+        </div>
+      </section>
+
+      <section id="distribution" class="page">
+        <div class="page-head"><div><h2>縣市志願分發</h2><p>依模擬總成績、志願序與年度缺額分發。缺額與門檻為遊戲數值。</p></div></div>
+        <div class="panel">
+          <div class="toolbar">
+            <label>第一志願<select id="pref1"></select></label>
+            <label>第二志願<select id="pref2"></select></label>
+            <label>第三志願<select id="pref3"></select></label>
+            <button class="primary-btn" id="runDistributionBtn">開始分發</button>
+          </div>
+          <div id="distributionResult" class="feedback"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>本年度模擬缺額</h3><span>點選縣市可查看特色</span></div>
+          <div id="countyCards" class="county-grid"></div>
+        </div>
+      </section>
+
+      <section id="unit" class="page">
+        <div class="page-head"><div><h2>單位選擇</h2><p>依目前階段與能力開放不同單位。部分專業單位需服務年資或甄選。</p></div></div>
+        <div class="panel">
+          <div class="info-banner" id="unitBanner">尚未完成縣市分發。</div>
+          <div id="unitCards" class="choice-grid"></div>
+          <div class="button-row"><button class="primary-btn" id="confirmUnitBtn">確認單位</button></div>
+          <div id="unitMsg" class="feedback"></div>
+        </div>
+      </section>
+
+      <section id="duty" class="page">
+        <div class="page-head">
+          <div><h2>今日勤務</h2><p id="dutySubtitle">完成單位分發後即可上勤。</p></div>
+          <div class="chips"><span id="shiftChip">08:00 值班</span><span id="energyChip">體力 100</span></div>
+        </div>
+        <div class="panel duty-mode-panel">
+          <div class="panel-head"><h3>本月主要勤務</h3><span>每完成一個代表性事件，遊戲時間推進約30天</span></div>
+          <div id="dutyModeCards" class="choice-grid"></div>
+        </div>
+        <div class="panel radio-panel">
+          <div class="radio-head"><span>📻 勤務指揮中心</span><button class="secondary-btn" id="nextDutyBtn">接下一件勤務</button></div>
+          <div id="dutyCase" class="dispatch-box">目前沒有派案。</div>
+          <div id="dutyChoices" class="action-grid"></div>
+          <div id="dutyResult" class="feedback"></div>
+        </div>
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head"><h3>勤務數據</h3></div>
+            <div class="info-list">
+              <div><span>今日完成</span><b id="dutyCount">0 件</b></div>
+              <div><span>經驗值</span><b id="dutyXp">0 XP</b></div>
+              <div><span>聲望</span><b id="dutyRep">50</b></div>
+              <div><span>體力</span><b id="dutyEnergy">100</b></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>值勤原則</h3></div>
+            <p class="muted">遊戲判定偏重安全、程序、紀錄、通報、救護與比例原則。實務仍以正式法規、勤務規定及現場指揮為準。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="cases" class="page">
+        <div class="page-head"><div><h2>案件卷宗</h2><p>保存你處理過的案件、處置與結果。</p></div></div>
+        <div class="panel">
+          <div id="caseList" class="case-list"></div>
+        </div>
+      </section>
+
+      <section id="career" class="page">
+        <div class="page-head"><div><h2>陞遷與調任</h2><p>依官職分立、職務出缺、陞遷序列、資績與甄審模擬；不再用 XP 直接「買官」。</p></div></div>
+        <div class="panel">
+          <div class="panel-head"><h3>目前任用狀態</h3><span>制度重構版</span></div>
+          <div class="exam-summary">
+            <div><span>任官資格</span><b id="careerQualification">—</b></div>
+            <div><span>現敘官階</span><b id="careerOfficialRank">—</b></div>
+            <div><span>現任職務</span><b id="careerPosition">—</b></div>
+            <div><span>陞遷序列</span><b id="careerSequence">—</b></div>
+          </div>
+        </div>
+        <div class="career-path" id="careerPath"></div>
+        <div class="three-col">
+          <div class="panel"><h3>職務陞遷甄審</h3><p class="muted" id="promotionRuleText">依缺額、陞遷序列、資績評分、考績與獎懲模擬。</p><div class="info-banner" id="promotionScoreBox">資績分數：—</div><button class="primary-btn" id="promotionBtn">參加甄審</button></div>
+          <div class="panel"><h3>專業甄選</h3><p class="muted">可申請偵查、交通、科技偵查等單位。</p><button class="secondary-btn" id="specialUnitBtn">參加甄選</button></div>
+          <div class="panel"><h3>跨縣市調任</h3><p class="muted">依年資、聲望與模擬缺額判定。</p><button class="secondary-btn" id="transferBtn">申請調任</button></div>
+        </div>
+        <div id="careerMsg" class="feedback"></div>
+      </section>
+
+      
+      <section id="academy" class="page">
+        <div class="page-head">
+          <div><h2>警察學堂</h2><p>警察制度、共同勤務、犯罪學與實務觀念。內容以遊戲學習為目的。</p></div>
+          <div class="chips"><span id="knowledgeChip">知識 0</span><span id="quizChip">測驗 0/0</span></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>警察制度速覽</h3><span>依警政署公開資料整理</span></div>
+          <div id="systemKnowledge" class="choice-grid"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>犯罪學重點</h3><span>基礎理論 × 情境理解</span></div>
+          <div id="criminologyCards" class="choice-grid"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>隨堂測驗</h3><button class="secondary-btn" id="newQuizBtn">換一題</button></div>
+          <div id="quizQuestion" class="dispatch-box">按「換一題」開始。</div>
+          <div id="quizChoices" class="action-grid"></div>
+          <div id="quizResult" class="feedback"></div>
+        </div>
+      </section>
+
+      <section id="performance" class="page">
+        <div class="page-head">
+          <div><h2>獎懲與考績</h2><p>勤務表現會累積優劣事蹟、行政獎懲與年度考績，並影響陞遷。</p></div>
+          <div class="chips"><span id="appraisalChip">本年預估：—</span><span id="disciplineChip">紀律分數：100</span></div>
+        </div>
+        <div class="stat-grid four">
+          <div class="stat-card"><span>嘉獎</span><strong id="commendStat">0</strong></div>
+          <div class="stat-card"><span>記功</span><strong id="meritStat">0</strong></div>
+          <div class="stat-card"><span>申誡</span><strong id="admonitionStat">0</strong></div>
+          <div class="stat-card"><span>記過</span><strong id="demeritStat">0</strong></div>
+        </div>
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head"><h3>平時考核</h3><span>遊戲化模型</span></div>
+            <div class="info-list">
+              <div><span>優蹟</span><b id="goodNoteStat">0</b></div>
+              <div><span>劣蹟</span><b id="badNoteStat">0</b></div>
+              <div><span>勤務品質</span><b id="qualityStat">50</b></div>
+              <div><span>民眾服務</span><b id="serviceStat">50</b></div>
+              <div><span>紀律</span><b id="disciplineStat">100</b></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>年度考績預估</h3><span>非官方計算公式</span></div>
+            <div id="appraisalBox" class="info-banner">尚未任職。</div>
+            <div class="button-row"><button class="primary-btn" id="closeYearBtn">辦理年度考績</button></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>獎懲紀錄</h3></div>
+          <div id="disciplineHistory" class="timeline"></div>
+        </div>
+      </section>
+
+      <section id="command" class="page">
+        <div class="page-head">
+          <div><h2>主管中心</h2><p>擔任帶班、所長、組長或更高主管後，玩法從「自己處理案件」轉向人員、勤務、風紀與決策管理。</p></div>
+          <div class="chips"><span id="positionChip">職位：警員</span><span id="commandScoreChip">主管評價：50</span></div>
+        </div>
+        <div id="commandLocked" class="panel">
+          <div class="empty-state">目前仍是基層職位。陞任巡佐以上後會逐步開放主管玩法。</div>
+        </div>
+        <div id="commandContent" style="display:none">
+          <div class="stat-grid four">
+            <div class="stat-card"><span>可用警力</span><strong id="staffStat">8</strong></div>
+            <div class="stat-card"><span>待處理公文</span><strong id="paperworkStat">3</strong></div>
+            <div class="stat-card"><span>單位士氣</span><strong id="moraleStat">70</strong></div>
+            <div class="stat-card"><span>民眾滿意</span><strong id="publicStat">65</strong></div>
+          </div>
+          <div class="panel">
+            <div class="radio-head"><span>📋 今日主管事件</span><button class="secondary-btn" id="nextCommandBtn">下一件主管事件</button></div>
+            <div id="commandCase" class="dispatch-box">等待主管事件。</div>
+            <div id="commandChoices" class="action-grid"></div>
+            <div id="commandResult" class="feedback"></div>
+          </div>
+          <div class="two-col">
+            <div class="panel"><div class="panel-head"><h3>主管工作</h3></div><div id="managerActions" class="action-grid"></div></div>
+            <div class="panel"><div class="panel-head"><h3>職位玩法說明</h3></div><div id="positionDescription" class="muted"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="life" class="page">
+        <div class="page-head"><div><h2>個人生活</h2><p>薪資、租屋、休息與壓力會影響長期生涯。</p></div></div>
+        <div class="stat-grid four">
+          <div class="stat-card"><span>月薪</span><strong id="salaryStat">NT$ 0</strong></div>
+          <div class="stat-card"><span>存款</span><strong id="savingsStat">NT$ 80,000</strong></div>
+          <div class="stat-card"><span>壓力</span><strong id="lifeStress">35</strong></div>
+          <div class="stat-card"><span>健康</span><strong id="healthStat">100</strong></div>
+        </div>
+        <div class="panel">
+          <div id="lifeActions" class="action-grid"></div>
+        </div>
+      </section>
+
+      <section id="records" class="page">
+        <div class="page-head"><div><h2>生涯紀錄</h2><p>從報考到勤務、升遷與調任都會留下紀錄。</p></div></div>
+        <div class="panel"><div id="historyList" class="timeline"></div></div>
+      </section>
+
+      <section id="settings" class="page">
+        <div class="page-head"><div><h2>系統設定</h2><p>管理存檔與遊戲資料。</p></div></div>
+        <div class="panel">
+          <div class="button-row">
+            <button class="primary-btn" id="manualSaveBtn">儲存到瀏覽器</button>
+            <button class="secondary-btn" id="manualLoadBtn">讀取瀏覽器存檔</button>
+            <button class="danger-btn" id="resetBtn">清除並重新開始</button>
+          </div>
+          <div class="info-banner">存檔只保存在你目前的瀏覽器中。清除網站資料後，存檔也會消失。</div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<script src="backend-config.js"></script>
+<script src="backend.js"></script>
+<script src="app-v3.js"></script>
+<script src="systems-v3.js"></script>
+</body>
+</html>
