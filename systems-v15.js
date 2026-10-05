@@ -171,7 +171,7 @@
   }
   function class2Eligibility(){
     const exam=!!(s.promotionExamPassed||s.thirdGradeUpgradePassed);
-    const degree=/大學|研究所/.test(String(s.education||""))||s.promotionTrainingPassed;
+    const degree=/大學|研究所/.test(String(s.education||""))||s.route==="tpa"||s.promotionTrainingPassed;
     const ok=exam&&degree&&rewardsOutweighPenalties()&&s.age<56&&(s.fit||0)>=60&&(s.discipline||0)>=80;
     return {ok,exam,degree};
   }
