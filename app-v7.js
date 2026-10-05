@@ -198,52 +198,88 @@ function units(){
       $("unitBanner").textContent="已分發至臺北市 "+(s.precinct||"")+"。以下為本次3個模擬初任職缺；職缺類型依臺北市分局實際組織設計。";
       const offers=officerInitialOffers();
       $("unitCards").innerHTML=offers.map(o=>'<div class="choice-card '+(s.selectedUnit===o.id?"selected":"")+'" data-o="'+o.id+'"><h3>'+o.unitName+'</h3><p><b>'+o.position+'</b><br>'+o.desc+'</p><div class="meta"><span class="tag">第九序列</span><span class="tag">初任職缺</span></div></div>').join("");
-      document.querySelectorAll("[data-o]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.o;units()});return;
+      document.querySelectorAll("[data-o]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.o;units()});
+      return;
     }
     if(s.careerStage==="officer_initial"&&!s.rotationEligible){
       $("unitBanner").textContent="目前初任："+(s.unitName||"—")+"｜"+(s.position||"巡官")+"。遊戲以12個月作為第一階段歷練期（僅為遊戲節奏設定）。";
       $("unitCards").innerHTML='<div class="choice-card selected"><h3>🏢 '+(s.unitName||"目前單位")+'</h3><p>現任：'+(s.position||"巡官")+'｜第九序列。</p><div class="meta"><span class="tag">歷練 '+(s.rotationMonths||0)+'/12 個月</span></div></div>';
-      $("confirmUnitBtn").style.display="none";return;
+      $("confirmUnitBtn").style.display="none";
+      return;
     }
     if(s.rotationEligible&&s.careerStage==="officer_initial"){
       $("confirmUnitBtn").style.display="";
       $("unitBanner").textContent="初任歷練完成。以下為本次3個模擬職缺；可能來自分局各組、偵查隊、警備隊或派出所主管職。";
       s.rotationOffers=officerRotationOffers();
       $("unitCards").innerHTML=s.rotationOffers.map(o=>'<div class="choice-card '+(s.selectedUnit===o.id?"selected":"")+'" data-o="'+o.id+'"><h3>'+o.unitName+'</h3><p><b>'+o.position+'</b><br>'+o.desc+'</p><div class="meta"><span class="tag">第'+o.seq+'序列職務</span></div></div>').join("");
-      document.querySelectorAll("[data-o]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.o;units()});return;
+      document.querySelectorAll("[data-o]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.o;units()});
+      return;
     }
     $("unitBanner").textContent="目前職務："+(s.unitName||"—")+"｜"+(s.position||"—")+"。後續職務輪調將依缺額與序列開放。";
-    $("unitCards").innerHTML='<div class="empty-state">目前沒有新的輪調缺額。</div>';$("confirmUnitBtn").style.display="none";return;
+    $("unitCards").innerHTML='<div class="empty-state">目前沒有新的輪調缺額。</div>';
+    $("confirmUnitBtn").style.display="none";
+    return;
   }
-  $("confirmUnitBtn").style.display="";
-      $("unitBanner").textContent="初任歷練完成。以下為本次模擬職缺；真正人事仍會依機關缺額、職務配階、資格、序列及人事程序辦理。";
-      s.rotationOffers=officerRotationOffers();
-      $("unitCards").innerHTML=s.rotationOffers.map(o=>'<div class="choice-card '+(s.selectedUnit===o.id?"selected":"")+'" data-o="'+o.id+'"><h3>'+o.unitName+'</h3><p><b>'+o.position+'</b><br>'+o.desc+'</p><div class="meta"><span class="tag">第'+o.seq+'序列職務</span></div></div>').join("");
-      document.querySelectorAll("[data-o]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.o;units()});return;
-    }
-    $("unitBanner").textContent="目前職務："+(s.unitName||"—")+"｜"+(s.position||"—")+"。後續職務輪調將依缺額與序列開放。";
-    $("unitCards").innerHTML='<div class="empty-state">目前沒有新的輪調缺額。</div>';$("confirmUnitBtn").style.display="none";return;
-  }
+
   $("confirmUnitBtn").style.display="";
   $("unitBanner").textContent=s.precinct?"目前分發：臺北市 "+s.precinct+"。":"尚未完成臺北市分局分發。";
-  $("unitCards").innerHTML=U.map(u=>{let l=s.year<u[3]||s.xp<u[4];let label=(u[0]==="traffic"?"臺北市政府警察局交通警察大隊"+String(s.precinct||"").replace("分局","")+"分隊":"臺北市政府警察局"+(s.precinct||"")+u[2]);return '<div class="choice-card '+((s.selectedUnit===u[0]||s.unit===u[0])?"selected":"")+'" data-u="'+u[0]+'"><h3>'+u[1]+" "+label+'</h3><p>'+u[5]+'</p><div class="meta"><span class="tag">遊戲年資 '+u[3]+' 年</span><span class="tag">XP '+u[4]+'</span><span class="tag">'+(l?"🔒 尚未解鎖":"可申請")+'</span></div></div>'}).join("");
+  $("unitCards").innerHTML=U.map(u=>{
+    let l=s.year<u[3]||s.xp<u[4];
+    let label=(u[0]==="traffic"
+      ?"臺北市政府警察局交通警察大隊"+String(s.precinct||"").replace("分局","")+"分隊"
+      :"臺北市政府警察局"+(s.precinct||"")+u[2]);
+    return '<div class="choice-card '+((s.selectedUnit===u[0]||s.unit===u[0])?"selected":"")+'" data-u="'+u[0]+'"><h3>'+u[1]+" "+label+'</h3><p>'+u[5]+'</p><div class="meta"><span class="tag">遊戲年資 '+u[3]+' 年</span><span class="tag">XP '+u[4]+'</span><span class="tag">'+(l?"🔒 尚未解鎖":"可申請")+'</span></div></div>';
+  }).join("");
   document.querySelectorAll("[data-u]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.u;units()});
 }
+
 $("confirmUnitBtn").onclick=()=>{
   if(!s.precinct)return fb("unitMsg","請先完成臺北市分局分發。",0);
+
   if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"){
     const o=(s.initialOffers||[]).find(x=>x.id===s.selectedUnit);
     if(!o)return fb("unitMsg","請先選擇一個初任職缺。",0);
-    s.unit=o.unit;s.unitName=o.unitName;s.position=o.position;s.rank=o.position;s.careerSequenceNo=o.seq;s.sequence="第九序列";s.careerStage="officer_initial";s.rotationEligible=false;s.rotationMonths=0;s.selectedUnit="";
-    rec("初任派職",o.unitName+"｜"+o.position);fb("unitMsg","初任派職完成："+o.unitName+"｜"+o.position+"。",1);save();render();return;
+    s.unit=o.unit;
+    s.unitName=o.unitName;
+    s.position=o.position;
+    s.rank=o.position;
+    s.careerSequenceNo=o.seq;
+    s.sequence="第九序列";
+    s.careerStage="officer_initial";
+    s.rotationEligible=false;
+    s.rotationMonths=0;
+    s.selectedUnit="";
+    rec("初任派職",o.unitName+"｜"+o.position);
+    fb("unitMsg","初任派職完成："+o.unitName+"｜"+o.position+"。",1);
+    save();render();return;
   }
+
   if(isOfficerTrack()&&s.rotationEligible&&s.careerStage==="officer_initial"){
     const o=(s.rotationOffers||[]).find(x=>x.id===s.selectedUnit);
     if(!o)return fb("unitMsg","請先選擇一個本次職缺。",0);
-    s.unit=o.unit;s.unitName=o.unitName;s.position=o.position;s.rank=o.position;s.careerSequenceNo=o.seq;s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][o.seq]+"序列";s.careerStage="officer_rotation";s.rotationEligible=false;s.rotationMonths=0;s.selectedUnit="";
-    rec("職務輪調",o.unitName+"｜"+o.position);fb("unitMsg","已派任："+o.unitName+"｜"+o.position+"。",1);save();render();return;
+    s.unit=o.unit;
+    s.unitName=o.unitName;
+    s.position=o.position;
+    s.rank=o.position;
+    s.careerSequenceNo=o.seq;
+    s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][o.seq]+"序列";
+    s.careerStage="officer_rotation";
+    s.rotationEligible=false;
+    s.rotationMonths=0;
+    s.selectedUnit="";
+    rec("職務輪調",o.unitName+"｜"+o.position);
+    fb("unitMsg","已派任："+o.unitName+"｜"+o.position+"。",1);
+    save();render();return;
   }
-  let u=U.find(x=>x[0]===s.selectedUnit);if(!u)return fb("unitMsg","請先選擇單位。",0);if(s.year<u[3]||s.xp<u[4])return fb("unitMsg","條件不足：需年資 "+u[3]+" 年、XP "+u[4]+"。",0);s.unit=u[0];s.unitName=u[2];rec("單位報到","臺北市｜"+s.precinct+"｜"+u[2]);fb("unitMsg","已報到：臺北市 "+s.precinct+" "+u[2]+"。",1);save();render();
+
+  let u=U.find(x=>x[0]===s.selectedUnit);
+  if(!u)return fb("unitMsg","請先選擇單位。",0);
+  if(s.year<u[3]||s.xp<u[4])return fb("unitMsg","條件不足：需年資 "+u[3]+" 年、XP "+u[4]+"。",0);
+  s.unit=u[0];
+  s.unitName=u[2];
+  rec("單位報到","臺北市｜"+s.precinct+"｜"+u[2]);
+  fb("unitMsg","已報到：臺北市 "+s.precinct+" "+u[2]+"。",1);
+  save();render();
 }
 function duty(){ if($("shiftChip"))$("shiftChip").textContent=shiftName()+"｜"+rocDateTime(); $("dutySubtitle").textContent=s.unit?[s.name,"臺北市",s.precinct||"",s.unitName,s.position||s.rank,s.officialRank||"—"].filter(Boolean).join("｜"):"完成分發後即可上勤。";$("energyChip").textContent="體力 "+s.energy;$("dutyCount").textContent=s.dutyCount+" 件";$("dutyXp").textContent=s.xp+" XP";$("dutyRep").textContent=s.rep;$("dutyEnergy").textContent=s.energy}
 $("nextDutyBtn").onclick=()=>{if(!s.unit)return toast("請先完成單位分發");active=D[Math.floor(Math.random()*D.length)];$("dutyCase").innerHTML="<b>"+active[0]+"</b><br>"+active[1];$("dutyChoices").innerHTML=active[2].map((c,i)=>'<div class="action-card" data-d="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+c[0]+'</strong><p>依安全、程序與完整性判定。</p></div>').join("");document.querySelectorAll("[data-d]").forEach(e=>e.onclick=()=>resolve(+e.dataset.d))}
