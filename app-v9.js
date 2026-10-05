@@ -170,7 +170,7 @@ $("dashboardSub").textContent=s.created?[s.name,s.routeName||"尚未選路線",s
 [["Law",s.law],["Eng",s.eng],["Fit",s.fit],["Comm",s.comm],["Stress",s.stress],["Rep",s.rep]].forEach(v=>{$("dash"+v[0]).textContent=v[1];$("dash"+v[0]+"Bar").style.width=v[1]+"%"});
 $("dashName").textContent=s.name||"—";$("dashRoute").textContent=s.routeName||"—";$("dashCounty").textContent=s.precinct||"—";$("dashUnit").textContent=s.unitName||"—";$("dashRank").textContent=s.position||s.rank;if($("dashQualification"))$("dashQualification").textContent=s.qualification||"尚未取得";if($("dashOfficialRank"))$("dashOfficialRank").textContent=s.officialRank||"—";if($("dashSequence"))$("dashSequence").textContent=s.sequence||"—";
 let a="先建立角色",b="完成基本資料後，選擇警專、警大或特考路線。";
-if(s.created&&!s.route){a="選擇入警路線";b="依學歷與規劃選擇路線。"}else if(s.route&&!s.passed){a="完成考試與受訓";b="備考、筆試、體測與訓練。"}else if(s.passed&&!s.county){a="填寫縣市志願";b="依模擬成績與缺額完成分發。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"){a="選填初任職務";b="分局分發完成後，從本次實際型態的組、隊職缺中選擇3個初任職務之一。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial"&&!s.rotationEligible){a="完成初任歷練";b="目前在 "+(s.unitName||"分局單位")+" 擔任 "+(s.position||"巡官")+"；累積約12個月歷練後開放下一輪缺額。"}else if(isOfficerTrack()&&s.rotationEligible&&s.careerStage==="officer_initial"){a="選填下一階段職務";b="依目前資格與缺額，從分局組室、偵查隊、警備隊或派出所副主管等職務中選擇。"}else if(s.county&&!s.unit){a="選擇服務單位";b="依任用路線與缺額選擇服務單位。"}else if(s.unit){a="開始勤務與累積職涯";b="處理勤務、累積資績與年資，等待輪調、甄審與陞遷機會。"}
+if(s.created&&!s.route){a="選擇入警路線";b="依學歷與規劃選擇路線。"}else if(s.route&&!s.passed){a="完成考試與受訓";b="備考、筆試、體測與訓練。"}else if(s.passed&&!s.county){a="填寫縣市志願";b="依模擬成績與缺額完成分發。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"){a="選填初任職務";b="分局分發完成後，從本次實際型態的組、隊職缺中選擇3個初任職務之一。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial"&&!s.rotationEligible){a="完成初任歷練";b="目前在 "+(s.unitName||"分局單位")+" 擔任 "+(s.position||"巡官")+"；累積約12個月歷練後開放下一輪缺額。"}else if(isOfficerTrack()&&s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){a="選填下一階段職務";b="依目前資格與缺額，從分局組室、偵查隊、警備隊或派出所副主管等職務中選擇。"}else if(s.county&&!s.unit){a="選擇服務單位";b="依任用路線與缺額選擇服務單位。"}else if(s.unit){a="開始勤務與累積職涯";b="處理勤務、累積資績與年資，等待輪調、甄審與陞遷機會。"}
 $("goalTitle").textContent=a;$("goalText").textContent=b;$("recentEvents").innerHTML=s.history.length?s.history.slice(0,6).map(h=>'<div class="timeline-item"><b>'+h.title+'</b><span>'+h.detail+'</span></div>').join(""):'<div class="empty-state">還沒有生涯事件。</div>';
 }
 function character(){if(!$("charHomeCounty").options.length)$("charHomeCounty").innerHTML="<option>臺北市</option>";$("charName").value=s.name||"林子維";$("charAge").value=s.age;$("charGender").value=s.gender;$("charEducation").value=s.education;$("charHomeCounty").value=s.homeCounty;$("charFamily").value=s.family}
@@ -227,7 +227,7 @@ function units(){
       $("confirmUnitBtn").style.display="none";
       return;
     }
-    if(s.rotationEligible&&s.careerStage==="officer_initial"){
+    if(s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){
       $("confirmUnitBtn").style.display="";
       $("unitBanner").textContent="初任歷練完成。以下為本次3個模擬職缺；可能來自分局各組、偵查隊、警備隊或派出所主管職。";
       if(!Array.isArray(s.rotationOffers)||!s.rotationOffers.length)s.rotationOffers=officerRotationOffers();
