@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>TW 台灣警察生涯模擬器</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v6.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v7.css">
 </head>
 <body>
 <div class="app-shell">
@@ -15,7 +15,7 @@
       <p>從入警考試、受訓、縣市分發，到單位勤務、調任與升遷的完整生涯模擬。</p>
     </div>
     <div class="header-actions">
-      <span class="version">臺北市版 v3.2</span>
+      <span class="version">臺北市版 v3.4</span>
       <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
       <button id="saveBtn" class="ghost-btn">💾 儲存</button>
       <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
@@ -210,11 +210,16 @@
           <div class="button-row"><button class="primary-btn" id="confirmUnitBtn">確認單位</button></div>
           <div id="unitMsg" class="feedback"></div>
         </div>
+        <div class="panel" id="stationDirectory">
+          <div class="panel-head"><h3 id="stationDirectoryTitle">轄內派出所</h3><span>依臺北市政府警察局公開聯絡資料整理</span></div>
+          <div id="stationDirectoryCards" class="station-directory-grid"></div>
+          <p class="muted station-note">派出所名稱採現行公開資料；實際警勤區、人力、主管職缺及案件量會隨人事與勤務調整。</p>
+        </div>
       </section>
 
       <section id="duty" class="page">
         <div class="page-head">
-          <div><h2>今日勤務</h2><p id="dutySubtitle">完成單位分發後即可上勤。</p></div>
+          <div><h2>勤務中心</h2><p id="dutySubtitle">完成單位分發後即可上勤。</p></div>
           <div class="chips"><span id="shiftChip">08:00 值班</span><span id="energyChip">體力 100</span></div>
         </div>
         <div class="panel duty-mode-panel">
@@ -231,7 +236,7 @@
           <div class="panel">
             <div class="panel-head"><h3>勤務數據</h3></div>
             <div class="info-list">
-              <div><span>今日完成</span><b id="dutyCount">0 件</b></div>
+              <div><span>累計完成</span><b id="dutyCount">0 件</b></div>
               <div><span>經驗值</span><b id="dutyXp">0 XP</b></div>
               <div><span>聲望</span><b id="dutyRep">50</b></div>
               <div><span>體力</span><b id="dutyEnergy">100</b></div>
@@ -389,7 +394,7 @@
 </div>
 <script src="backend-config.js"></script>
 <script src="backend.js"></script>
-<script src="app-v8.js"></script>
-<script src="systems-v7.js"></script>
+<script src="app-v9.js"></script>
+<script src="systems-v8.js"></script>
 </body>
 </html>
