@@ -974,7 +974,7 @@ function runSelfCheck(){
   if(s.unit==="station"&&!s.stationName)issues.push("派出所勤務缺少實際派出所");if(s.stationName&&!stationList().includes(s.stationName))issues.push("目前派出所與分局不一致");
   if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"&&s.unit)issues.push("警官初任待選階段卻已有單位");if(isOfficerTrack()&&s.rotationOffers?.some(o=>Number(o.seq)!==effectiveOfficerSequence()))issues.push("輪調職缺序列與目前職務不一致");if(isOfficerTrack()&&/警務正/.test(String(s.position))&&effectiveOfficerSequence()>6)issues.push("警務正不應被降回第七至第九序列");
   if((s.simEpoch||0)<(Number(localStorage.getItem(CLOCK_KEY)||0)))issues.push("遊戲時間落後歷史最晚時間");if(!s.retired&&s.unit&&s.age>=retirementProfile().mandatory)issues.push("已達屆齡退休年齡但尚未退休");
-  const result=issues.length?"發現 "+issues.length+" 項問題："+issues.join("；"):"自我檢查通過：臺北市範圍、分局／派出所、職務狀態與時間資料目前一致。";
+  const result=issues.length?"發現 "+issues.length+" 項問題："+issues.join("；"):"自我檢查通過：全國警察機關、分局／派出所、職務狀態與時間資料目前一致。";
   if($("selfCheckResult")){$("selfCheckResult").textContent=result;$("selfCheckResult").className="info-banner "+(issues.length?"bad":"good")}
   if(!issues.length)save();
   return issues;
@@ -1006,6 +1006,7 @@ if(advDay){
     rec("時間推進","跳過約一個月，日期前進至 "+rocDateTime());
     save();
     render();
-loadPoliceDirectory();
   };
 }
+
+loadPoliceDirectory();
