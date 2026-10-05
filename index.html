@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>TW 台灣警察生涯模擬器</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v13.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><link rel="stylesheet" href="theme-v14.css">
 </head>
 <body>
 <div class="app-shell">
@@ -15,7 +15,7 @@
       <p>從入警考試、受訓、分局分發，到單位勤務、調任與升遷的完整生涯模擬。</p>
     </div>
     <div class="header-actions">
-      <span class="version">臺北市版 v4.2</span>
+      <span class="version">臺北市版 v4.3</span>
       <label class="theme-picker">畫風<select id="themeSelect"><option value="warroom">戰情室</option><option value="police">警政系統</option><option value="game">遊戲風</option></select></label>
       <button id="saveBtn" class="ghost-btn">💾 儲存</button>
       <button id="loadBtn" class="ghost-btn">↻ 讀取</button>
@@ -90,7 +90,7 @@
           <div class="panel">
             <div class="panel-head"><h3>官職分立資料</h3><span>官等／官階 ≠ 現任職務</span></div>
             <div class="info-list">
-              <div><span>姓名</span><b id="dashName">—</b></div>
+              <div><span>姓名</span><b id="dashName">—</b></div><div><span>目前年齡</span><b id="dashAge">—</b></div>
               <div><span>教育／任用路線</span><b id="dashRoute">—</b></div>
               <div><span>任官資格</span><b id="dashQualification">尚未取得</b></div>
               <div><span>現敘官階</span><b id="dashOfficialRank">—</b></div>
@@ -375,6 +375,18 @@
           <div class="stat-card"><span>壓力</span><strong id="lifeStress">35</strong></div>
           <div class="stat-card"><span>健康</span><strong id="healthStat">100</strong></div>
         </div>
+        <div class="panel retirement-panel">
+          <div class="panel-head"><h3>退休制度</h3><span>依現職判定危勞／一般屆齡</span></div>
+          <div class="stat-grid four compact-stats">
+            <div class="stat-card"><span>目前年齡</span><strong id="retirementAgeStat">—</strong></div>
+            <div class="stat-card"><span>退休類別</span><strong id="retirementClassStat">—</strong></div>
+            <div class="stat-card"><span>屆齡退休</span><strong id="retirementMandatoryStat">—</strong></div>
+            <div class="stat-card"><span>服務年資</span><strong id="retirementServiceStat">—</strong></div>
+          </div>
+          <div id="retirementStatus" class="info-banner">尚未任職。</div>
+          <div class="button-row"><button class="secondary-btn" id="voluntaryRetireBtn">尚未符合自願退休條件</button></div>
+          <p class="muted retirement-note">遊戲依現行危勞職務退休年齡標準區分：第一類危勞職務屆齡59歲、第二類危勞職務屆齡60歲；未列危勞降齡職務則回歸一般公務人員65歲屆齡退休。實際個案仍依退休時法令、職稱與人事審定。</p>
+        </div>
         <div class="panel">
           <div id="lifeActions" class="action-grid"></div>
         </div>
@@ -403,7 +415,7 @@
 </div>
 <script src="backend-config.js"></script>
 <script src="backend.js"></script>
-<script src="app-v16.js"></script>
-<script src="systems-v12.js"></script>
+<script src="app-v17.js"></script>
+<script src="systems-v13.js"></script>
 </body>
 </html>
