@@ -1646,7 +1646,8 @@ function officerRotationOffers(){
   const pools={
     10:[
       {id:"station_deputy10",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡佐兼副所長",seq:10,desc:"派出所副主管，兼顧勤務、帶班與所務。"},
-      {id:"patrol_squad10",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡佐兼小隊長",seq:10,desc:"派出所勤務小隊主管，兼任巡佐職務，帶領巡邏與值班勤務。"}
+      {id:"patrol_squad10",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡佐兼小隊長",seq:10,desc:"派出所勤務小隊主管，兼任巡佐職務，帶領巡邏與值班勤務。"},
+      {id:"station_chief10",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡佐兼所長",seq:10,desc:"派出所主管職；部分縣市與分駐（派出）所可由符合資格的警正巡佐兼任。"}
     ],
     9:[
       {id:"rotation_admin",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"巡官",seq:9,desc:"分局行政、勤務規劃與法規歷練。"},
@@ -1657,7 +1658,7 @@ function officerRotationOffers(){
       {id:"rotation_detective",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查員",seq:9,desc:"刑案偵查與案件管制歷練。"},
       {id:"rotation_guard",unit:"security",assignmentType:"guard",unitName:pfx+"警備隊",position:"巡官",seq:9,desc:"機動與重大勤務歷練。"},
       {id:"station_deputy",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡官兼副所長",seq:9,desc:"派出所副主管，兼顧勤務、帶班與所務。"},
-      {id:"patrol_squad9",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡官兼小隊長",seq:9,desc:"派出所勤務小隊主管，兼任巡官職務，帶領巡邏與值班勤務。"}
+      {id:"station_chief9",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡官兼所長",seq:9,desc:"派出所主管職；依各局所定序列、官階、職務歷練與遴選資格派任。"}
     ],
     8:[
       {id:"rotation_admin8",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"警務員",seq:8,desc:"分局行政業務之較高層級幕僚歷練。"},
@@ -1675,7 +1676,8 @@ function officerRotationOffers(){
       {id:"rotation_prevention7",unit:"admin",assignmentType:"prevention",unitName:pfx+"防治組",position:"第七序列警務員",seq:7,desc:"防治、婦幼與社區警政業務督導歷練。"},
       {id:"rotation_inspector7",unit:"admin",assignmentType:"inspection",unitName:pfx+"督察組",position:"督察員",seq:7,desc:"勤務督導、考核與風紀業務歷練。"},
       {id:"rotation_guard7",unit:"security",assignmentType:"guard",unitName:pfx+"警備隊",position:"警備隊長",seq:7,desc:"警備隊主管職，負責隊務與機動勤務督導。"},
-      {id:"rotation_detective7",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查隊副隊長",seq:7,desc:"刑案與偵查勤務副主管歷練。"}
+      {id:"rotation_detective7",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"警務員兼副隊長",seq:7,desc:"偵查隊副主管職；實際序列依機關與職缺編列。"},
+      {id:"station_chief7",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"警務員兼所長",seq:7,desc:"第七序列警務員兼所長職缺，依各局遴補與任用資格派任。"}
     ],
     6:[
       {id:"rotation_policeaffairs6a",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"警務正",seq:6,desc:"第六序列警務正，辦理較高層級幕僚、督導及專案工作。"},
@@ -1685,7 +1687,8 @@ function officerRotationOffers(){
       {id:"rotation_civil6",unit:"admin",assignmentType:"civil_defense",unitName:pfx+"民防組",position:"民防組長",seq:6,desc:"分局民防組主管職。"},
       {id:"rotation_traffic6",unit:"admin",assignmentType:"traffic_office",unitName:pfx+"交通組",position:"交通組長",seq:6,desc:"分局交通組主管職。"},
       {id:"rotation_detective6",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查隊長",seq:6,desc:"分局偵查隊主管職。"},
-      {id:"rotation_command6",unit:"admin",assignmentType:"command_center",unitName:pfx+"勤務指揮中心",position:"主任",seq:6,desc:"勤務指揮中心主管職，負責110、派遣、管制及重大事故通報。"}
+      {id:"rotation_command6",unit:"admin",assignmentType:"command_center",unitName:pfx+"勤務指揮中心",position:"主任",seq:6,desc:"勤務指揮中心主管職，負責110、派遣、管制及重大事故通報。"},
+      {id:"rotation_detective_deputy6",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"警務員兼副隊長",seq:6,desc:"偵查隊副主管職；實際序列依機關與職缺編列。"}
     ]
   };
 
@@ -1735,7 +1738,7 @@ function officerRotationOffers(){
   const agency=otherAgencies[Math.floor(Math.random()*otherAgencies.length)];
   const externalPosition={0:"警察局局長",1:"警察局副局長",2:"警察局副局長",3:"警察局副局長",4:"分局長",5:"專員",6:"組長",7:"督察員",8:"警務員",9:"巡官",10:"巡佐"}[seq]||s.position||"警察人員";
   const external={id:"rotation_external_"+seq+"_"+agency[0],unit:"admin",assignmentType:"administration",unitName:agency[1]+"｜局本部／所屬單位",position:externalPosition,seq,county:agency[0],localAgency:agency[1],crossCounty:true,desc:"外縣市調任選項，職務序列相當；可轉往"+agency[0]+"服務。"};
-  const requiredIds=seq===10?["station_deputy10","patrol_squad10"]:seq===9?["station_deputy","patrol_squad9"]:[];
+  const requiredIds=seq===10?["station_deputy10","patrol_squad10","station_chief10"]:seq===9?["station_deputy","station_chief9"]:seq===8?["station_chief"]:seq===7?["rotation_detective7","station_chief7"]:seq===6?["rotation_detective_deputy6"]:[];
   const required=requiredIds.map(id=>base.find(o=>o.id===id)).filter(Boolean);
   const remaining=base.filter(o=>!required.some(r=>r.id===o.id));
   const extra=pickOfficerOffers(remaining,required.length?1:Math.min(2,remaining.length));
@@ -2309,7 +2312,7 @@ function units(){
       const seqNow=s.careerStage==="patrol_rotation"?Number(s.careerSequenceNo):effectiveOfficerSequence();
       s.careerSequenceNo=seqNow;
       s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][seqNow]+"序列";
-      const requiredIds=seqNow===10?["station_deputy10","patrol_squad10"]:seqNow===9?["station_deputy","patrol_squad9"]:[];
+      const requiredIds=seqNow===10?["station_deputy10","patrol_squad10","station_chief10"]:seqNow===9?["station_deputy","station_chief9"]:seqNow===8?["station_chief"]:seqNow===7?["rotation_detective7","station_chief7"]:seqNow===6?["rotation_detective_deputy6"]:[];
       const badOffers=!Array.isArray(s.rotationOffers)||!s.rotationOffers.length||s.rotationOffers.some(o=>Number(o.seq)!==seqNow)||!s.rotationOffers.some(o=>o.crossCounty)||requiredIds.some(id=>!s.rotationOffers.some(o=>o.id===id));
       if(badOffers){s.rotationOffers=officerRotationOffers();s.selectedUnit="";}
       $("unitBanner").textContent="目前職務："+(s.position||"—")+"｜"+s.sequence+"。可選本縣市或外縣市的同序列／相當職務；已升任警務員時，不會再出現第九序列巡官缺額。";
