@@ -1638,7 +1638,8 @@ function effectiveOfficerSequence(){
   return Math.max(0,Math.min(9,seq));
 }
 function officerRotationOffers(){
-  const seq=effectiveOfficerSequence();
+  const patrolSeq=Number(s&&s.careerSequenceNo);
+  const seq=!isOfficerTrack()&&[9,10].includes(patrolSeq)?patrolSeq:effectiveOfficerSequence();
   const pfx=localPrefix();
 
   // 職務輪調是「同序列／相當職務」的橫向歷練，不應把已升任警務員的人降回巡官。
@@ -2305,7 +2306,7 @@ function units(){
     }
     if(s.rotationEligible&&["officer_initial","officer_rotation","patrol_rotation"].includes(s.careerStage)){
       $("confirmUnitBtn").style.display="";
-      const seqNow=effectiveOfficerSequence();
+      const seqNow=s.careerStage==="patrol_rotation"?Number(s.careerSequenceNo):effectiveOfficerSequence();
       s.careerSequenceNo=seqNow;
       s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][seqNow]+"序列";
       const requiredIds=seqNow===10?["station_deputy10","patrol_squad10"]:seqNow===9?["station_deputy","patrol_squad9"]:[];
@@ -2377,7 +2378,7 @@ $("confirmUnitBtn").onclick=()=>{
   }
 
   if((isOfficerTrack()||s.careerStage==="patrol_rotation")&&s.rotationEligible&&["officer_initial","officer_rotation","patrol_rotation"].includes(s.careerStage)){
-    const seqNow=effectiveOfficerSequence();
+    const seqNow=s.careerStage==="patrol_rotation"?Number(s.careerSequenceNo):effectiveOfficerSequence();
     const o=(s.rotationOffers||[]).find(x=>x.id===s.selectedUnit);
     if(!o)return fb("unitMsg","請先選擇一個本次職缺。",0);
     if(Number(o.seq)!==seqNow){
