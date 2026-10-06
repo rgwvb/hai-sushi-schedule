@@ -2401,7 +2401,14 @@ function duty(){
   if($("nextDutyBtn"))$("nextDutyBtn").disabled=false;
   if($("dutySubtitle"))$("dutySubtitle").textContent=s.unit?[s.name,s.county||"",s.precinct||"",s.unitName,s.position||s.rank,s.officialRank||"—"].filter(Boolean).join("｜"):"完成分發後即可上勤。";
 }
-function cases(){ $("caseList").innerHTML=s.cases.length?s.cases.map(c=>'<div class="case-item"><h3>#'+c.id+"｜"+c.type+'</h3><div class="case-meta">'+c.date+"｜"+c.xp+' XP</div><p><b>處置：</b>'+c.action+'<br><b>結果：</b>'+c.result+"</p></div>").join(""):'<div class="empty-state">目前沒有案件卷宗。</div>'}
+function cases(){
+  const list=$("caseList");
+  if(!list)return;
+  const all=Array.isArray(s.cases)?s.cases:[];
+  const recent=all.slice(0,5);
+  if(!recent.length){list.innerHTML='<div class="empty-state">目前沒有勤務紀錄。</div>';return;}
+  list.innerHTML='<div class="info-banner">最近 '+recent.length+' 筆勤務紀錄｜累計 '+all.length+' 筆</div>'+recent.map(c=>'<div class="case-item"><h3>#'+c.id+"｜"+c.type+'</h3><div class="case-meta">'+c.date+"｜"+c.xp+' XP</div><p><b>處置：</b>'+c.action+'<br><b>結果：</b>'+c.result+"</p></div>").join("");
+}
 function career(){document.querySelectorAll(".career-node").forEach((n,i)=>n.classList.toggle("current",i===s.promo))}
 $("specialUnitBtn").onclick=()=>{
   if(s.retired)return fb("careerMsg","已退休，不能再參加職務甄選。",0);
@@ -3302,6 +3309,8 @@ loadPoliceDirectory();
   }
 
   function managerRoleText(){
+    const pos=String(s.position||"");
+    if(pos.includes("巡官"))return "巡官負責指揮本班勤務、協調派遣、掌握現場狀況，並覆核案件紀錄。";
     const L=s.positionLevel||0;
     if(L===0)return"基層警員以直接執行勤務、受理案件與現場處置為主。";
     if(L===1)return"巡佐／小隊長開始負責帶班、現場協調、新進同仁指導與勤務品質。";
@@ -3313,7 +3322,7 @@ loadPoliceDirectory();
   }
   function renderCommand(){
     if(!$("commandLocked"))return;
-    const sup=isSupervisor();
+    const sup=!!s.unit&&!s.retired&&!["考生","待分發"].includes(String(s.position||""))&&isSupervisor();
     $("commandLocked").style.display=sup?"none":"block";
     $("commandContent").style.display=sup?"block":"none";
     $("positionChip").textContent="職位："+positionName();$("commandScoreChip").textContent="主管評價："+s.commandScore;
@@ -3321,11 +3330,11 @@ loadPoliceDirectory();
     $("staffStat").textContent=s.staff;$("paperworkStat").textContent=s.paperwork;$("moraleStat").textContent=s.morale;$("publicStat").textContent=s.publicSatisfaction;
     $("positionDescription").innerHTML="<b>"+positionName()+"</b><br>"+managerRoleText();
     const acts=[
-      ["roster","排定勤務表","警力配置、士氣與疲勞管理"],
-      ["review","覆核案件紀錄","降低程序缺失並提升品質"],
-      ["coach","帶教部屬","提升士氣與單位品質"],
-      ["inspection","裝備／勤務抽查","提升紀律但可能增加壓力"],
-      ["meeting","召開勤前教育","提升溝通與重大事件應變"]
+      ["roster","指揮勤務與派遣","配置警力、掌握同仁服勤狀況"],
+      ["review","覆核案件紀錄","檢視處置程序與紀錄完整性"],
+      ["coach","帶教所屬同仁","提升協作與勤務品質"],
+      ["inspection","督導勤務與裝備","追蹤執勤紀律及裝備狀態"],
+      ["meeting","主持勤前提示","說明勤務重點與現場風險"]
     ];
     $("managerActions").innerHTML=acts.map(a=>'<div class="action-card" data-ma="'+a[0]+'"><strong>'+a[1]+'</strong><p>'+a[2]+'</p></div>').join("");
     document.querySelectorAll("[data-ma]").forEach(e=>e.onclick=()=>managerAction(e.dataset.ma));
@@ -3437,11 +3446,72 @@ loadPoliceDirectory();
     fb("careerMsg","甄審通過：陞任 "+sequenceLabel(nextSeq)+"「"+target+"」。這是職務陞遷；官階另依任官與銓敘條件處理。",1);save();render();
   }
 
+  function renderRoleInterface(){
+    const position=String(s.position||"考生");
+    const pending=["考生","待分發"].includes(position);
+    const employed=!!s.unit&&!s.retired&&!pending;
+    const supervisor=employed&&isSupervisor();
+    const visible={
+      dashboard:true,
+      character:!s.created,
+      route:!!s.created&&!s.route,
+      distribution:!!s.passed&&!s.county&&!s.retired,
+      study:!!s.route&&!s.passed&&!s.retired,
+      exam:!!s.route&&!s.passed&&!s.retired,
+      academy:true,
+      unit:!!s.county&&!s.retired,
+      duty:employed,
+      cases:employed||!!s.retired,
+      command:supervisor,
+      career:employed||!!s.retired,
+      performance:employed||!!s.retired,
+      life:true,records:true,settings:true
+    };
+    document.querySelectorAll(".nav-btn[data-page]").forEach(btn=>{btn.style.display=visible[btn.dataset.page]===false?"none":"";});
+    document.querySelectorAll(".page[id]").forEach(page=>{page.style.display=visible[page.id]===false?"none":"";});
+    document.querySelectorAll(".nav-group").forEach(group=>{
+      const hasVisible=[...group.querySelectorAll(".nav-btn")].some(btn=>btn.style.display!=="none");
+      group.style.display=hasVisible?"":"none";
+    });
+    const activePage=document.querySelector(".page.active");
+    if(activePage&&visible[activePage.id]===false){
+      activePage.classList.remove("active");
+      if($("#dashboard"))$("#dashboard").classList.add("active");
+      document.querySelectorAll(".nav-btn").forEach(btn=>btn.classList.toggle("active",btn.dataset.page==="dashboard"));
+    }
+    const appointmentLabel=document.querySelector('[data-nav-group="appointment"] summary');
+    if(appointmentLabel)appointmentLabel.textContent=employed?"任用與輪調":"任用與調任";
+    const trainingLabel=document.querySelector('[data-nav-group="training"] summary');
+    if(trainingLabel)trainingLabel.textContent=employed?"持續訓練":"考試與訓練";
+    const operationsLabel=document.querySelector('[data-nav-group="operations"] summary');
+    if(operationsLabel)operationsLabel.textContent=supervisor?"勤務與指揮":"勤務任務";
+    const careerLabel=document.querySelector('[data-nav-group="career"] summary');
+    if(careerLabel)careerLabel.textContent="升遷與考績";
+    const dutyNav=document.querySelector('.nav-btn[data-page="duty"]');
+    if(dutyNav)dutyNav.textContent=supervisor?"本班勤務":"今日勤務任務";
+    const casesNav=document.querySelector('.nav-btn[data-page="cases"]');
+    if(casesNav)casesNav.textContent="勤務紀錄";
+    const commandNav=document.querySelector('.nav-btn[data-page="command"]');
+    if(commandNav)commandNav.textContent=position.includes("巡官")?"巡官指揮台":position+"指揮中心";
+    const dashHeading=$("#dashboard")?.querySelector(".page-head h2");
+    if(dashHeading)dashHeading.textContent=s.retired?"退休生涯首頁":(employed?(supervisor?(position.includes("巡官")?"巡官勤務指揮台":position+"指揮台"):"警員勤務首頁"):(s.created?"入警準備首頁":"生涯首頁"));
+    const dutyHeading=$("#duty")?.querySelector(".page-head h2");
+    if(dutyHeading)dutyHeading.textContent=supervisor?(position.includes("巡官")?"巡官勤務指揮":"主管勤務指揮"):"今日勤務任務";
+    const casesHeading=$("#cases")?.querySelector(".page-head h2");
+    if(casesHeading)casesHeading.textContent="近期勤務紀錄";
+    const casesIntro=$("#cases")?.querySelector(".page-head p");
+    if(casesIntro)casesIntro.textContent="只顯示最近 5 筆勤務處置，讓你快速回看重點。";
+    const commandHeading=$("#command")?.querySelector(".page-head h2");
+    if(commandHeading)commandHeading.textContent=position.includes("巡官")?"巡官指揮台":position+"指揮中心";
+    const commandIntro=$("#command")?.querySelector(".page-head p");
+    if(commandIntro&&supervisor)commandIntro.textContent=managerRoleText();
+  }
+
   function renderEnhancements(){
     try{
       migrate();
       const pending=["考生","待分發"].includes(String(s.position||""));
-      const parts=[["academy",renderAcademy],["performance",renderPerformance],["command",renderCommand],["career-upgrade",renderCareerUpgrade],["officer-qualification",renderOfficerQualification],["police-monitor-training",renderPoliceMonitorTraining],["duty-modes",renderDutyModes]];
+      const parts=[["academy",renderAcademy],["performance",renderPerformance],["command",renderCommand],["role-interface",renderRoleInterface],["career-upgrade",renderCareerUpgrade],["officer-qualification",renderOfficerQualification],["police-monitor-training",renderPoliceMonitorTraining],["duty-modes",renderDutyModes]];
       parts.forEach(([name,fn])=>{try{fn()}catch(err){console.error("[enhancement:"+name+"]",err)}});
       if($("dutySubtitle")&&s.unit)$("dutySubtitle").textContent=[s.name,s.county||"",s.precinct||"",s.unitName,positionName(),s.officialRank||"—"].filter(Boolean).join("｜");
       if($("miniStatus"))$("miniStatus").textContent=positionName()+(s.stationName?("｜"+s.stationName):"");
