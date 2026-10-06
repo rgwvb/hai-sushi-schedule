@@ -770,6 +770,13 @@ button:hover{transform:none!important}
   #dashboard .chips>span,.chips .rank-status,.chips button{padding:6px}
   .county-grid{grid-template-columns:1fr}
 }
+
+/* Official police seal, sourced from the Wikimedia Commons SVG. */
+.avatar{background:#f6f8fa;border-color:#d3deea}
+.avatar .police-seal{display:block;width:100%;height:100%;padding:2px;object-fit:contain}
+#dashboard .hero-mark{clip-path:none!important;background:transparent!important;filter:none!important;display:grid;place-items:center;width:66px;height:66px}
+#dashboard .hero-mark img{display:block;width:100%;height:100%;object-fit:contain}
+@media(max-width:520px){#dashboard .hero-mark{width:48px;height:48px}}
 </style>
 <meta name="description" content="台灣警察生涯模擬器單檔 HTML 版本；CSS 與 JavaScript 已內嵌。">
 </head>
@@ -791,7 +798,7 @@ button:hover{transform:none!important}
   <div class="layout">
     <aside class="sidebar">
       <div class="profile-mini">
-        <div class="avatar">警</div>
+        <div class="avatar"><img class="police-seal" src="https://upload.wikimedia.org/wikipedia/commons/4/42/Republic_of_China_Police_Logo.svg" alt="中華民國警察徽章"></div>
         <div>
           <strong id="miniName">尚未建立角色</strong>
           <span id="miniStatus">考生</span>
@@ -863,7 +870,7 @@ button:hover{transform:none!important}
         </div>
 
         <div class="hero-card">
-          <span class="hero-mark" aria-hidden="true">★</span>
+          <span class="hero-mark" aria-hidden="true"><img src="https://upload.wikimedia.org/wikipedia/commons/4/42/Republic_of_China_Police_Logo.svg" alt=""></span>
           <div>
             <span class="eyebrow">警察生涯總覽</span>
             <h3 id="goalTitle">先建立角色</h3>
