@@ -1643,6 +1643,10 @@ function officerRotationOffers(){
 
   // 職務輪調是「同序列／相當職務」的橫向歷練，不應把已升任警務員的人降回巡官。
   const pools={
+    10:[
+      {id:"station_deputy10",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡佐兼副所長",seq:10,desc:"派出所副主管，兼顧勤務、帶班與所務。"},
+      {id:"patrol_squad10",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡佐兼小隊長",seq:10,desc:"派出所勤務小隊主管，兼任巡佐職務，帶領巡邏與值班勤務。"}
+    ],
     9:[
       {id:"rotation_admin",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"巡官",seq:9,desc:"分局行政、勤務規劃與法規歷練。"},
       {id:"rotation_security",unit:"admin",assignmentType:"security_affairs",unitName:pfx+"保防組",position:"巡官",seq:9,desc:"保防、安全防護與社會治安調查歷練。"},
@@ -1651,7 +1655,8 @@ function officerRotationOffers(){
       {id:"rotation_traffic",unit:"admin",assignmentType:"traffic_office",unitName:pfx+"交通組",position:"巡官",seq:9,desc:"交通勤務規劃與專案歷練。"},
       {id:"rotation_detective",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查員",seq:9,desc:"刑案偵查與案件管制歷練。"},
       {id:"rotation_guard",unit:"security",assignmentType:"guard",unitName:pfx+"警備隊",position:"巡官",seq:9,desc:"機動與重大勤務歷練。"},
-      {id:"station_deputy",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡官兼副所長",seq:9,desc:"派出所副主管，兼顧勤務、帶班與所務。"}
+      {id:"station_deputy",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡官兼副所長",seq:9,desc:"派出所副主管，兼顧勤務、帶班與所務。"},
+      {id:"patrol_squad9",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡官兼小隊長",seq:9,desc:"派出所勤務小隊主管，兼任巡官職務，帶領巡邏與值班勤務。"}
     ],
     8:[
       {id:"rotation_admin8",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"警務員",seq:8,desc:"分局行政業務之較高層級幕僚歷練。"},
@@ -1727,9 +1732,13 @@ function officerRotationOffers(){
 
   const otherAgencies=LOCAL_POLICE_AGENCIES.filter(a=>a[0]!==s.county);
   const agency=otherAgencies[Math.floor(Math.random()*otherAgencies.length)];
-  const externalPosition={0:"警察局局長",1:"警察局副局長",2:"警察局副局長",3:"警察局副局長",4:"分局長",5:"專員",6:"組長",7:"督察員",8:"警務員",9:"巡官"}[seq]||s.position||"警察人員";
+  const externalPosition={0:"警察局局長",1:"警察局副局長",2:"警察局副局長",3:"警察局副局長",4:"分局長",5:"專員",6:"組長",7:"督察員",8:"警務員",9:"巡官",10:"巡佐"}[seq]||s.position||"警察人員";
   const external={id:"rotation_external_"+seq+"_"+agency[0],unit:"admin",assignmentType:"administration",unitName:agency[1]+"｜局本部／所屬單位",position:externalPosition,seq,county:agency[0],localAgency:agency[1],crossCounty:true,desc:"外縣市調任選項，職務序列相當；可轉往"+agency[0]+"服務。"};
-  const local=pickOfficerOffers(base,Math.min(2,base.length)).map(o=>{if(o.stationName)o.unitName=stationFullName(o.stationName);return o});
+  const requiredIds=seq===10?["station_deputy10","patrol_squad10"]:seq===9?["station_deputy","patrol_squad9"]:[];
+  const required=requiredIds.map(id=>base.find(o=>o.id===id)).filter(Boolean);
+  const remaining=base.filter(o=>!required.some(r=>r.id===o.id));
+  const extra=pickOfficerOffers(remaining,required.length?1:Math.min(2,remaining.length));
+  const local=required.concat(extra).map(o=>{if(o.stationName)o.unitName=stationFullName(o.stationName);return o});
   return local.concat(external);
 }
 function retirementProfile(){
@@ -1939,14 +1948,14 @@ function load(){let x=localStorage.getItem("twPoliceCareerSaveV1");if(!x)return 
 function fb(id,m,g){let e=$(id);e.className="feedback "+(g?"good":"bad");e.textContent=m}
 function go(p){const selected=document.querySelector(".nav-btn[data-page=\""+p+"\"]");const group=selected&&selected.closest(".nav-group");if(group)document.querySelectorAll(".nav-group").forEach(x=>x.open=x===group);document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===p));document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x.dataset.page===p));window.scrollTo({top:0,behavior:"smooth"});render()}
 document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>go(b.dataset.page));
-function next(){if(s.retired)return"life";if(!s.created)return"character";if(!s.route)return"route";if(!s.passed)return s.written===null?"study":"exam";if(!s.county)return"distribution";if(isOfficerTrack()&&(s.careerStage==="officer_initial_offer"||(["officer_initial","officer_rotation"].includes(s.careerStage)&&s.rotationEligible)))return"unit";if(!s.unit)return"unit";return"duty"}
+function next(){if(s.retired)return"life";if(!s.created)return"character";if(!s.route)return"route";if(!s.passed)return s.written===null?"study":"exam";if(!s.county)return"distribution";if((isOfficerTrack()||s.careerStage==="patrol_rotation")&&(s.careerStage==="officer_initial_offer"||(["officer_initial","officer_rotation","patrol_rotation"].includes(s.careerStage)&&s.rotationEligible)))return"unit";if(!s.unit)return"unit";return"duty"}
 function dashboard(){
 $("miniName").textContent=s.created?s.name:"尚未建立角色";$("miniStatus").textContent=s.position||s.rank;$("careerYearChip").textContent="生涯第 "+s.year+" 年";if($("dateChip"))$("dateChip").textContent=rocDateTime();$("rankChip").textContent="職務："+(s.position||s.rank);$("moneyChip").textContent="存款："+cash(s.savings);
 $("dashboardSub").textContent=s.created?[s.name,s.routeName||"尚未選路線",s.county?([s.county,s.precinct].filter(Boolean).join("｜")):"尚未分發",s.unitName||""].join("｜"):"建立角色後開始你的警察生涯。";
 [["Law",s.law],["Eng",s.eng],["Fit",s.fit],["Comm",s.comm],["Stress",s.stress],["Rep",s.rep]].forEach(v=>{$("dash"+v[0]).textContent=v[1];$("dash"+v[0]+"Bar").style.width=v[1]+"%"});
 $("dashName").textContent=s.name||"—";if($("dashAge"))$("dashAge").textContent=s.age+" 歲";$("dashRoute").textContent=s.routeName||"—";$("dashCounty").textContent=[s.county,s.precinct].filter(Boolean).join("｜")||"—";$("dashUnit").textContent=s.unitName||"—";$("dashRank").textContent=s.position||s.rank;if($("dashQualification"))$("dashQualification").textContent=s.qualification||"尚未取得";if($("dashOfficialRank"))$("dashOfficialRank").textContent=s.officialRank||"—";if($("dashSequence"))$("dashSequence").textContent=s.sequence||"—";
 let a=s.retired?"已退休":(!s.created?"序章案件｜第一通勤務通報":"繼續警察生涯"),b=s.retired?((s.retirementReason||"退休")+"｜原職："+(s.lastActivePosition||"—")+"｜退休日："+(s.retirementDate||"—")):(!s.created?"勤務中心來電：轄區路口發生交通事故，需要員警協助。建立角色後，系統會帶你選擇入警路線，完成備考、考試與分發；正式報到後立即接下第一件勤務。":"完成基本資料後，選擇警專、警大或特考路線。");
-if(!s.retired&&s.created&&!s.route){a="選擇入警路線";b="依學歷與規劃選擇路線。"}else if(s.route&&!s.passed){a="完成考試與受訓";b="備考、筆試、體測與訓練。"}else if(s.passed&&!s.county){a="填寫全國警察機關志願";b="依模擬成績與缺額分發至全臺地方警察機關。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"){a="選填初任職務";b="分局分發完成後，從本次實際型態的組、隊職缺中選擇3個初任職務之一。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial"&&!s.rotationEligible){a="完成初任歷練";b="目前在 "+(s.unitName||"分局單位")+" 擔任 "+(s.position||"巡官")+"；累積約12個月歷練後開放下一輪缺額。"}else if(isOfficerTrack()&&s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){a="選填下一階段職務";b="依目前資格與缺額，從分局組室、偵查隊、警備隊或派出所副主管等職務中選擇。"}else if(s.county&&!s.unit){a="選擇服務單位";b="依任用路線、分局與可用職缺選擇服務單位。"}else if(s.unit){a="開始勤務與累積職涯";b="處理勤務、累積資績與年資，等待輪調、甄審與陞遷機會。"}
+if(!s.retired&&s.created&&!s.route){a="選擇入警路線";b="依學歷與規劃選擇路線。"}else if(s.route&&!s.passed){a="完成考試與受訓";b="備考、筆試、體測與訓練。"}else if(s.passed&&!s.county){a="填寫全國警察機關志願";b="依模擬成績與缺額分發至全臺地方警察機關。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"){a="選填初任職務";b="分局分發完成後，從本次實際型態的組、隊職缺中選擇3個初任職務之一。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial"&&!s.rotationEligible){a="完成初任歷練";b="目前在 "+(s.unitName||"分局單位")+" 擔任 "+(s.position||"巡官")+"；累積約12個月歷練後開放下一輪缺額。"}else if((isOfficerTrack()||s.careerStage==="patrol_rotation")&&s.rotationEligible&&["officer_initial","officer_rotation","patrol_rotation"].includes(s.careerStage)){a="選填下一階段職務";b="依目前資格與缺額，可選同序列輪調與派出所副所長、小隊長等兼任職務。"}else if(s.county&&!s.unit){a="選擇服務單位";b="依任用路線、分局與可用職缺選擇服務單位。"}else if(s.unit){a="開始勤務與累積職涯";b="處理勤務、累積資績與年資，等待輪調、甄審與陞遷機會。"}
 $("goalTitle").textContent=a;$("goalText").textContent=b;const nextStep=next();const stepLabels={character:"建立身分 →",route:"選擇入警路線 →",study:"前往備考訓練 →",exam:"前往考試中心 →",distribution:"填寫分發志願 →",unit:"選擇任職單位 →",duty:"前往勤務 →",life:"查看退休生涯 →"};const continueButton=$("continueBtn");if(continueButton)continueButton.textContent=!s.created?"開始序章｜建立身分 →":(stepLabels[nextStep]||"繼續生涯 →");renderRankInsignia();$("recentEvents").innerHTML=s.history.length?s.history.slice(0,6).map(h=>'<div class="timeline-item"><b>'+h.title+'</b><span>'+h.detail+'</span></div>').join(""):'<div class="empty-state">還沒有生涯事件。</div>';
 }
 function character(){if(!$("charHomeCounty").options.length)$("charHomeCounty").innerHTML=C.map(c=>"<option>"+c+"</option>").join("");$("charName").value=s.name||"林子維";$("charAge").value=s.age;$("charGender").value=s.gender;$("charEducation").value=s.education;$("charHomeCounty").value=s.homeCounty;$("charFamily").value=s.family}
@@ -2156,7 +2165,7 @@ function rocDay(d){
   return (d.getFullYear()-16)+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日";
 }
 function rotationForecastText(){
-  if(!isOfficerTrack())return "基層警員線以單位甄選、分局調任與職缺為主，不設定固定輪調倒數。";
+  if(!isOfficerTrack()&&s.careerStage!=="patrol_rotation")return "基層警員線以單位甄選、分局調任與職缺為主；達巡佐／巡官後可申請兼任職缺。";
   if(s.careerStage==="officer_initial_offer")return "初任職缺：現在已開放，可直接選填。";
   if(s.rotationEligible)return "下一輪職缺：現在已開放，可直接選填。";
   if(!s.unit)return "完成初任派職後，系統才會開始計算下一輪職缺時間。";
@@ -2266,7 +2275,13 @@ function officerVacancyCard(o,extraTag=""){
 }
 function units(){
   renderStationDirectory();renderPrecinctOrg();renderRotationForecast();
-  if(isOfficerTrack()){
+  if(!isOfficerTrack()&&!s.pendingStationPick&&s.unitSelectionOpen&&[9,10].includes(Number(s.careerSequenceNo||11))){
+    s.careerStage="patrol_rotation";
+    s.rotationEligible=true;
+    s.rotationOffers=officerRotationOffers();
+    s.unitSelectionOpen=false;
+  }
+  if(isOfficerTrack()||s.careerStage==="patrol_rotation"){
     if(s.careerStage==="officer_initial_offer"){
       $("confirmUnitBtn").style.display="";
       $("unitBanner").textContent="已分發至 "+([s.county,s.precinct].filter(Boolean).join("｜"))+"。以下為本次3個模擬初任職缺。";
@@ -2275,18 +2290,26 @@ function units(){
       document.querySelectorAll("[data-o]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.o;units()});
       return;
     }
+    if(s.careerStage==="patrol_rotation"&&!s.rotationEligible){
+      const elapsed=Math.floor((Number(s.rotationCycleDays)||0)/30);
+      $("unitBanner").textContent="目前職務："+(s.position||"—")+"｜下一輪兼任職缺歷練 "+elapsed+"/18 個月。";
+      $("unitCards").innerHTML='<div class="choice-card selected current-assignment-card"><h3>🏢 '+(s.unitName||"目前單位")+'</h3><p>'+[s.county,s.precinct,s.stationName,s.position].filter(Boolean).join("｜")+'</p><div class="meta"><span class="tag">下一輪兼任職缺歷練 '+elapsed+'/18 個月</span></div></div>';
+      $("confirmUnitBtn").style.display="none";
+      return;
+    }
     if(s.careerStage==="officer_initial"&&!s.rotationEligible){
       $("unitBanner").textContent="目前初任："+(s.unitName||"—")+"｜"+(s.position||"巡官")+"。遊戲以12個月作為第一階段歷練期（僅為遊戲節奏設定）。";
       $("unitCards").innerHTML='<div class="choice-card selected officer-vacancy-card"><div class="vacancy-card-head"><div><h3>🏢 '+(s.unitName||"目前單位")+'</h3><strong class="vacancy-position">'+(s.position||"巡官")+'</strong></div><div class="vacancy-rank">'+rankInsigniaHTML(effectiveOfficerSequence(),true)+'</div></div><p>目前任職中｜'+s.sequence+'</p><div class="meta"><span class="tag">歷練 '+(s.rotationMonths||0)+'/12 個月</span><span class="tag">'+rankInsigniaSpec(effectiveOfficerSequence()).label+'</span></div></div>';
       $("confirmUnitBtn").style.display="none";
       return;
     }
-    if(s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){
+    if(s.rotationEligible&&["officer_initial","officer_rotation","patrol_rotation"].includes(s.careerStage)){
       $("confirmUnitBtn").style.display="";
       const seqNow=effectiveOfficerSequence();
       s.careerSequenceNo=seqNow;
       s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][seqNow]+"序列";
-      const badOffers=!Array.isArray(s.rotationOffers)||!s.rotationOffers.length||s.rotationOffers.some(o=>Number(o.seq)!==seqNow)||!s.rotationOffers.some(o=>o.crossCounty);
+      const requiredIds=seqNow===10?["station_deputy10","patrol_squad10"]:seqNow===9?["station_deputy","patrol_squad9"]:[];
+      const badOffers=!Array.isArray(s.rotationOffers)||!s.rotationOffers.length||s.rotationOffers.some(o=>Number(o.seq)!==seqNow)||!s.rotationOffers.some(o=>o.crossCounty)||requiredIds.some(id=>!s.rotationOffers.some(o=>o.id===id));
       if(badOffers){s.rotationOffers=officerRotationOffers();s.selectedUnit="";}
       $("unitBanner").textContent="目前職務："+(s.position||"—")+"｜"+s.sequence+"。可選本縣市或外縣市的同序列／相當職務；已升任警務員時，不會再出現第九序列巡官缺額。";
       $("unitCards").innerHTML=s.rotationOffers.map(o=>officerVacancyCard(o,"輪調職缺")).join("");
@@ -2353,7 +2376,7 @@ $("confirmUnitBtn").onclick=()=>{
     save();enterAssignedDuty();return;
   }
 
-  if(isOfficerTrack()&&s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){
+  if((isOfficerTrack()||s.careerStage==="patrol_rotation")&&s.rotationEligible&&["officer_initial","officer_rotation","patrol_rotation"].includes(s.careerStage)){
     const seqNow=effectiveOfficerSequence();
     const o=(s.rotationOffers||[]).find(x=>x.id===s.selectedUnit);
     if(!o)return fb("unitMsg","請先選擇一個本次職缺。",0);
@@ -2370,7 +2393,8 @@ $("confirmUnitBtn").onclick=()=>{
     s.rank=o.position;
     s.careerSequenceNo=o.seq;
     s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][o.seq]+"序列";
-    s.careerStage="officer_rotation";
+    s.careerStage=isOfficerTrack()?"officer_rotation":"patrol_rotation";
+    s.unitSelectionOpen=false;
     s.rotationEligible=false;
     s.rotationMonths=0;
     s.rotationCycleMonths=0;
@@ -2438,6 +2462,18 @@ $("specialUnitBtn").onclick=()=>{
     if(s.rotationEligible){go("unit");return}
     return fb("careerMsg","警官線的專業職務以輪調缺額方式開放；目前尚未產生新的輪調缺額。",0);
   }
+  const seqNow=Number(s.careerSequenceNo||11);
+  if([9,10].includes(seqNow)&&["patrol_rotation","officer_rotation"].includes(s.careerStage)){
+    if(s.rotationEligible){go("unit");return}
+    return fb("careerMsg","下一輪兼任職缺尚未開放，請依「職務輪調」頁的歷練倒數等待。",0);
+  }
+  if([9,10].includes(seqNow)){
+    if(s.year<2||s.xp<180)return fb("careerMsg","需任職至少2年並累積180勤務 XP，才能申請巡佐／巡官兼任職務。",0);
+    s.careerStage="patrol_rotation";s.rotationEligible=true;s.rotationCycleDays=0;s.rotationCycleMonths=0;s.rotationMonths=0;s.rotationOffers=officerRotationOffers();s.selectedUnit="";s.unitSelectionOpen=false;
+    rec("巡佐／巡官輪調資格開放","符合年資與勤務資績門檻，開放副所長、小隊長等兼任職務選填");
+    fb("careerMsg","已開放巡佐／巡官兼任職缺，請到「職務輪調」選填。",1);
+    save();go("unit");return;
+  }
   if(s.year<2||s.xp<180)return fb("careerMsg","遊戲化甄選門檻：需一定年資與勤務資績；目前尚未達標。",0);
   s.unitSelectionOpen=true;rec("取得專業職務申請資格","可到職務輪調頁查看偵查隊、交通分隊或分局組室等可用單位");
   fb("careerMsg","已取得本次專業職務申請資格，請到「職務輪調」查看可用單位。",1);
@@ -2456,9 +2492,9 @@ $("transferBtn").onclick=()=>{
   const oldPosition=s.position,oldOfficialRank=s.officialRank,oldSeq=isOfficerTrack()?effectiveOfficerSequence():Number(s.careerSequenceNo||11);
   s.county=post.county;s.localAgency=post.agency;s.precinct=post.precinct||"";s.stationName="";s.selectedStation="";s.selectedUnit="";s.initialOffers=[];s.rotationOffers=[];
 
-  if(isOfficerTrack()){
+  if(isOfficerTrack()||[9,10].includes(oldSeq)){
     s.careerSequenceNo=oldSeq;s.sequence=oldSeq===0?"最高職務層級":"第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][oldSeq]+"序列";
-    s.officialRank=oldOfficialRank;s.position=oldPosition;s.rank=oldPosition;s.unit="";s.unitName="";s.assignmentType="";s.careerStage="officer_rotation";s.rotationEligible=true;s.rotationCycleDays=0;s.rotationCycleMonths=0;s.rotationMonths=0;s.rotationOffers=officerRotationOffers();
+    s.officialRank=oldOfficialRank;s.position=oldPosition;s.rank=oldPosition;s.unit="";s.unitName="";s.assignmentType="";s.careerStage=isOfficerTrack()?"officer_rotation":"patrol_rotation";s.rotationEligible=true;s.rotationCycleDays=0;s.rotationCycleMonths=0;s.rotationMonths=0;s.rotationOffers=officerRotationOffers();
     rec("全國警察機關調任",oldLabel+" → "+post.label+"｜保留 "+s.sequence+"／"+oldPosition+" 層級");
     fb("careerMsg","調任核定："+post.label+"。官階與職務序列不變，請選擇相當職務。",1);save();render();go("unit");return;
   }
@@ -2632,8 +2668,9 @@ loadPoliceDirectory();
       }
     }
 
-    if(typeof isOfficerTrack!=="function"||!isOfficerTrack())return;
-    if(!["officer_initial","officer_rotation"].includes(s.careerStage))return;
+    const patrolRotation=s.careerStage==="patrol_rotation"&&[9,10].includes(currentSequenceNo());
+    if((typeof isOfficerTrack!=="function"||!isOfficerTrack())&&!patrolRotation)return;
+    if(!["officer_initial","officer_rotation"].includes(s.careerStage)&&!patrolRotation)return;
     s.rotationCycleDays=(Number(s.rotationCycleDays)||0)+Number(days);
     s.rotationCycleMonths=Math.floor(s.rotationCycleDays/30);
     s.rotationMonths=s.rotationCycleMonths;
@@ -3433,7 +3470,7 @@ loadPoliceDirectory();
   }
   function enhancedPromotion(){
     if(s.retired)return fb("careerMsg","已退休，不能再參加陞遷甄審。",0);
-    if(!s.unit)return fb("careerMsg","尚未正式任職。",0);if(isOfficerTrack()&&s.rotationEligible)return fb("careerMsg","目前已有職務輪調缺額待選，請先完成「職務輪調」再參加陞遷甄審。",0);
+    if(!s.unit)return fb("careerMsg","尚未正式任職。",0);if((isOfficerTrack()||s.careerStage==="patrol_rotation")&&s.rotationEligible)return fb("careerMsg","目前已有職務輪調缺額待選，請先完成「職務輪調」再參加陞遷甄審。",0);
     const seq=currentSequenceNo(),nextSeq=seq>0?seq-1:null;
     if(nextSeq===null)return fb("careerMsg","已達最高職務層級。",1);
     if(seq===10&&nextSeq===9&&!patrolOfficerQualified()){
