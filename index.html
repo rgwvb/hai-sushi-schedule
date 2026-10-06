@@ -2133,10 +2133,17 @@ function rankInsigniaHTML(seq,compact=false){
   return '<span class="rank-insignia '+(compact?"compact":"")+'" title="'+spec.label+'"><img src="'+rankInsigniaURL(spec.file)+'" alt="'+spec.label+' 階級識別圖"></span><span class="rank-insignia-label">'+spec.label+"</span>";
 }
 function renderRankInsignia(){
-  const seq=(typeof effectiveOfficerSequence==="function"&&isOfficerTrack())?effectiveOfficerSequence():Number(s.careerSequenceNo||11);
-  if($("dashInsignia"))$("dashInsignia").innerHTML=rankInsigniaHTML(seq);
-  if($("careerInsignia"))$("careerInsignia").innerHTML=rankInsigniaHTML(seq);
-  if($("rankInsigniaChip"))$("rankInsigniaChip").innerHTML=rankInsigniaHTML(seq,true);
+  const pending = ["考生","待分發"].includes(String(s.position||""));
+  const hasSequence = s.careerSequenceNo!==null && s.careerSequenceNo!==undefined && s.careerSequenceNo!=="";
+  const hasRank = !pending && hasSequence && !!s.officialRank && s.officialRank!=="—";
+  const noRank = '<span class="rank-insignia-label">尚未任官</span>';
+  const seq = hasRank
+    ? ((typeof effectiveOfficerSequence==="function"&&isOfficerTrack())?effectiveOfficerSequence():Number(s.careerSequenceNo))
+    : null;
+  const html = hasRank ? rankInsigniaHTML(seq) : noRank;
+  if($("dashInsignia"))$("dashInsignia").innerHTML=html;
+  if($("careerInsignia"))$("careerInsignia").innerHTML=html;
+  if($("rankInsigniaChip"))$("rankInsigniaChip").innerHTML=hasRank?rankInsigniaHTML(seq,true):noRank;
 }
 function rocDay(d){
   return (d.getFullYear()-16)+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日";
