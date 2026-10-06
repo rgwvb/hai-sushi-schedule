@@ -2821,6 +2821,7 @@ loadPoliceDirectory();
   }
   function renderOfficerQualification(){
     if(!$("officerQualificationBox"))return;
+    if(["考生","待分發"].includes(String(s.position||""))){$("officerQualificationPanel").style.display="none";return;}
     const seq=currentSequenceNo();
     $("officerQualificationPanel").style.display=(seq===10||seq===9||s.policeZhengQualified||s.officerEducationQualified)?"block":"none";
     $("officerQualificationBox").innerHTML=qualificationStatusHTML();
@@ -3372,20 +3373,22 @@ loadPoliceDirectory();
   }
   function renderCareerUpgrade(){
     if(!$("careerMsg"))return;
-    const seq=currentSequenceNo();
-    s.careerSequenceNo=seq;s.sequence=sequenceLabel(seq);s.promotionScore=promotionScore();
+    const pending=["考生","待分發"].includes(String(s.position||""));
+    const seq=pending?null:currentSequenceNo();
+    if(!pending){s.careerSequenceNo=seq;s.sequence=sequenceLabel(seq);}
+    s.promotionScore=promotionScore();
     if($("careerQualification"))$("careerQualification").textContent=s.qualification||"—";
-    if($("careerOfficialRank"))$("careerOfficialRank").textContent=s.officialRank||"—";
+    if($("careerOfficialRank"))$("careerOfficialRank").textContent=pending?"尚未任官":(s.officialRank||"—");
     if($("careerPosition"))$("careerPosition").textContent=positionName();
-    if($("careerSequence"))$("careerSequence").textContent=sequenceLabel(seq);
-    if($("promotionScoreBox"))$("promotionScoreBox").textContent="資績模擬分："+s.promotionScore+"｜最近考績："+((s.appraisals&&s.appraisals[0]?.grade)||"尚無")+"｜獎懲："+(s.commend||0)+"嘉獎／"+(s.merit||0)+"記功／"+(s.admonition||0)+"申誡／"+(s.demerit||0)+"記過";
-    const nextSeq=seq>0?seq-1:null;
-    if($("promotionRuleText"))$("promotionRuleText").textContent=nextSeq!==null?(seq===10?"目前第十序列；升任第九序列巡官等警官職務前，須先完成官等、警大教育／訓練、績效與獎懲資格。":"目前 "+sequenceLabel(seq)+"；可依缺額與資格參加 "+sequenceLabel(nextSeq)+" 職務甄審。"):"目前已到最高職務層級。";
+    if($("careerSequence"))$("careerSequence").textContent=pending?"尚未任官":sequenceLabel(seq);
+    if($("promotionScoreBox"))$("promotionScoreBox").textContent=pending?"完成分發與派職後，才開始計算陞遷資績。":"資績模擬分："+s.promotionScore+"｜最近考績："+((s.appraisals&&s.appraisals[0]?.grade)||"尚無")+"｜獎懲："+(s.commend||0)+"嘉獎／"+(s.merit||0)+"記功／"+(s.admonition||0)+"申誡／"+(s.demerit||0)+"記過";
+    const nextSeq=pending?null:(seq>0?seq-1:null);
+    if($("promotionRuleText"))$("promotionRuleText").textContent=pending?"完成考試、分發與派職後，才會開始計算職務陞遷。":(nextSeq!==null?(seq===10?"目前第十序列；升任第九序列巡官等警官職務前，須先完成官等、警大教育／訓練、績效與獎懲資格。":"目前 "+sequenceLabel(seq)+"；可依缺額與資格參加 "+sequenceLabel(nextSeq)+" 職務甄審。"):"目前已到最高職務層級。");
     if($("careerPath")){
       const seqs=[11,10,9,8,7,6,5,4,3,2,1,0];
       $("careerPath").className="sequence-grid";
       $("careerPath").innerHTML=seqs.map(n=>{
-        const info=sequenceInfo[n],state=n===seq?" current":n>seq?" passed":"";
+        const info=sequenceInfo[n],state=pending?"":(n===seq?" current":n>seq?" passed":"");
         return '<div class="sequence-card'+state+'"><div class="seq-head"><strong>'+sequenceLabel(n)+'</strong><span>'+info.range+'</span></div><p>'+info.examples.join("、")+'</p>'+(n===seq?'<em>目前所在序列</em>':'')+'</div>';
       }).join("");
     }
@@ -3437,6 +3440,7 @@ loadPoliceDirectory();
   function renderEnhancements(){
     try{
       migrate();
+      const pending=["考生","待分發"].includes(String(s.position||""));
       const parts=[["academy",renderAcademy],["performance",renderPerformance],["command",renderCommand],["career-upgrade",renderCareerUpgrade],["officer-qualification",renderOfficerQualification],["police-monitor-training",renderPoliceMonitorTraining],["duty-modes",renderDutyModes]];
       parts.forEach(([name,fn])=>{try{fn()}catch(err){console.error("[enhancement:"+name+"]",err)}});
       if($("dutySubtitle")&&s.unit)$("dutySubtitle").textContent=[s.name,s.county||"",s.precinct||"",s.unitName,positionName(),s.officialRank||"—"].filter(Boolean).join("｜");
@@ -3444,8 +3448,8 @@ loadPoliceDirectory();
       if($("rankChip"))$("rankChip").textContent="職位："+positionName();
       if($("dashRank"))$("dashRank").textContent=positionName();
       if($("dashQualification"))$("dashQualification").textContent=s.qualification||"尚未取得";
-      if($("dashOfficialRank"))$("dashOfficialRank").textContent=s.officialRank||"—";
-      if($("dashSequence"))$("dashSequence").textContent=sequenceLabel(currentSequenceNo());
+      if($("dashOfficialRank"))$("dashOfficialRank").textContent=pending?"尚未任官":(s.officialRank||"—");
+      if($("dashSequence"))$("dashSequence").textContent=pending?"尚未任官":sequenceLabel(currentSequenceNo());
       if(typeof renderRotationForecast==="function")renderRotationForecast();
       if(typeof renderRankInsignia==="function")renderRankInsignia();
       if(typeof syncExamActionButtons==="function")syncExamActionButtons();
