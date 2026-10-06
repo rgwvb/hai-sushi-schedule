@@ -25,16 +25,22 @@ if(standaloneIds.every(id=>htmlRaw.includes(`id="${id}"`))){
     assert(window.document.title.includes("台灣警察生涯模擬器"),"standalone simulator title missing");
     assert(window.document.querySelectorAll(".nav-btn").length>=12,"main navigation did not render");
     const rotationScenarios=[
-      {position:"巡佐",seq:10,expected:["巡佐兼副所長","巡佐兼小隊長"]},
-      {position:"巡官",seq:9,expected:["巡官兼副所長","巡官兼小隊長"]}
+      {position:"巡佐",seq:10,route:"tpa",stage:"basic_active",openWithButton:true,expected:["巡佐兼副所長","巡佐兼小隊長"]},
+      {position:"巡官",seq:9,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["巡官兼副所長","巡官兼小隊長"]}
     ];
     for(const scenario of rotationScenarios){
-      const state={created:true,passed:true,route:"tpa",county:"臺北市",localAgency:"臺北市政府警察局",precinct:"中正第一分局",unit:"station",unitName:"臺北市政府警察局中正第一分局忠孝西路派出所",assignmentType:"station",stationName:"忠孝西路派出所",position:scenario.position,rank:scenario.position,careerSequenceNo:scenario.seq,careerStage:"basic_active",unitSelectionOpen:true,rotationEligible:false,rotationOffers:[],selectedUnit:"",pendingStationPick:false,year:5,xp:500};
-      window.eval("Object.assign(s,"+JSON.stringify(state)+");units()");
+      const oldOffers=scenario.seq===9?[
+        {id:"rotation_admin",unit:"admin",assignmentType:"administration",unitName:"臺北市政府警察局行政組",position:"巡官",seq:9},
+        {id:"rotation_external_9_新北市",unit:"admin",assignmentType:"administration",unitName:"新北市政府警察局｜局本部／所屬單位",position:"巡官",seq:9,crossCounty:true,county:"新北市",localAgency:"新北市政府警察局"}
+      ]:[];
+      const state={created:true,passed:true,route:scenario.route,county:"臺北市",localAgency:"臺北市政府警察局",precinct:"中正第一分局",unit:"station",unitName:"臺北市政府警察局中正第一分局忠孝西路派出所",assignmentType:"station",stationName:"忠孝西路派出所",position:scenario.position,rank:scenario.position,careerSequenceNo:scenario.seq,careerStage:scenario.stage,unitSelectionOpen:false,rotationEligible:scenario.seq===9,rotationOffers:oldOffers,selectedUnit:"",pendingStationPick:false,year:5,xp:500,officerEducationQualified:true};
+      window.eval("Object.assign(s,"+JSON.stringify(state)+");");
+      if(scenario.openWithButton)click(window,window.document.getElementById("specialUnitBtn"));
+      else window.eval("units()");
       const shown=[...window.document.querySelectorAll("#unitCards .vacancy-position")].map(x=>x.textContent);
       for(const title of scenario.expected)assert(shown.includes(title),scenario.position+" rotation missing "+title);
     }
-    window.eval("s=NEW();render()");
+    window.eval("s=NEW();render();go('dashboard')");
     assert(window.document.querySelectorAll("#charHomeCounty option").length===22,"county select should contain 22 options");
     click(window,window.document.getElementById("createCharacterBtn"));await wait(0);
     click(window,window.document.querySelector('#routeCards [data-r="tpa"]'));await wait(0);
