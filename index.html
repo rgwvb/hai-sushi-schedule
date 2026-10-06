@@ -1942,12 +1942,12 @@ $("miniName").textContent=s.created?s.name:"尚未建立角色";$("miniStatus").
 $("dashboardSub").textContent=s.created?[s.name,s.routeName||"尚未選路線",s.county?([s.county,s.precinct].filter(Boolean).join("｜")):"尚未分發",s.unitName||""].join("｜"):"建立角色後開始你的警察生涯。";
 [["Law",s.law],["Eng",s.eng],["Fit",s.fit],["Comm",s.comm],["Stress",s.stress],["Rep",s.rep]].forEach(v=>{$("dash"+v[0]).textContent=v[1];$("dash"+v[0]+"Bar").style.width=v[1]+"%"});
 $("dashName").textContent=s.name||"—";if($("dashAge"))$("dashAge").textContent=s.age+" 歲";$("dashRoute").textContent=s.routeName||"—";$("dashCounty").textContent=[s.county,s.precinct].filter(Boolean).join("｜")||"—";$("dashUnit").textContent=s.unitName||"—";$("dashRank").textContent=s.position||s.rank;if($("dashQualification"))$("dashQualification").textContent=s.qualification||"尚未取得";if($("dashOfficialRank"))$("dashOfficialRank").textContent=s.officialRank||"—";if($("dashSequence"))$("dashSequence").textContent=s.sequence||"—";
-let a=s.retired?"已退休":"先建立角色",b=s.retired?((s.retirementReason||"退休")+"｜原職："+(s.lastActivePosition||"—")+"｜退休日："+(s.retirementDate||"—")):"完成基本資料後，選擇警專、警大或特考路線。";
+let a=s.retired?"已退休":(!s.created?"序章案件｜第一通勤務通報":"繼續警察生涯"),b=s.retired?((s.retirementReason||"退休")+"｜原職："+(s.lastActivePosition||"—")+"｜退休日："+(s.retirementDate||"—")):(!s.created?"勤務中心來電：轄區路口發生交通事故，需要員警協助。建立角色後，系統會帶你選擇入警路線，完成備考、考試與分發；正式報到後立即接下第一件勤務。":"完成基本資料後，選擇警專、警大或特考路線。");
 if(!s.retired&&s.created&&!s.route){a="選擇入警路線";b="依學歷與規劃選擇路線。"}else if(s.route&&!s.passed){a="完成考試與受訓";b="備考、筆試、體測與訓練。"}else if(s.passed&&!s.county){a="填寫全國警察機關志願";b="依模擬成績與缺額分發至全臺地方警察機關。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial_offer"){a="選填初任職務";b="分局分發完成後，從本次實際型態的組、隊職缺中選擇3個初任職務之一。"}else if(isOfficerTrack()&&s.careerStage==="officer_initial"&&!s.rotationEligible){a="完成初任歷練";b="目前在 "+(s.unitName||"分局單位")+" 擔任 "+(s.position||"巡官")+"；累積約12個月歷練後開放下一輪缺額。"}else if(isOfficerTrack()&&s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){a="選填下一階段職務";b="依目前資格與缺額，從分局組室、偵查隊、警備隊或派出所副主管等職務中選擇。"}else if(s.county&&!s.unit){a="選擇服務單位";b="依任用路線、分局與可用職缺選擇服務單位。"}else if(s.unit){a="開始勤務與累積職涯";b="處理勤務、累積資績與年資，等待輪調、甄審與陞遷機會。"}
-$("goalTitle").textContent=a;$("goalText").textContent=b;renderRankInsignia();$("recentEvents").innerHTML=s.history.length?s.history.slice(0,6).map(h=>'<div class="timeline-item"><b>'+h.title+'</b><span>'+h.detail+'</span></div>').join(""):'<div class="empty-state">還沒有生涯事件。</div>';
+$("goalTitle").textContent=a;$("goalText").textContent=b;const nextStep=next();const stepLabels={character:"建立身分 →",route:"選擇入警路線 →",study:"前往備考訓練 →",exam:"前往考試中心 →",distribution:"填寫分發志願 →",unit:"選擇任職單位 →",duty:"前往勤務 →",life:"查看退休生涯 →"};const continueButton=$("continueBtn");if(continueButton)continueButton.textContent=!s.created?"開始序章｜建立身分 →":(stepLabels[nextStep]||"繼續生涯 →");renderRankInsignia();$("recentEvents").innerHTML=s.history.length?s.history.slice(0,6).map(h=>'<div class="timeline-item"><b>'+h.title+'</b><span>'+h.detail+'</span></div>').join(""):'<div class="empty-state">還沒有生涯事件。</div>';
 }
 function character(){if(!$("charHomeCounty").options.length)$("charHomeCounty").innerHTML=C.map(c=>"<option>"+c+"</option>").join("");$("charName").value=s.name||"林子維";$("charAge").value=s.age;$("charGender").value=s.gender;$("charEducation").value=s.education;$("charHomeCounty").value=s.homeCounty;$("charFamily").value=s.family}
-$("createCharacterBtn").onclick=()=>{s.created=true;s.name=$("charName").value.trim()||"無名警員";s.age=Math.max(18,Math.min(45,+$("charAge").value||18));s.initialAge=s.age;s.gender=$("charGender").value;s.education=$("charEducation").value;s.homeCounty=$("charHomeCounty").value;s.family=$("charFamily").value;rec("建立角色",s.name+"，"+s.age+"歲，"+s.education+"，居住 "+s.homeCounty);fb("characterMsg","角色建立完成。",1);save();render()}
+$("createCharacterBtn").onclick=()=>{s.created=true;s.name=$("charName").value.trim()||"無名警員";s.age=Math.max(18,Math.min(45,+$("charAge").value||18));s.initialAge=s.age;s.gender=$("charGender").value;s.education=$("charEducation").value;s.homeCounty=$("charHomeCounty").value;s.family=$("charFamily").value;rec("建立角色",s.name+"，"+s.age+"歲，"+s.education+"，居住 "+s.homeCounty);fb("characterMsg","角色建立完成，接著選擇入警路線。",1);save();go("route")}
 function routeCardsMarkup(){
   return R.map(r=>'<div class="choice-card '+((s.selectedRoute===r[0]||s.route===r[0])?"selected":"")+'" data-r="'+r[0]+'"><h3>'+r[1]+" "+r[2]+'</h3><p>'+r[3]+'</p><div class="meta"><span class="tag">難度 '+"★".repeat(r[4])+'</span><span class="tag">準備 '+r[5]+' 天</span><span class="tag">'+r[6]+'</span></div></div>').join("");
 }
@@ -1979,7 +1979,7 @@ function routes(){
   box.innerHTML=routeCardsMarkup();
   box.querySelectorAll("[data-r]").forEach(e=>e.onclick=()=>{s.selectedRoute=e.dataset.r;routes()});
 }
-$("confirmRouteBtn").onclick=()=>{if(!s.created)return fb("routeMsg","請先建立角色。",0);let r=R.find(x=>x[0]===s.selectedRoute);if(!r)return fb("routeMsg","請先選擇路線。",0);if(r[0]==="g3"&&!["大學畢業","研究所畢業"].includes(s.education))return fb("routeMsg","本遊戲中三等需大學以上學歷。",0);s.route=r[0];s.routeName=r[2];s.days=r[5];s.written=null;s.physical=null;s.training=false;s.passed=false;s.rank="考生";s.position="考生";s.qualification="尚未取得";s.officialRank="—";s.sequence="—";rec("選擇入警路線",r[2]);fb("routeMsg","已選擇 "+r[2]+"。",1);save();render()}
+$("confirmRouteBtn").onclick=()=>{if(!s.created)return fb("routeMsg","請先建立角色。",0);let r=R.find(x=>x[0]===s.selectedRoute);if(!r)return fb("routeMsg","請先選擇路線。",0);if(r[0]==="g3"&&!["大學畢業","研究所畢業"].includes(s.education))return fb("routeMsg","本遊戲中三等需大學以上學歷。",0);s.route=r[0];s.routeName=r[2];s.days=r[5];s.written=null;s.physical=null;s.training=false;s.passed=false;s.rank="考生";s.position="考生";s.qualification="尚未取得";s.officialRank="—";s.sequence="—";rec("選擇入警路線",r[2]);fb("routeMsg","已選擇 "+r[2]+"，開始備考訓練。",1);save();go("study")}
 function study(){
   if($("studyDaysChip"))$("studyDaysChip").textContent="距考試 "+s.days+" 天";
   if($("studyLaw"))$("studyLaw").textContent=s.law;
@@ -1997,7 +1997,7 @@ function study(){
   if($("overallProgress"))$("overallProgress").style.width=cl(o)+"%";
   if($("studyAdvice"))$("studyAdvice").textContent=!s.route?"先選擇入警路線。":s.law<55?"建議優先讀法學。":s.fit<60?"建議加強體能。":s.stress>70?"壓力偏高，建議休息。":"目前狀態穩定。";
 }
-function train(a){if(!s.route)return toast("請先選入警路線");if(s.days<=0)return toast("已到考試日期");if(a==="law"){s.law=cl(s.law+5);s.stress=cl(s.stress+3);s.savings-=300}if(a==="eng"){s.eng=cl(s.eng+5);s.stress=cl(s.stress+2);s.savings-=200}if(a==="fit"){s.fit=cl(s.fit+5);s.health=cl(s.health+1)}if(a==="mock"){s.law=cl(s.law+3);s.eng=cl(s.eng+2);s.stress=cl(s.stress+4)}if(a==="work"){s.savings+=2500;s.stress=cl(s.stress+3)}if(a==="rest"){s.stress=cl(s.stress-10);s.health=cl(s.health+2)}s.days=Math.max(0,s.days-7);advanceDays(7);save();render()}
+function train(a){if(!s.route)return toast("請先選入警路線");if(s.days<=0)return toast("已到考試日期");if(a==="law"){s.law=cl(s.law+5);s.stress=cl(s.stress+3);s.savings-=300}if(a==="eng"){s.eng=cl(s.eng+5);s.stress=cl(s.stress+2);s.savings-=200}if(a==="fit"){s.fit=cl(s.fit+5);s.health=cl(s.health+1)}if(a==="mock"){s.law=cl(s.law+3);s.eng=cl(s.eng+2);s.stress=cl(s.stress+4)}if(a==="work"){s.savings+=2500;s.stress=cl(s.stress+3)}if(a==="rest"){s.stress=cl(s.stress-10);s.health=cl(s.health+2)}s.days=Math.max(0,s.days-7);advanceDays(7);save();if(s.days<=0)go("exam");else render()}
 function syncExamActionButtons(){
   const w=$("writtenExamBtn"),p=$("physicalExamBtn"),tr=$("trainingBtn"),next=$("examNextPageBtn");
   const all=[w,p,tr,next].filter(Boolean);
@@ -2065,7 +2065,7 @@ function exam(){
 }
 $("writtenExamBtn").onclick=()=>{if(!s.route)return fb("examMsg","請先選擇路線。",0);let r=R.find(x=>x[0]===s.route),z=Math.round(s.law*.55+s.eng*.25+s.comm*.1+s.fit*.1-r[4]*2.8-Math.max(0,(s.stress-50)*.12)+(Math.random()*12-4));s.written=cl(z);advanceHours(3);rec("參加筆試","成績 "+s.written);fb("examMsg",s.written>=55?"筆試通過，成績 "+s.written+"。已自動切換到下一步：體測。":"未達遊戲門檻55分，可回備考重考。",s.written>=55);save();render();setTimeout(()=>{if(s.written>=55&&$("physicalExamBtn"))$("physicalExamBtn").focus()},0)}
 $("physicalExamBtn").onclick=()=>{if(s.written===null||s.written<55)return fb("examMsg","需先通過筆試。",0);s.physical=cl(Math.round(s.fit-s.stress*.08+s.health*.06+(Math.random()*10-3)));advanceDays(7);rec("參加體測","成績 "+s.physical);fb("examMsg",s.physical>=55?"體測通過，成績 "+s.physical+"。已自動切換到下一步：受訓。":"未達遊戲門檻55分。",s.physical>=55);save();render();setTimeout(()=>{if(s.physical>=55&&$("trainingBtn"))$("trainingBtn").focus()},0)}
-$("trainingBtn").onclick=()=>{if(s.physical===null||s.physical<55)return fb("examMsg","需先通過前階段測驗。",0);let r=R.find(x=>x[0]===s.route);if(!r)return fb("examMsg","找不到任用路線。",0);s.training=true;advanceDays(r[10]);s.score=Math.round(s.written*.68+s.physical*.32);s.ranking=Math.max(1,Math.round(1800-s.score*17+Math.random()*120));s.passed=true;s.qualification=r[6];s.officialRank=r[7];s.position="待分發";s.rank="待分發";s.sequence=r[9];s.careerSequenceNo=r[11];s.comm=cl(s.comm+5);let detail=(s.route==="tpa"?"完成警專教育並通過四等警察人員特考任用流程":s.route==="cpu"?"完成警大教育並通過三等警察人員特考任用流程":s.route==="g4"?"完成四等一般警察特考教育與實務訓練":"完成三等一般警察特考教育與實務訓練");rec("取得任官資格",detail+"｜"+s.qualification);fb("examMsg",detail+"。目前任官資格："+s.qualification+"；已切換到下一步：臺北市分局分發。",1);save();render();setTimeout(()=>{if($("examNextPageBtn"))$("examNextPageBtn").focus()},0)}
+$("trainingBtn").onclick=()=>{if(s.physical===null||s.physical<55)return fb("examMsg","需先通過前階段測驗。",0);let r=R.find(x=>x[0]===s.route);if(!r)return fb("examMsg","找不到任用路線。",0);s.training=true;advanceDays(r[10]);s.score=Math.round(s.written*.68+s.physical*.32);s.ranking=Math.max(1,Math.round(1800-s.score*17+Math.random()*120));s.passed=true;s.qualification=r[6];s.officialRank=r[7];s.position="待分發";s.rank="待分發";s.sequence=r[9];s.careerSequenceNo=r[11];s.comm=cl(s.comm+5);let detail=(s.route==="tpa"?"完成警專教育並通過四等警察人員特考任用流程":s.route==="cpu"?"完成警大教育並通過三等警察人員特考任用流程":s.route==="g4"?"完成四等一般警察特考教育與實務訓練":"完成三等一般警察特考教育與實務訓練");rec("取得任官資格",detail+"｜"+s.qualification);fb("examMsg",detail+"。目前任官資格："+s.qualification+"；現在進入全國機關分發。",1);save();go("distribution")}
 if($("examNextPageBtn"))$("examNextPageBtn").onclick=()=>{if(!s.passed)return fb("examMsg","尚未完成錄取流程。",0);go("distribution")};
 function cn(id){let row=distributionPost(id);return row?[row.vacancy,row.threshold]:[20,65]}
 function dist(){
@@ -2105,7 +2105,7 @@ $("runDistributionBtn").onclick=()=>{
     rec("分發",post.label);
     fb("distributionResult","分發成功："+post.label+"。下一步選擇基層服務單位。",1);
   }
-  save();render();
+  save();go("unit");
 }
 function rankInsigniaSpec(seq){
   const map={
@@ -2306,6 +2306,7 @@ function units(){
   document.querySelectorAll("[data-u]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.u;units()});
 }
 
+function enterAssignedDuty(){go("duty");if(s.unit&&typeof window.__policeNewDuty==="function")window.__policeNewDuty();}
 $("confirmUnitBtn").onclick=()=>{
   if(!s.county)return fb("unitMsg","請先完成分發。",0);
 
@@ -2329,7 +2330,7 @@ $("confirmUnitBtn").onclick=()=>{
     s.selectedUnit="";
     rec("初任派職",o.unitName+"｜"+o.position);
     fb("unitMsg","初任派職完成："+o.unitName+"｜"+o.position+"。",1);
-    save();render();return;
+    save();enterAssignedDuty();return;
   }
 
   if(isOfficerTrack()&&s.rotationEligible&&["officer_initial","officer_rotation"].includes(s.careerStage)){
@@ -2358,7 +2359,7 @@ $("confirmUnitBtn").onclick=()=>{
     s.selectedUnit="";
     rec("職務輪調",o.unitName+"｜"+o.position);
     fb("unitMsg","已派任："+o.unitName+"｜"+o.position+"。",1);
-    save();render();return;
+    save();enterAssignedDuty();return;
   }
 
   let u=U.find(x=>x[0]===s.selectedUnit);
@@ -2367,7 +2368,7 @@ $("confirmUnitBtn").onclick=()=>{
     if(!s.selectedStation)return fb("unitMsg","請先選擇一間派出所。",0);
     s.unit="station";s.assignmentType="station";s.stationName=s.selectedStation;s.unitName=stationFullName(s.selectedStation);s.position="警員";s.rank="警員";s.pendingStationPick=false;s.selectedUnit="station";s.unitSelectionOpen=false;s.careerStage="basic_active";
     rec("派出所報到","臺北市｜"+s.precinct+"｜"+s.stationName);
-    fb("unitMsg","已報到："+s.unitName+"。",1);save();render();return;
+    fb("unitMsg","已報到："+s.unitName+"。",1);save();enterAssignedDuty();return;
   }
   if(s.year<u[3]||s.xp<u[4])return fb("unitMsg","條件不足：需年資 "+u[3]+" 年、XP "+u[4]+"。",0);
   if(u[0]==="station"){
@@ -2380,7 +2381,7 @@ $("confirmUnitBtn").onclick=()=>{
   s.assignmentType=u[0];s.stationName="";s.unitSelectionOpen=false;s.careerStage="basic_active";
   rec("單位報到",[s.county,s.precinct,u[2]].filter(Boolean).join("｜"));
   fb("unitMsg","已報到："+s.unitName+"。",1);
-  save();render();
+  save();enterAssignedDuty();
 }
 function duty(){
   if($("shiftChip"))$("shiftChip").textContent=shiftName()+"｜"+rocDateTime();
