@@ -81,6 +81,13 @@ if(standaloneIds.every(id=>htmlRaw.includes(`id="${id}"`))){
     assert(!window.document.getElementById("policeMonitorTrainingBtn").disabled,"qualified police senior training should unlock on the rotation page");
     click(window,window.document.getElementById("policeMonitorTrainingBtn"));await wait(0);
     assert(window.document.getElementById("policeMonitorTrainingStatus").textContent.includes("已完成警正升警監訓練"),"police senior training completion did not update");
+    const retryState={...seniorState,law:0,knowledge:0,service:0,policeMonitorTrainingPassed:false,policeMonitorTrainingLastResult:""};
+    window.localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(retryState));click(window,window.document.getElementById("manualLoadBtn"));await wait(0);click(window,window.document.querySelector('.nav-btn[data-page="unit"]'));await wait(0);
+    const originalRandom=window.Math.random;window.Math.random=()=>0;click(window,window.document.getElementById("policeMonitorTrainingBtn"));await wait(0);window.Math.random=originalRandom;
+    assert(window.document.getElementById("policeMonitorTrainingStatus").textContent.includes("本次警監班訓練未通過"),"failed training result should be visible on the training card");
+    const blockedState={...retryState,officialRank:"警正二階",policeMonitorTrainingLastResult:""};window.localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(blockedState));click(window,window.document.getElementById("manualLoadBtn"));await wait(0);click(window,window.document.querySelector('.nav-btn[data-page="unit"]'));await wait(0);
+    assert(window.document.getElementById("policeMonitorTrainingBtn").disabled,"ineligible training button should remain disabled");
+    assert(window.document.getElementById("policeMonitorTrainingStatus").textContent.includes("官階須為警正一階"),"ineligible training blocker should be explained on the training card");
     if(errors.length)throw new Error("Runtime console errors:\n"+errors.join("\n"));
     console.log("SMOKE_OK standalone app, route, study, duty scenario");
   }catch(err){console.error("SMOKE_FAIL",err.stack||err);if(errors.length)console.error(errors.join("\n"));process.exit(1)}
