@@ -1622,91 +1622,139 @@ function officerInitialOffers(){
   return s.initialOffers;
 }
 function effectiveOfficerSequence(){
-  let seq=Number(s&&s.careerSequenceNo);
-  if(!Number.isFinite(seq)||seq<0||seq>9)seq=9;
+  const storedSeq=Number(s&&s.careerSequenceNo);
+  const hasStoredSeq=Number.isInteger(storedSeq)&&storedSeq>=0&&storedSeq<=9;
+  let seq=hasStoredSeq?storedSeq:9;
   const pos=String((s&&s.position)||(s&&s.rank)||"");
-  if(/警務員/.test(pos))seq=Math.min(seq,8);
-  if(/警務正|偵查正|分局.*組長|偵查隊長/.test(pos))seq=Math.min(seq,6);
-  else if(/第七序列警務員|督察員|警備隊長|偵查隊副隊長/.test(pos))seq=Math.min(seq,7);
-  if(/組長|偵查隊長|主任/.test(pos))seq=Math.min(seq,6);
-  if(/副分局長|科長|大隊長|專員/.test(pos))seq=Math.min(seq,5);
-  if(/分局長|大隊長/.test(pos))seq=Math.min(seq,4);
-  if(/警政署組長|勤務指揮中心主任|刑事警察局副局長|直轄市.*警察局副局長/.test(pos))seq=Math.min(seq,3);
-  if(/警政委員|警政署主任秘書|警政署督察室主任|航空警察局局長|國道公路警察局局長|保安警察第[一二]總隊總隊長/.test(pos))seq=Math.min(seq,2);
-  if(/警政署副署長|刑事警察局局長|直轄市.*警察局局長|臺灣警察專科學校校長/.test(pos))seq=Math.min(seq,1);
-  if(/警政署署長|中央警察大學校長/.test(pos))seq=0;
+  // 已有陞遷序列代表任用職缺核定的序列。同一職稱在不同機關可能分列不同序列，
+  // 因此只在舊存檔缺少序列時，才用職稱回推，避免跨機關輪調後被錯誤降列。
+  if(!hasStoredSeq){
+    if(/警務員/.test(pos))seq=Math.min(seq,8);
+    if(/警務正|偵查正|分局.*組長|偵查隊長/.test(pos))seq=Math.min(seq,6);
+    else if(/第七序列警務員|督察員|警備隊長|偵查隊副隊長/.test(pos))seq=Math.min(seq,7);
+    if(/組長|偵查隊長|主任/.test(pos))seq=Math.min(seq,6);
+    if(/副分局長|科長|大隊長|專員/.test(pos))seq=Math.min(seq,5);
+    if(/分局長|大隊長/.test(pos))seq=Math.min(seq,4);
+    if(/警政署組長|勤務指揮中心主任|刑事警察局副局長|直轄市.*警察局副局長/.test(pos))seq=Math.min(seq,3);
+    if(/警政委員|警政署主任秘書|警政署督察室主任|航空警察局局長|國道公路警察局局長|保安警察第[一二]總隊總隊長/.test(pos))seq=Math.min(seq,2);
+    if(/警政署副署長|刑事警察局局長|直轄市.*警察局局長|臺灣警察專科學校校長/.test(pos))seq=Math.min(seq,1);
+    if(/警政署署長|中央警察大學校長/.test(pos))seq=0;
+  }
   return Math.max(0,Math.min(9,seq));
 }
 function officerRotationOffers(){
   const patrolSeq=Number(s&&s.careerSequenceNo);
   const seq=!isOfficerTrack()&&[9,10].includes(patrolSeq)?patrolSeq:effectiveOfficerSequence();
   const pfx=localPrefix();
+  const homeMetro=Boolean(agencyRecord(s&&s.county)?.[4]);
 
-  // 職務輪調是「同序列／相當職務」的橫向歷練，不應把已升任警務員的人降回巡官。
+  // 輪調職務按警察機關陞遷序列表建模；派出所兼任職依各局遴補資格列入同序列選項。
   const pools={
     10:[
       {id:"station_deputy10",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡佐兼副所長",seq:10,desc:"派出所副主管，兼顧勤務、帶班與所務。"},
-      {id:"patrol_squad10",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡佐兼小隊長",seq:10,desc:"派出所勤務小隊主管，兼任巡佐職務，帶領巡邏與值班勤務。"},
-      {id:"station_chief10",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡佐兼所長",seq:10,desc:"派出所主管職；部分縣市與分駐（派出）所可由符合資格的警正巡佐兼任。"}
+      {id:"patrol_squad10",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡佐兼小隊長",seq:10,desc:"派出所勤務小隊主管，帶領巡邏與值班勤務。"},
+      {id:"station_chief10",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡佐兼所長",seq:10,desc:"派出所主管職，依機關編制與遴補資格派任。"},
+      {id:"sergeant_regular10",unit:"admin",assignmentType:"administration",unitName:pfx+"勤務單位",position:"巡佐",seq:10,desc:"巡佐職務，負責帶班、勤務執行與現場協調。"},
+      {id:"sergeant_policeaffairs10",unit:"admin",assignmentType:"administration",unitName:pfx+"勤務單位",position:"警務佐",seq:10,desc:"警務佐職務，依單位編制承辦警察業務。"},
+      {id:"sergeant_education10",unit:"admin",assignmentType:"administration",unitName:pfx+"教育訓練單位",position:"教育班長",seq:10,desc:"協助教育訓練、常年訓練與勤前教育。"},
+      {id:"sergeant_detective10",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查佐",seq:10,desc:"執行刑案偵查、蒐證與案件移送。"}
     ],
     9:[
       {id:"rotation_admin",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"巡官",seq:9,desc:"分局行政、勤務規劃與法規歷練。"},
       {id:"rotation_security",unit:"admin",assignmentType:"security_affairs",unitName:pfx+"保防組",position:"巡官",seq:9,desc:"保防、安全防護與社會治安調查歷練。"},
-      {id:"rotation_prevention",unit:"admin",assignmentType:"prevention",unitName:pfx+"防治組",position:"巡官",seq:9,desc:"婦幼、社區警政與失蹤人口業務歷練。"},
-      {id:"rotation_civil",unit:"admin",assignmentType:"civil_defense",unitName:pfx+"民防組",position:"巡官",seq:9,desc:"民防、義警、防災與城鎮韌性歷練。"},
+      {id:"rotation_prevention",unit:"admin",assignmentType:"prevention",unitName:pfx+"防治組",position:"巡官",seq:9,desc:"防治、婦幼與社區警政業務歷練。"},
+      {id:"rotation_civil",unit:"admin",assignmentType:"civil_defense",unitName:pfx+"民防組",position:"巡官",seq:9,desc:"民防、義警、防災與城鎮韌性業務歷練。"},
       {id:"rotation_traffic",unit:"admin",assignmentType:"traffic_office",unitName:pfx+"交通組",position:"巡官",seq:9,desc:"交通勤務規劃與專案歷練。"},
       {id:"rotation_detective",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查員",seq:9,desc:"刑案偵查與案件管制歷練。"},
       {id:"rotation_guard",unit:"security",assignmentType:"guard",unitName:pfx+"警備隊",position:"巡官",seq:9,desc:"機動與重大勤務歷練。"},
+      {id:"rotation_squad9",unit:"traffic",assignmentType:"traffic",unitName:pfx+"交通分隊",position:"分隊長",seq:9,desc:"交通分隊主管，負責路檢、事故處理與勤務規劃。"},
+      {id:"rotation_academy_squad9",unit:"central",assignmentType:"central_school",unitName:"臺灣警察專科學校",position:"區隊長",seq:9,desc:"警專學生生活管理、隊務與訓練輔導職務。"},
       {id:"station_deputy",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡官兼副所長",seq:9,desc:"派出所副主管，兼顧勤務、帶班與所務。"},
       {id:"station_chief9",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"巡官兼所長",seq:9,desc:"派出所主管職；依各局所定序列、官階、職務歷練與遴選資格派任。"}
     ],
     8:[
-      {id:"rotation_admin8",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"警務員",seq:8,desc:"分局行政業務之較高層級幕僚歷練。"},
-      {id:"rotation_security8",unit:"admin",assignmentType:"security_affairs",unitName:pfx+"保防組",position:"警務員",seq:8,desc:"保防與安全防護業務之幕僚歷練。"},
-      {id:"rotation_prevention8",unit:"admin",assignmentType:"prevention",unitName:pfx+"防治組",position:"警務員",seq:8,desc:"防治、婦幼與社區警政業務之幕僚歷練。"},
-      {id:"rotation_civil8",unit:"admin",assignmentType:"civil_defense",unitName:pfx+"民防組",position:"警務員",seq:8,desc:"民防與防災業務之幕僚歷練。"},
-      {id:"rotation_traffic8",unit:"admin",assignmentType:"traffic_office",unitName:pfx+"交通組",position:"警務員",seq:8,desc:"交通業務之幕僚與協調歷練。"},
-      {id:"rotation_detective8",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查員",seq:8,desc:"刑案偵查與專案案件之較高層級歷練。"},
-      {id:"rotation_guard8",unit:"security",assignmentType:"guard",unitName:pfx+"警備隊",position:"警務員",seq:8,desc:"機動勤務與隊務幕僚歷練。"},
+      {id:"rotation_admin8",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"警務員",seq:8,desc:"分局行政業務幕僚職務。"},
+      {id:"rotation_security8",unit:"admin",assignmentType:"security_affairs",unitName:pfx+"保防組",position:"警務員",seq:8,desc:"保防與安全防護業務職務。"},
+      {id:"rotation_prevention8",unit:"admin",assignmentType:"prevention",unitName:pfx+"防治組",position:"組員",seq:8,desc:"防治、婦幼與社區警政業務職務。"},
+      {id:"rotation_civil8",unit:"admin",assignmentType:"civil_defense",unitName:pfx+"民防組",position:"課員",seq:8,desc:"民防、防災與協勤組織業務職務。"},
+      {id:"rotation_traffic8",unit:"admin",assignmentType:"traffic_office",unitName:pfx+"交通組",position:"警務員",seq:8,desc:"交通業務承辦與勤務協調職務。"},
+      {id:"rotation_detective8",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查員",seq:8,desc:"刑案偵查與專案案件職務。"},
+      {id:"rotation_investigator8",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"調查員",seq:8,desc:"刑事案件調查、蒐證與資料分析職務。"},
+      {id:"rotation_guard8",unit:"security",assignmentType:"guard",unitName:pfx+"警備隊",position:"組員",seq:8,desc:"機動勤務與隊務執行職務。"},
       {id:"station_chief",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"警務員兼所長",seq:8,desc:"派出所主管職，負責所務、勤務、人員與轄區治安。"}
     ],
     7:[
-      {id:"rotation_admin7",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"第七序列警務員",seq:7,desc:"分局較高層級幕僚與業務督導歷練。"},
-      {id:"rotation_security7",unit:"admin",assignmentType:"security_affairs",unitName:pfx+"保防組",position:"第七序列警務員",seq:7,desc:"保防與安全防護業務督導歷練。"},
-      {id:"rotation_prevention7",unit:"admin",assignmentType:"prevention",unitName:pfx+"防治組",position:"第七序列警務員",seq:7,desc:"防治、婦幼與社區警政業務督導歷練。"},
-      {id:"rotation_inspector7",unit:"admin",assignmentType:"inspection",unitName:pfx+"督察組",position:"督察員",seq:7,desc:"勤務督導、考核與風紀業務歷練。"},
-      {id:"rotation_guard7",unit:"security",assignmentType:"guard",unitName:pfx+"警備隊",position:"警備隊長",seq:7,desc:"警備隊主管職，負責隊務與機動勤務督導。"},
+      {id:"rotation_admin7",unit:"admin",assignmentType:"administration",unitName:pfx+(homeMetro?"督察單位":"局本部"),position:homeMetro?"督察員":"股長",seq:7,desc:"局本部督察或股長職務，依機關類型與編制派任。"},
+      {id:"rotation_security7",unit:"security",assignmentType:"guard",unitName:pfx+"警備隊",position:"警備隊長",seq:7,desc:"警備隊主管，負責隊務與機動勤務督導。"},
+      {id:"rotation_prevention7",unit:"admin",assignmentType:"inspection",unitName:pfx+"督察組",position:"督察員",seq:7,desc:"勤務督導、考核與風紀業務歷練。"},
+      {id:"rotation_guard7",unit:"security",assignmentType:"guard",unitName:"內政部警政署保安警察總隊",position:"中隊長",seq:7,desc:"保安警察中隊主管，負責中隊勤務與人員督導。"},
       {id:"rotation_detective7",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"警務員兼副隊長",seq:7,desc:"偵查隊副主管職；實際序列依機關與職缺編列。"},
-      {id:"station_chief7",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"警務員兼所長",seq:7,desc:"第七序列警務員兼所長職缺，依各局遴補與任用資格派任。"}
+      {id:"station_chief7",unit:"station",assignmentType:"station_command",stationName:randomStation(),position:"警務員兼所長",seq:7,desc:"警務員兼任派出所所長，依各局遴補與任用資格派任。"}
     ],
     6:[
-      {id:"rotation_policeaffairs6a",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"警務正",seq:6,desc:"第六序列警務正，辦理較高層級幕僚、督導及專案工作。"},
+      {id:"rotation_policeaffairs6a",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"警務正",seq:6,desc:"警務正職務，辦理警察業務幕僚、督導及專案工作。"},
       {id:"rotation_admin6",unit:"admin",assignmentType:"administration",unitName:pfx+"行政組",position:"行政組長",seq:6,desc:"分局行政組主管職。"},
       {id:"rotation_security6",unit:"admin",assignmentType:"security_affairs",unitName:pfx+"保防組",position:"保防組長",seq:6,desc:"分局保防組主管職。"},
       {id:"rotation_prevention6",unit:"admin",assignmentType:"prevention",unitName:pfx+"防治組",position:"防治組長",seq:6,desc:"分局防治組主管職。"},
       {id:"rotation_civil6",unit:"admin",assignmentType:"civil_defense",unitName:pfx+"民防組",position:"民防組長",seq:6,desc:"分局民防組主管職。"},
       {id:"rotation_traffic6",unit:"admin",assignmentType:"traffic_office",unitName:pfx+"交通組",position:"交通組長",seq:6,desc:"分局交通組主管職。"},
-      {id:"rotation_detective6",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查隊長",seq:6,desc:"分局偵查隊主管職。"},
-      {id:"rotation_command6",unit:"admin",assignmentType:"command_center",unitName:pfx+"勤務指揮中心",position:"主任",seq:6,desc:"勤務指揮中心主管職，負責110、派遣、管制及重大事故通報。"},
-      {id:"rotation_detective_deputy6",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"警務員兼副隊長",seq:6,desc:"偵查隊副主管職；實際序列依機關與職缺編列。"}
+      {id:"rotation_detective6",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"偵查隊長",seq:6,desc:"分局偵查隊主管職；正式序列依機關編制。"},
+      {id:"rotation_command6",unit:"admin",assignmentType:"command_center",unitName:pfx+"勤務指揮中心",position:"主任",seq:6,desc:"勤務指揮中心主管，負責110、派遣、管制及重大事故通報。"},
+      {id:"rotation_detective_deputy6",unit:"detective",assignmentType:"detective",unitName:pfx+"偵查隊",position:"警務員兼副隊長",seq:6,desc:"偵查隊副主管職；實際序列依機關與職缺編列。"},
+      {id:"rotation_special_deputy6",unit:"security",assignmentType:"guard",unitName:pfx+"直屬警察隊",position:"副隊長",seq:6,desc:"直屬警察隊副主管，負責勤務部署與人員督導。"},
+      {id:"rotation_section6",unit:"admin",assignmentType:"administration",unitName:pfx+"局本部",position:homeMetro?"股長":"警務正",seq:6,desc:"警察局本部股長或警務正職務，依機關編制派任。"}
+    ],
+    5:homeMetro?[
+      {id:"metro_specialist5",unit:"admin",assignmentType:"administration",unitName:localAgencyName()+"本部",position:"專員",seq:5,desc:"直轄市警察局局本部專員，辦理跨單位幕僚與專案業務。"},
+      {id:"npa_specialist5",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"專員",seq:5,desc:"警政署專員職缺，依預算員額及任用資格遴補。"},
+      {id:"police_college_instructor5",unit:"central",assignmentType:"central_school",unitName:"臺灣警察專科學校",position:"教官",seq:5,desc:"警專教官職缺，依編制員額與遴選資格派任。"},
+      {id:"cib_deputy_squad5",unit:"central",assignmentType:"central_cib",unitName:"內政部警政署刑事警察局",position:"副大隊長",seq:5,desc:"刑事警察局大隊副主管職務。"},
+      {id:"cib_researcher5",unit:"central",assignmentType:"central_cib",unitName:"內政部警政署刑事警察局",position:"研究員",seq:5,desc:"刑事警察局研究職務。"}
+    ]:[
+      {id:"county_secretary5",unit:"admin",assignmentType:"administration",unitName:localAgencyName()+"本部",position:"主任秘書",seq:5,desc:"縣市警察局主任秘書，負責局本部綜合幕僚與協調。"},
+      {id:"county_inspector5",unit:"admin",assignmentType:"inspection",unitName:localAgencyName()+"督察室",position:"督察長",seq:5,desc:"縣市警察局督察長，統籌督察、考核與風紀業務。"},
+      {id:"county_department5",unit:"admin",assignmentType:"administration",unitName:localAgencyName()+"局本部",position:"科長",seq:5,desc:"縣市警察局科長，負責全局專業業務管理。"},
+      {id:"county_precinct5",unit:"admin",assignmentType:"administration",unitName:localAgencyName()+"所屬分局",position:"分局長",seq:5,desc:"縣市警察局分局長；須符合警正班及候用分局長職前訓練等資格。"},
+      {id:"county_battalion5",unit:"traffic",assignmentType:"traffic",unitName:localAgencyName()+"所屬大隊",position:"大隊長",seq:5,desc:"縣市警察局所屬大隊主管職務。"},
+      {id:"county_team5",unit:"security",assignmentType:"guard",unitName:localAgencyName()+"所屬隊",position:"隊長",seq:5,desc:"縣市警察局所屬警察隊主管職務。"},
+      {id:"aviation_deputy_squad5",unit:"central",assignmentType:"central_special",unitName:"內政部警政署航空警察局",position:"副大隊長",seq:5,desc:"航空警察局大隊副主管職務。"},
+      {id:"highway_battalion5",unit:"central",assignmentType:"central_special",unitName:"內政部警政署國道公路警察局",position:"公路警察大隊大隊長",seq:5,desc:"國道公路警察局公路警察大隊主管職務。"},
+      {id:"special_forces_lead5",unit:"central",assignmentType:"central_special",unitName:"內政部警政署保安警察總隊",position:"大隊長",seq:5,desc:"保安警察總隊大隊主管職務。"}
+    ],
+    4:homeMetro?[
+      {id:"metro_division4",unit:"admin",assignmentType:"administration",unitName:localAgencyName()+"所屬分局",position:"分局長",seq:4,desc:"直轄市警察局分局長，負責分局勤務、治安與人員督導。"},
+      {id:"metro_battalion4",unit:"traffic",assignmentType:"traffic",unitName:localAgencyName()+"所屬大隊",position:"大隊長",seq:4,desc:"直轄市警察局大隊長，統籌所屬專業勤務與人員。"},
+      {id:"metro_inspector4",unit:"admin",assignmentType:"inspection",unitName:localAgencyName()+"本部",position:"督察長",seq:4,desc:"直轄市警察局督察長，統籌督察、考核與風紀業務。"},
+      {id:"metro_section4",unit:"admin",assignmentType:"administration",unitName:localAgencyName()+"本部",position:"科長",seq:4,desc:"直轄市警察局科長或主任職務。"},
+      {id:"metro_police_monitor4",unit:"admin",assignmentType:"administration",unitName:localAgencyName()+"本部",position:"警政監",seq:4,desc:"直轄市警察局警政監職務。"}
+    ]:[
+      {id:"county_deputy4",unit:"admin",assignmentType:"administration",unitName:localAgencyName()+"局本部",position:"副局長",seq:4,desc:"縣市警察局副局長，協助局長統籌全局警政工作。"},
+      {id:"npa_section_chief4",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"科長",seq:4,desc:"警政署科長職務。"},
+      {id:"railway_deputy4",unit:"central",assignmentType:"central_special",unitName:"內政部警政署鐵路警察局",position:"副局長",seq:4,desc:"鐵路警察局副局長職務。"},
+      {id:"special_force_deputy4",unit:"central",assignmentType:"central_special",unitName:"內政部警政署保安警察第一總隊",position:"副總隊長",seq:4,desc:"保安警察總隊副總隊長職務。"},
+      {id:"npa_inspector4",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"督察",seq:4,desc:"警政署督察職務。"}
     ]
   };
 
-  const genericSeq=Math.min(seq,6);
-  let base=pools[seq]||pools[genericSeq]||pools[9];
+  let base=pools[seq]||pools[9];
 
-  // 高階生涯擴展到全國與中央警察機關。第3至第1序列依警政署公開陞遷序列表建模；最高職務層級另列署長／警大校長。
+  // 中央層級職務按警政署正式序列表；地方職務依直轄市與縣市警局不同序列列出。
   if(seq===3){
     base=[
-      {id:"npa_dir3",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"組長",seq:3,desc:"警政署業務單位主管。"},
-      {id:"npa_cmd3",unit:"central",assignmentType:"central_command",unitName:"內政部警政署勤務指揮中心",position:"主任",seq:3,desc:"全國重大治安、交通、災害與110勤務指揮。"},
-      {id:"cib_deputy3",unit:"central",assignmentType:"central_cib",unitName:"內政部警政署刑事警察局",position:"副局長",seq:3,desc:"刑事警察局副首長，參與全國刑事偵防政策與指揮。"},
-      {id:"metro_deputy3",unit:"central",assignmentType:"central_local",unitName:"直轄市政府警察局",position:"副局長",seq:3,desc:"直轄市警察局副首長職務。"}
+      {id:"npa_dir3",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"組長",seq:3,desc:"警政署組長，統籌業務單位政策與執行。"},
+      {id:"npa_cmd3",unit:"central",assignmentType:"central_command",unitName:"內政部警政署勤務指揮中心",position:"主任",seq:3,desc:"勤務指揮中心主任，統籌全國重大治安、交通、災害與110勤務。"},
+      {id:"cib_deputy3",unit:"central",assignmentType:"central_cib",unitName:"內政部警政署刑事警察局",position:"副局長",seq:3,desc:"刑事警察局副局長，參與全國刑事偵防政策與指揮。"},
+      {id:"npa_director3",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"主任",seq:3,desc:"警政署主任職務。"},
+      {id:"spc_group_chief3",unit:"central",assignmentType:"central_special",unitName:"內政部警政署保安警察第三至第七總隊",position:"總隊長",seq:3,desc:"保安警察第三至第七總隊首長職務。"},
+      {id:"railway_chief3",unit:"central",assignmentType:"central_special",unitName:"內政部警政署鐵路警察局",position:"局長",seq:3,desc:"鐵路警察局首長職務。"},
+      homeMetro
+        ?{id:"metro_deputy3",unit:"admin",assignmentType:"administration",unitName:localAgencyName()+"局本部",position:"副局長",seq:3,desc:"直轄市政府警察局副局長職務。"}
+        :{id:"county_chief3",unit:"admin",assignmentType:"administration",unitName:localAgencyName()+"局本部",position:"局長",seq:3,desc:"縣市政府警察局局長職務。"}
     ];
   }else if(seq===2){
     base=[
-      {id:"npa_sec2",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"主任秘書",seq:2,desc:"署本部高階幕僚主管。"},
-      {id:"npa_inspector2",unit:"central",assignmentType:"central_command",unitName:"內政部警政署督察室",position:"主任",seq:2,desc:"全國警察督察、考核與風紀高階主管。"},
+      {id:"npa_sec2",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"主任秘書",seq:2,desc:"警政署主任秘書，負責署本部高階幕僚與跨單位協調。"},
+      {id:"npa_inspector2",unit:"central",assignmentType:"central_command",unitName:"內政部警政署督察室",position:"督察室主任",seq:2,desc:"統籌全國警察督察、考核與風紀業務。"},
       {id:"npa_commissioner2",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"警政委員",seq:2,desc:"警政署高階警政幕僚職務。"},
       {id:"aviation_chief2",unit:"central",assignmentType:"central_special",unitName:"內政部警政署航空警察局",position:"局長",seq:2,desc:"航空警察局首長。"},
       {id:"highway_chief2",unit:"central",assignmentType:"central_special",unitName:"內政部警政署國道公路警察局",position:"局長",seq:2,desc:"國道公路警察局首長。"},
@@ -1724,26 +1772,55 @@ function officerRotationOffers(){
     ];
   }else if(seq===0){
     base=[
-      {id:"npa_chief0",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"署長",seq:0,desc:"全國警察行政最高首長，統一指揮、監督全國警察機關（構）執行警察任務。"},
-      {id:"cpu_president0",unit:"central",assignmentType:"central_school",unitName:"中央警察大學",position:"校長",seq:0,desc:"中央警察大學校長，屬警察體系最高層級職務之一。"}
-    ];
-  }else if(seq<=5){
-    base=[
-      {id:"senior_staff",unit:"admin",assignmentType:"senior",unitName:"臺北市政府警察局局本部／所屬單位",position:seq===5?"專員":"高階主管職",seq,desc:"較高序列之局本部或大型單位主管／幕僚職務；依缺額與資格產生。"},
-      {id:"senior_command",unit:"admin",assignmentType:"senior",unitName:"臺北市政府警察局所屬分局／大隊",position:seq===5?"副主管職":"分局長／大隊長等高階主管職",seq,desc:"較高序列主管職務；不再回到基層巡官職缺。"}
+      {id:"npa_chief0",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"署長",seq:0,desc:"全國警察行政最高首長，統一指揮、監督全國警察機關執行警察任務。"},
+      {id:"cpu_president0",unit:"central",assignmentType:"central_school",unitName:"中央警察大學",position:"校長",seq:0,desc:"中央警察大學校長，警察教育體系最高職務之一。"}
     ];
   }
 
-  const otherAgencies=LOCAL_POLICE_AGENCIES.filter(a=>a[0]!==s.county);
-  const agency=otherAgencies[Math.floor(Math.random()*otherAgencies.length)];
-  const externalPosition={0:"警察局局長",1:"警察局副局長",2:"警察局副局長",3:"警察局副局長",4:"分局長",5:"專員",6:"組長",7:"督察員",8:"警務員",9:"巡官",10:"巡佐"}[seq]||s.position||"警察人員";
-  const external={id:"rotation_external_"+seq+"_"+agency[0],unit:"admin",assignmentType:"administration",unitName:agency[1]+"｜局本部／所屬單位",position:externalPosition,seq,county:agency[0],localAgency:agency[1],crossCounty:true,desc:"外縣市調任選項，職務序列相當；可轉往"+agency[0]+"服務。"};
-  const requiredIds=seq===10?["station_deputy10","patrol_squad10","station_chief10"]:seq===9?["station_deputy","station_chief9"]:seq===8?["station_chief"]:seq===7?["rotation_detective7","station_chief7"]:seq===6?["rotation_detective_deputy6"]:[];
+  let requiredIds=seq===10?["station_deputy10","patrol_squad10","station_chief10"]
+    :seq===9?["station_deputy","station_chief9"]
+    :seq===8?["station_chief"]
+    :seq===7?["rotation_detective7","station_chief7"]
+    :seq===6?["rotation_detective_deputy6"]
+    :seq===5?[homeMetro?"metro_specialist5":"county_secretary5"]
+    :seq===4?[homeMetro?"metro_division4":"county_deputy4"]
+    :seq===3?[homeMetro?"metro_deputy3":"county_chief3"]
+    :seq===2?["npa_sec2"]
+    :seq===1?["npa_deputy1"]
+    :[];
   const required=requiredIds.map(id=>base.find(o=>o.id===id)).filter(Boolean);
   const remaining=base.filter(o=>!required.some(r=>r.id===o.id));
   const extra=pickOfficerOffers(remaining,required.length?1:Math.min(2,remaining.length));
   const local=required.concat(extra).map(o=>{if(o.stationName)o.unitName=stationFullName(o.stationName);return o});
-  return local.concat(external);
+
+  let external=null;
+  if(seq===2){
+    const alternative=base.filter(o=>!local.some(shown=>shown.id===o.id));
+    const target=alternative[Math.floor(Math.random()*alternative.length)];
+    if(target)external={...target,id:"rotation_external_2_"+target.id,crossAgency:true,county:"中央",localAgency:target.unitName,desc:"跨機關同序列調任示例；實際遴補仍依機關資格與缺額辦理。"};
+  }else if(seq!==0){
+    let candidates=LOCAL_POLICE_AGENCIES.filter(a=>a[0]!==s.county);
+    if(seq===1)candidates=candidates.filter(a=>a[4]);
+    else if(seq>=3&&seq<=5)candidates=candidates.filter(a=>Boolean(a[4])===homeMetro);
+    const agency=candidates[Math.floor(Math.random()*candidates.length)];
+    if(agency){
+      let position="",unitName=agency[1]+"局本部";
+      if(seq===1)position="局長";
+      else if(seq===3)position=agency[4]?"副局長":"局長";
+      else if(seq===4){position=agency[4]?"分局長":"副局長";if(agency[4])unitName=agency[1]+"所屬分局";}
+      else if(seq===5)position=agency[4]?"專員":"主任秘書";
+      else if(seq===6)position=agency[4]?"股長":"警務正";
+      else if(seq===7){position=agency[4]?"督察員":"股長";if(agency[4])unitName=agency[1]+"督察單位";}
+      else if(seq===8)position="警務員";
+      else if(seq===9)position="巡官";
+      else if(seq===10)position="巡佐";
+      external={id:"rotation_external_"+seq+"_"+agency[0],unit:"admin",assignmentType:"administration",unitName,position,seq,county:agency[0],localAgency:agency[1],crossCounty:true,desc:"外縣市同序列職務示例；實際序列、官階與任用資格依該機關編制及甄選公告辦理。"};
+    }
+  }
+
+  const offers=external?local.concat(external):local;
+  s.rotationOfferVersion=2;
+  return offers;
 }
 function retirementProfile(){
   if(s&&s.retired&&s.retirementClass)return {kind:s.retirementClass,voluntary:Number(s.retirementVoluntaryAge||60),mandatory:Number(s.retirementMandatoryAge||65),note:"退休時適用之退休類別"};
@@ -1810,7 +1887,7 @@ function voluntaryRetire(){
   rec("自願退休",s.retirementReason+"｜"+s.retirementAge+"歲｜原職："+s.lastActivePosition);
   save();render();go("life");
 }
-const NEW=()=>({created:false,name:"",age:18,initialAge:18,gender:"男",education:"高中畢業",homeCounty:"臺北市",family:"與家人同住",route:"",routeName:"",selectedRoute:"",days:180,law:20,eng:40,fit:50,comm:50,stress:35,health:100,written:null,physical:null,training:false,passed:false,score:0,ranking:null,county:"",localAgency:"",precinct:"",unit:"",unitName:"",assignmentType:"",stationName:"",selectedStation:"",pendingStationPick:false,selectedUnit:"",unitSelectionOpen:false,rank:"考生",qualification:"尚未取得",officialRank:"—",position:"考生",sequence:"—",careerSequenceNo:null,careerStage:"",rotationMonths:0,rotationEligible:false,rotationCycleMonths:0,rotationCycleDays:0,initialOffers:[],rotationOffers:[],dutyMode:"patrol",year:0,xp:0,rep:50,energy:100,dutyCount:0,savings:80000,salary:0,promo:0,cases:[],history:[],simDate:"2026-01-01T08:00:00",simEpoch:null,maxSimEpoch:null,startDate:"2026-01-01T08:00:00",joinDate:"",retired:false,retirementDate:"",retirementReason:"",retirementAge:null,retirementClass:"",retirementVoluntaryAge:null,retirementMandatoryAge:null,lastActivePosition:"",lastActiveUnit:""});
+const NEW=()=>({created:false,name:"",age:18,initialAge:18,gender:"男",education:"高中畢業",homeCounty:"臺北市",family:"與家人同住",route:"",routeName:"",selectedRoute:"",days:180,law:20,eng:40,fit:50,comm:50,stress:35,health:100,written:null,physical:null,training:false,passed:false,score:0,ranking:null,county:"",localAgency:"",precinct:"",unit:"",unitName:"",assignmentType:"",stationName:"",selectedStation:"",pendingStationPick:false,selectedUnit:"",unitSelectionOpen:false,rank:"考生",qualification:"尚未取得",officialRank:"—",position:"考生",sequence:"—",careerSequenceNo:null,careerStage:"",rotationMonths:0,rotationEligible:false,rotationCycleMonths:0,rotationCycleDays:0,initialOffers:[],rotationOffers:[],rotationOfferVersion:0,dutyMode:"patrol",year:0,xp:0,rep:50,energy:100,dutyCount:0,savings:80000,salary:0,promo:0,cases:[],history:[],simDate:"2026-01-01T08:00:00",simEpoch:null,maxSimEpoch:null,startDate:"2026-01-01T08:00:00",joinDate:"",retired:false,retirementDate:"",retirementReason:"",retirementAge:null,retirementClass:"",retirementVoluntaryAge:null,retirementMandatoryAge:null,lastActivePosition:"",lastActiveUnit:""});
 function normalizeState(){
   s=Object.assign(NEW(),s||{});
   if(!C.includes(s.homeCounty))s.homeCounty="臺北市";
@@ -1824,7 +1901,7 @@ function normalizeState(){
   if(!Array.isArray(s.rotationOffers))s.rotationOffers=[];
   if(s.rotationOffers.length){
     const seqNow=isOfficerTrack()?effectiveOfficerSequence():Number(s.careerSequenceNo||9);
-    const stale=s.rotationOffers.some(o=>Number(o.seq||99)!==seqNow)||!s.rotationOffers.some(o=>o.crossCounty);
+    const stale=Number(s.rotationOfferVersion||0)<2||s.rotationOffers.some(o=>Number(o.seq||99)!==seqNow)||(seqNow===0?s.rotationOffers.some(o=>o.crossCounty||o.crossAgency):!s.rotationOffers.some(o=>o.crossCounty||o.crossAgency));
     if(stale){s.rotationOffers=[];s.selectedUnit=""}
   }
   if(!Number.isFinite(Number(s.rotationCycleDays)))s.rotationCycleDays=0;
@@ -2274,7 +2351,7 @@ function officerVacancyCard(o,extraTag=""){
     '<div class="vacancy-card-head"><div><h3>'+o.unitName+'</h3><strong class="vacancy-position">'+o.position+'</strong></div>'+
     '<div class="vacancy-rank">'+rank+'</div></div>'+
     '<p>'+o.desc+'</p>'+
-    '<div class="meta"><span class="tag">第'+seq+'序列職務</span>'+(o.crossCounty?'<span class="tag">外縣市</span>':'')+(extraTag?'<span class="tag">'+extraTag+'</span>':'')+'<span class="tag">'+rankInsigniaSpec(seq).label+'</span></div>'+
+    '<div class="meta"><span class="tag">第'+seq+'序列職務</span>'+(o.crossCounty?'<span class="tag">外縣市</span>':o.crossAgency?'<span class="tag">跨機關</span>':'')+(extraTag?'<span class="tag">'+extraTag+'</span>':'')+'<span class="tag">'+rankInsigniaSpec(seq).label+'</span></div>'+
   '</div>';
 }
 function units(){
@@ -2313,9 +2390,9 @@ function units(){
       s.careerSequenceNo=seqNow;
       s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][seqNow]+"序列";
       const requiredIds=seqNow===10?["station_deputy10","patrol_squad10","station_chief10"]:seqNow===9?["station_deputy","station_chief9"]:seqNow===8?["station_chief"]:seqNow===7?["rotation_detective7","station_chief7"]:seqNow===6?["rotation_detective_deputy6"]:[];
-      const badOffers=!Array.isArray(s.rotationOffers)||!s.rotationOffers.length||s.rotationOffers.some(o=>Number(o.seq)!==seqNow)||!s.rotationOffers.some(o=>o.crossCounty)||requiredIds.some(id=>!s.rotationOffers.some(o=>o.id===id));
+      const badOffers=!Array.isArray(s.rotationOffers)||!s.rotationOffers.length||s.rotationOffers.some(o=>Number(o.seq)!==seqNow)||(seqNow===0?s.rotationOffers.some(o=>o.crossCounty||o.crossAgency):!s.rotationOffers.some(o=>o.crossCounty||o.crossAgency))||requiredIds.some(id=>!s.rotationOffers.some(o=>o.id===id));
       if(badOffers){s.rotationOffers=officerRotationOffers();s.selectedUnit="";}
-      $("unitBanner").textContent="目前職務："+(s.position||"—")+"｜"+s.sequence+"。可選本縣市或外縣市的同序列／相當職務；已升任警務員時，不會再出現第九序列巡官缺額。";
+      $("unitBanner").textContent="目前職務："+(s.position||"—")+"｜"+s.sequence+"。依目前陞遷序列挑選相當職務；跨縣市與跨機關職缺會按任職機關類型呈現，已升任警務員時不會再出現第九序列巡官缺額。";
       $("unitCards").innerHTML=s.rotationOffers.map(o=>officerVacancyCard(o,"輪調職缺")).join("");
       document.querySelectorAll("[data-o]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.o;units()});
       return;
@@ -2391,7 +2468,7 @@ $("confirmUnitBtn").onclick=()=>{
     s.unit=o.unit;
     s.unitName=o.unitName;
     s.assignmentType=o.assignmentType||o.unit;
-    if(o.crossCounty){s.county=o.county;s.localAgency=o.localAgency;s.precinct="";s.selectedStation="";}
+    if(o.crossCounty){s.county=o.county;s.localAgency=o.localAgency;s.precinct="";s.selectedStation="";}else if(o.crossAgency||o.unit==="central"){s.county="中央";s.localAgency=o.localAgency||o.unitName;s.precinct="";s.selectedStation="";}
     s.stationName=o.stationName||"";
     s.position=o.position;
     s.rank=o.position;

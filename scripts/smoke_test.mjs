@@ -28,15 +28,23 @@ if(standaloneIds.every(id=>htmlRaw.includes(`id="${id}"`))){
       {position:"巡佐",seq:10,route:"tpa",stage:"basic_active",openWithButton:true,expected:["巡佐兼副所長","巡佐兼小隊長","巡佐兼所長"]},
       {position:"巡官",seq:9,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["巡官兼副所長","巡官兼所長"]},
       {position:"警務員",seq:8,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["警務員兼所長"]},
-      {position:"第七序列警務員",seq:7,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["警務員兼所長","警務員兼副隊長"]},
-      {position:"警務正",seq:6,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["警務員兼副隊長"]}
+      {position:"督察員",seq:7,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["警務員兼所長","警務員兼副隊長"]},
+      {position:"警務正",seq:6,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["警務員兼副隊長"]},
+      {position:"專員",seq:5,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["專員"]},
+      {position:"分局長",seq:4,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["分局長"]},
+      {position:"副局長",seq:3,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["副局長"]},
+      {position:"主任秘書",seq:2,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["主任秘書"],transferTag:"跨機關"},
+      {position:"副署長",seq:1,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["副署長"],transferTag:"外縣市"},
+      {position:"署長",seq:0,route:"cpu",stage:"officer_rotation",openWithButton:false,expected:["署長","校長"],noTransfer:true},
+      {position:"主任秘書",seq:5,route:"cpu",stage:"officer_rotation",openWithButton:false,county:"屏東縣",localAgency:"屏東縣政府警察局",currentUnit:"admin",currentAssignmentType:"administration",expected:["主任秘書"]}
     ];
     for(const scenario of rotationScenarios){
       const oldOffers=scenario.seq===9?[
         {id:"rotation_admin",unit:"admin",assignmentType:"administration",unitName:"臺北市政府警察局行政組",position:"巡官",seq:9},
         {id:"rotation_external_9_新北市",unit:"admin",assignmentType:"administration",unitName:"新北市政府警察局｜局本部／所屬單位",position:"巡官",seq:9,crossCounty:true,county:"新北市",localAgency:"新北市政府警察局"}
       ]:[];
-      const state={created:true,passed:true,route:scenario.route,county:"臺北市",localAgency:"臺北市政府警察局",precinct:"中正第一分局",unit:"station",unitName:"臺北市政府警察局中正第一分局忠孝西路派出所",assignmentType:"station",stationName:"忠孝西路派出所",position:scenario.position,rank:scenario.position,careerSequenceNo:scenario.seq,careerStage:scenario.stage,unitSelectionOpen:false,rotationEligible:scenario.seq!==10,rotationOffers:oldOffers||[],selectedUnit:"",pendingStationPick:false,year:5,xp:500,officerEducationQualified:true};
+      const county=scenario.county||"臺北市",localAgency=scenario.localAgency||"臺北市政府警察局",currentUnit=scenario.currentUnit||"station",currentAssignmentType=scenario.currentAssignmentType||"station",stationName=scenario.county?"":"忠孝西路派出所",precinct=scenario.county?"":"中正第一分局";
+      const state={created:true,passed:true,route:scenario.route,county,localAgency,precinct,unit:currentUnit,unitName:currentUnit==="station"?localAgency+"｜"+precinct+stationName:localAgency+"本部",assignmentType:currentAssignmentType,stationName,position:scenario.position,rank:scenario.position,careerSequenceNo:scenario.seq,careerStage:scenario.stage,unitSelectionOpen:false,rotationEligible:scenario.seq!==10,rotationOffers:oldOffers||[],selectedUnit:"",pendingStationPick:false,year:5,xp:500,officerEducationQualified:true};
       window.localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(state));
       click(window,window.document.getElementById("loadBtn"));await wait(0);
       if(scenario.openWithButton){
@@ -48,6 +56,10 @@ if(standaloneIds.every(id=>htmlRaw.includes(`id="${id}"`))){
       const shown=[...window.document.querySelectorAll("#unitCards .vacancy-position")].map(x=>x.textContent);
       const diagnostic="active="+(window.document.querySelector(".page.active")?.id||"")+"; feedback="+(window.document.getElementById("careerMsg")?.textContent||"")+"; banner="+(window.document.getElementById("unitBanner")?.textContent||"")+"; cards="+shown.join("|");
       for(const title of scenario.expected)assert(shown.includes(title),scenario.position+" rotation missing "+title+"; "+diagnostic);
+      for(const placeholder of ["高階主管職","副主管職","分局長／大隊長等高階主管職"])assert(!shown.includes(placeholder),"generic placeholder remains in "+scenario.seq+"; "+diagnostic);
+      const tags=[...window.document.querySelectorAll("#unitCards .tag")].map(x=>x.textContent);
+      if(scenario.transferTag)assert(tags.includes(scenario.transferTag),scenario.position+" should show "+scenario.transferTag+"; "+diagnostic);
+      if(scenario.noTransfer)assert(!tags.some(x=>x==="外縣市"||x==="跨機關"),scenario.position+" should not show a transfer vacancy; "+diagnostic);
     }
     click(window,window.document.getElementById("resetBtn"));await wait(0);
     assert(window.document.querySelectorAll("#charHomeCounty option").length===22,"county select should contain 22 options");
