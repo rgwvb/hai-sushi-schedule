@@ -34,13 +34,18 @@ if(standaloneIds.every(id=>htmlRaw.includes(`id="${id}"`))){
         {id:"rotation_external_9_新北市",unit:"admin",assignmentType:"administration",unitName:"新北市政府警察局｜局本部／所屬單位",position:"巡官",seq:9,crossCounty:true,county:"新北市",localAgency:"新北市政府警察局"}
       ]:[];
       const state={created:true,passed:true,route:scenario.route,county:"臺北市",localAgency:"臺北市政府警察局",precinct:"中正第一分局",unit:"station",unitName:"臺北市政府警察局中正第一分局忠孝西路派出所",assignmentType:"station",stationName:"忠孝西路派出所",position:scenario.position,rank:scenario.position,careerSequenceNo:scenario.seq,careerStage:scenario.stage,unitSelectionOpen:false,rotationEligible:scenario.seq===9,rotationOffers:oldOffers,selectedUnit:"",pendingStationPick:false,year:5,xp:500,officerEducationQualified:true};
-      window.eval("Object.assign(s,"+JSON.stringify(state)+");");
-      if(scenario.openWithButton)click(window,window.document.getElementById("specialUnitBtn"));
-      else window.eval("units()");
+      window.localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(state));
+      click(window,window.document.getElementById("loadBtn"));await wait(0);
+      if(scenario.openWithButton){
+        click(window,window.document.querySelector('.nav-btn[data-page="career"]'));await wait(0);
+        click(window,window.document.getElementById("specialUnitBtn"));await wait(0);
+      }else{
+        click(window,window.document.querySelector('.nav-btn[data-page="unit"]'));await wait(0);
+      }
       const shown=[...window.document.querySelectorAll("#unitCards .vacancy-position")].map(x=>x.textContent);
       for(const title of scenario.expected)assert(shown.includes(title),scenario.position+" rotation missing "+title);
     }
-    window.eval("s=NEW();render();go('dashboard')");
+    click(window,window.document.getElementById("resetBtn"));await wait(0);
     assert(window.document.querySelectorAll("#charHomeCounty option").length===22,"county select should contain 22 options");
     click(window,window.document.getElementById("createCharacterBtn"));await wait(0);
     click(window,window.document.querySelector('#routeCards [data-r="tpa"]'));await wait(0);
