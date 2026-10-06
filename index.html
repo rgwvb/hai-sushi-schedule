@@ -155,6 +155,9 @@ button{transition:.18s ease}.app-shell{max-width:1500px;margin:auto;padding:22px
   text-align:right;
 }
 .sequence-card p{margin:0;color:var(--muted);line-height:1.65}
+.sequence-rank-reference{display:flex;align-items:center;gap:8px;margin:2px 0 9px}
+.sequence-rank-reference .rank-insignia-label{font-size:12px}
+.sequence-note{margin:10px 0 4px}
 .sequence-card em{
   display:inline-block;
   margin-top:10px;
@@ -1073,8 +1076,8 @@ button:hover{transform:none!important}
           <div class="chips"><span id="shiftChip">08:00 值班</span><span id="energyChip">體力 100</span></div>
         </div>
         <div class="panel duty-mode-panel">
-          <div class="panel-head"><h3>本月主要勤務</h3><span>每完成一個代表性事件，遊戲時間推進約30天</span></div>
-          <div id="dutyModeCards" class="choice-grid"></div>
+          <div class="panel-head"><h3>勤務與法規混合派題</h3><span>勤務事件推進約30天；單純答法規題不推進日期</span></div>
+          <div id="dutyModeCards" class="info-banner"></div>
         </div>
         <div class="panel radio-panel">
           <div class="radio-head"><span>📻 勤務指揮中心</span><button class="secondary-btn" id="nextDutyBtn">開始／換一題</button></div>
@@ -1133,6 +1136,7 @@ button:hover{transform:none!important}
           </div>
           <p class="muted qualification-disclaimer">遊戲會依現行制度概念檢查職務年資、最近考績、獎懲、體能與考試／警大教育資格；部分年資與名額以遊戲節奏近似模擬，實際資格仍依當年度法規及招生簡章。</p>
         </div>
+        <p class="muted sequence-note">各序列階級圖為職務參考；考生與待分發身分尚未取得個人官階。</p>
         <div id="careerPath" class="sequence-grid"></div>
         <div class="three-col">
           <div class="panel"><h3>職務陞遷甄審</h3><p class="muted" id="promotionRuleText">依缺額、陞遷序列、資績評分、考績與獎懲模擬。</p><label class="promotion-target-label">本次申請職務<select id="promotionTarget"></select></label><div class="info-banner" id="promotionScoreBox">資績分數：—</div><button class="primary-btn" id="promotionBtn">參加甄審</button></div>
@@ -1157,8 +1161,9 @@ button:hover{transform:none!important}
           <div id="criminologyCards" class="choice-grid"></div>
         </div>
         <div class="panel">
-          <div class="panel-head"><h3>隨堂測驗</h3><button class="secondary-btn" id="newQuizBtn">換一題</button></div>
-          <div id="quizQuestion" class="dispatch-box">按「換一題」開始。</div>
+          <div class="panel-head"><h3>隨堂測驗｜混合題庫</h3><button class="secondary-btn" id="newQuizBtn">開始／換一題</button></div>
+          <p class="muted">警察法規、憲法、法學緒論、行政法、刑事訴訟與警察勤務隨機出題；答題後顯示解析與法源，接著自動出下一題。</p>
+          <div id="quizQuestion" class="dispatch-box">按「開始／換一題」開始。</div>
           <div id="quizChoices" class="action-grid"></div>
           <div id="quizResult" class="feedback"></div>
         </div>
@@ -2921,7 +2926,7 @@ loadPoliceDirectory();
     const requiredYears=s.route==="cpu"?6:3;
     const tenureOK=years>=requiredYears;
     const annual=annualAppraisals(3);
-    const gradeOK=annual.length>=3&&annual.filter(x=>x.grade==="甲等").length>=2&&annual.every(x=>x.grade==="甲等"||x.grade==="乙等");
+    const gradeOK=annual.filter(x=>x.grade==="甲等").length>=2&&annual.every(x=>x.grade==="甲等"||x.grade==="乙等");
     const disciplineOK=(s.discipline||0)>=80;
     const ok=seqOK&&rankOK&&routeOK&&tenureOK&&gradeOK&&disciplineOK&&!s.policeMonitorTrainingPassed;
     return {ok,seqOK,rankOK,routeOK,years,requiredYears,tenureOK,annual,gradeOK,disciplineOK,passed:!!s.policeMonitorTrainingPassed};
@@ -3064,16 +3069,57 @@ loadPoliceDirectory();
     ["破窗理論","環境失序與輕微違序可能影響居民安全感與公共秩序，但政策運用仍須兼顧比例、人權與避免過度執法。"]
   ];
   const quizzes=[
-    ["下列何者最接近警察共同勤務中的「守望」？",["在固定衝要地點警戒、受理報告並協助交通","只在辦公室批公文","專門進行刑事鑑識"],0],
-    ["日常活動理論強調犯罪事件較可能在何種條件聚合時出現？",["有動機者、合適標的、缺乏有效監控","只有高失業率","只有刑罰過輕"],0],
-    ["警察官等主要區分為？",["警監、警正、警佐","甲、乙、丙","署、局、分局"],0],
-    ["勤務指揮中心的核心功能之一是？",["110報案接報、派遣與管制","審理刑事判決","核發大學學位"],0],
-    ["主管面對部屬疑似違紀，較適當的管理方向是？",["保全事證、依程序查處並避免包庇或預斷","先公開羞辱部屬","完全不留下紀錄"],0],
-    ["社會解組理論較關注哪一層面的犯罪條件？",["社區結構、凝聚與非正式社會控制","單一基因因素","純粹刑罰長度"],0],
-    ["刑事警察工作較接近下列何者？",["犯罪偵查、情資、鑑識與重大刑案偵防","只負責道路標線","只負責戶籍登記"],0],
-    ["警察職務配階的主要目的之一是？",["形成層級領導並利於指揮監督","取消所有主管職","讓所有職務工作完全相同"],0]
+    ["警察法所列警察任務，何者最完整？",["只負責刑事案件偵查","維持公共秩序、保護社會安全、防止危害並促進人民福利","處理所有民事糾紛","負責法院裁判"],1,"警察法","警察任務包括維持公共秩序、保護社會安全、防止一切危害。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080001&flno=2","警察法第2條"],
+    ["警察行使職權時，何者符合比例原則？",["能達目的即可採最強手段","選擇達成目的所必要且侵害較小的方法，目的達成後停止","只要民眾不配合就提高強度","處分越重越能嚇阻"],1,"警察職權行使法","警察職權行使須符合比例原則，採取必要且侵害較小的方法，目的達成後應停止。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080145&flno=3","警察職權行使法第3條"],
+    ["員警執行職務要求民眾配合時，原則上應如何表明身分？",["不需表明，民眾應自行辨認","穿著制服或出示證件，並告知事由","只需口頭說自己是警察","事後才在筆錄中補記"],1,"警察職權行使法","執行職務時應著制服或出示證件表明身分，並告知事由。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080145&flno=4","警察職權行使法第4條"],
+    ["下列哪種情況較可能符合法定身分查證要件？",["只因對方看起來可疑","有具體事實符合警察職權行使法列舉情形","為了完成勤務數量而隨機查證","因對方拒絕聊天"],1,"警察職權行使法","身分查證須有法律列舉的具體情形，不能只憑抽象直覺或勤務數量任意實施。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080145&flno=6","警察職權行使法第6條"],
+    ["憲法第7條平等原則的核心意旨是？",["所有案件都必須採相同處理，不得考慮差異","人民在法律上一律平等，公權力不得作無正當理由的差別待遇","只有公務員享有平等權","平等只適用於選舉"],1,"中華民國憲法","憲法保障人民法律上一律平等；差別待遇須有正當理由。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0000001&flno=7","憲法第7條"],
+    ["憲法第8條主要保障哪一項？",["人身自由及正當法律程序","財產繼承順序","地方自治預算","公務員考績"],0,"中華民國憲法","憲法第8條保障人身自由，並規範逮捕、拘禁及法院審查等程序。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0000001&flno=8","憲法第8條"],
+    ["警察處理集會活動時，應特別注意保障哪項憲法權利？",["集會自由","拒絕任何法律規範的權利","免除所有交通管制的權利","要求警察提供個人資料的權利"],0,"中華民國憲法","人民有集會及結社自由；警察勤務須兼顧基本權保障與依法維持秩序。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0000001&flno=14","憲法第14條"],
+    ["憲法第23條對限制基本權的要求，何者正確？",["行政機關認為方便即可限制","須有法律依據，且為列舉公益目的所必要","只要公告就能限制任何權利","基本權在緊急時一律停止"],1,"中華民國憲法","限制自由權利須以法律為依據，並符合憲法列舉目的及必要性。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0000001&flno=23","憲法第23條"],
+    ["憲法第11條保障的自由，包含何者？",["言論、講學、著作及出版自由","任意洩漏偵查秘密","拒絕法院裁判","未經許可使用公有土地"],0,"中華民國憲法","憲法第11條保障言論、講學、著作及出版自由，限制仍須符合法律與憲法原則。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0000001&flno=11","憲法第11條"],
+    ["依憲法第170條，「法律」是指何種規範？",["任何機關發布的內部通知","立法院通過、總統公布的法律","地方機關的勤務表","未經公布的政策草案"],1,"法學緒論","憲法第170條界定法律為立法院通過、總統公布的法律。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0000001&flno=170","憲法第170條"],
+    ["命令與法律牴觸時，依憲法第172條應如何處理？",["命令位階較低，牴觸部分無效","以發布較晚者優先","由執行員警自行選擇","一律以命令優先"],0,"法學緒論","憲法第172條規定命令與憲法或法律牴觸者無效，反映法規範位階。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0000001&flno=172","憲法第172條"],
+    ["行政機關作成行政行為，應遵守哪項基本要求？",["只依長官口頭指示","受法律及一般法律原則拘束","只要有預算就可執行","可以溯及增加人民義務"],1,"行政程序法","行政行為應受法律及一般法律原則拘束。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0030055&flno=4","行政程序法第4條"],
+    ["比例原則要求行政機關採取的手段應如何？",["與目的無關也可採用","有助目的、損害較小，且利益與損害相稱","一律選最方便機關的手段","只考量成本，不考量權利"],1,"行政程序法","比例原則包含適合性、必要性及狹義比例性等要求。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0030055&flno=7","行政程序法第7條"],
+    ["刑事案件尚未經法院判決確定前，應如何看待被告？",["推定有罪直到自證清白","推定無罪，犯罪事實須依證據認定","只要被告沉默就視為認罪","由新聞報導決定是否有罪"],1,"刑事訴訟法","被告未經審判證明有罪確定前，推定為無罪；犯罪事實應依證據認定。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=C0010001&flno=154","刑事訴訟法第154條"],
+    ["刑法的罪刑法定原則，最符合下列何者？",["沒有法律明文也可按社會觀感處罰","行為時法律未明定為犯罪者，不得處罰","後來訂定的刑罰一律溯及既往","只有行政機關能創設犯罪"],1,"刑法／法學緒論","罪刑法定要求犯罪與刑罰以行為時法律明定；刑法另有較有利法律適用規定。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=C0000001&flno=1","刑法第1條"],
+    ["警察依法查證身分後，達成目的且已無繼續查證必要時，應如何處理？",["繼續留置以增加盤查效果","停止查證並讓民眾離開","改查同行者作為補足","要求民眾簽署自白"],1,"警察職權行使法","職權行使須受必要性與比例原則限制，已無法定目的時不得任意延長。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080145&flno=3","警察職權行使法第3條"],
+    ["有多種方法都能達成勤務目的時，警察應優先選哪一項？",["對人民權益侵害較少且仍能達成目的的方法","效果最強、侵害最大的手段","最方便機關作業的方法","不需考量具體目的的方法"],0,"警察職權行使法","警察職權不得超過目的所需，並應採取對人民權益侵害最少的適當方法。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080145&flno=3","警察職權行使法第3條"],
+    ["行政程序法第7條的必要性原則，要求機關優先採取什麼方法？",["對人民權益損害最少且可達成目的的方法","處罰最重的方法","不用說明理由的方法","成本最高的方法"],0,"行政法／法學緒論","多種可行手段都能達成目的時，應選對人民權益損害較少者。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0030055&flno=7","行政程序法第7條"],
+    ["在法規適用上，憲法、法律與命令的位階關係何者正確？",["命令可以推翻法律","法律不得牴觸憲法，命令不得牴觸憲法或法律","三者位階完全相同","機關內規一律優先"],1,"法學緒論","憲法具最高規範位階；命令牴觸憲法或法律者無效。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0000001&flno=172","憲法第172條"],
+    ["115年一般警察人員考試公告的法學知識範圍包含哪些？",["只考民法","中華民國憲法與法學緒論","只考刑事訴訟法","只考警察勤務"],1,"考試範圍","考選部公告將憲法與法學緒論列入法學知識範圍；本題庫題目為依公開法規改寫的練習題。","https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=115060&y=2026","考選部115年警察人員考試"],
+    ["主管收到部屬疑似違紀通報，較妥適的第一步是？",["先公開認定有罪","保存相關資料、依程序查證並避免預斷","立即銷毀不利資料","要求通報人撤回"],1,"警察實務／法治觀念","調查應依程序並保持客觀，避免預斷；刑事案件另受無罪推定原則拘束。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=C0010001&flno=154","刑事訴訟法第154條"],
+    ["警察遇到集會現場交通壅塞，依法執行時較適當的做法是？",["不問危險程度一律解散","先評估具體危險，採必要且侵害較小的交通疏導措施","只要有人抗議就全面扣留","禁止所有路人發言"],1,"憲法／警察實務","處置須同時考量集會自由與現場安全，並遵守法定職權及比例原則。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0000001&flno=14","憲法第14條"]
   ];
   let currentQuiz=null;
+  let quizAnswered=false,quizAdvanceTimer=null;
+  let dutyQuizQuestion=null,dutyQuizAnswered=false,dutyAdvanceTimer=null;
+  let commandQuizQuestion=null,commandQuizAnswered=false,commandAdvanceTimer=null;
+
+  function recordMixedQuizAnswer(q,i,resultId){
+    const correct=i===q[2];
+    s.quizTotal=(s.quizTotal||0)+1;
+    if(correct){s.quizCorrect=(s.quizCorrect||0)+1;s.knowledge=(s.knowledge||0)+3}
+    const correctText=String.fromCharCode(65+q[2])+". "+q[1][q[2]];
+    fb(resultId,(correct?"答對了，知識 +3。":"答錯了，正確答案是 "+correctText+"。")+q[4],correct);
+    const box=$(resultId);
+    if(box&&q[5]){
+      const prefix=document.createElement("span");
+      prefix.textContent=" 資料來源：";
+      const link=document.createElement("a");
+      link.href=q[5];link.target="_blank";link.rel="noopener noreferrer";link.textContent=q[6]||"官方法規／考試資料";
+      box.append(prefix,link);
+    }
+    const chip=$("quizChip");
+    if(chip)chip.textContent="測驗 "+(s.quizCorrect||0)+"/"+(s.quizTotal||0);
+    return correct;
+  }
+  function showMixedQuiz(caseId,choicesId,q,attribute,handler){
+    $(caseId).innerHTML="<span class=\"tag\">"+q[3]+"</span><br><b>"+q[0]+"</b>";
+    $(choicesId).innerHTML=q[1].map((choice,i)=>'<div class="action-card" '+attribute+'="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+choice+'</strong></div>').join("");
+    $(choicesId).querySelectorAll("["+attribute+"]").forEach(card=>card.onclick=()=>handler(Number(card.getAttribute(attribute))));
+  }
 
   const dutyModes=[
     ["patrol","🚓 巡邏","機動巡視、處理臨時事故與110派案"],
@@ -3309,18 +3355,18 @@ loadPoliceDirectory();
     $("criminologyCards").innerHTML=crimeTopics.map(x=>'<div class="choice-card"><h3>'+x[0]+'</h3><p>'+x[1]+'</p></div>').join("");
   }
   function newQuiz(){
+    if(quizAdvanceTimer){clearTimeout(quizAdvanceTimer);quizAdvanceTimer=null}
     currentQuiz=quizzes[Math.floor(Math.random()*quizzes.length)];
-    $("quizQuestion").innerHTML="<b>"+currentQuiz[0]+"</b>";
-    $("quizChoices").innerHTML=currentQuiz[1].map((x,i)=>'<div class="action-card" data-q="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+x+'</strong></div>').join("");
+    quizAnswered=false;
+    showMixedQuiz("quizQuestion","quizChoices",currentQuiz,"data-q",answerQuiz);
     $("quizResult").textContent="";$("quizResult").className="feedback";
-    document.querySelectorAll("[data-q]").forEach(e=>e.onclick=()=>answerQuiz(Number(e.dataset.q)));
   }
   function answerQuiz(i){
-    if(!currentQuiz)return;
-    s.quizTotal++;
-    if(i===currentQuiz[2]){s.quizCorrect++;s.knowledge+=3;fb("quizResult","答對了，知識 +3。",1)}
-    else fb("quizResult","答錯了，建議回上方資料複習。",0);
+    if(!currentQuiz||quizAnswered)return;
+    quizAnswered=true;
+    recordMixedQuizAnswer(currentQuiz,i,"quizResult");
     $("quizChoices").innerHTML="";save();renderEnhancements();
+    quizAdvanceTimer=setTimeout(()=>{quizAdvanceTimer=null;newQuiz()},1500);
   }
 
   function appraisalScore(){
@@ -3403,8 +3449,7 @@ loadPoliceDirectory();
   }
   function renderDutyModes(){
     if(!$("dutyModeCards"))return;
-    $("dutyModeCards").innerHTML=dutyModes.map(m=>'<div class="choice-card '+(s.dutyMode===m[0]?"selected":"")+'" data-dmode="'+m[0]+'"><h3>'+m[1]+'</h3><p>'+m[2]+'</p></div>').join("");
-    document.querySelectorAll("[data-dmode]").forEach(e=>e.onclick=()=>{s.dutyMode=e.dataset.dmode;save();render()});
+    $("dutyModeCards").textContent="系統直接混合巡邏、臨檢、守望、值班、備勤、單位職務與警察法規題目，不必先選勤務類型。";
   }
   const officeDuties={
     administration:[
@@ -3430,20 +3475,26 @@ loadPoliceDirectory();
   };
 
   function newAdvancedDuty(){
+    if(dutyAdvanceTimer){clearTimeout(dutyAdvanceTimer);dutyAdvanceTimer=null}
     if(s.retired)return toast("已退休，勤務系統已關閉");
     if(!s.unit)return toast("請先完成單位分發");
-    const unitPool=((officeDuties[s.assignmentType])||(unitDuties[s.unit])||D).slice();
-    const modePool=(modeDuties[s.dutyMode]||modeDuties.patrol).slice();
-    const pool=Math.random()<0.55?modePool.concat(unitPool.slice(0,2)):unitPool.concat(modePool.slice(0,1));
-    active=Math.random()<0.08?lifeEvents[Math.floor(Math.random()*lifeEvents.length)]:pool[Math.floor(Math.random()*pool.length)];
-    $("dutyCase").innerHTML="<b>"+active[0]+"</b><br>"+active[1]+"<br><span class='muted'>"+(s.stationName?("勤務單位："+s.stationName+"｜"):"")+"本月主要勤務："+(dutyModes.find(x=>x[0]===s.dutyMode)?.[1]||"巡邏")+"</span>";
-    $("dutyChoices").innerHTML=active[2].map((c,i)=>'<button type="button" class="action-card" data-advd="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+c[0]+'</strong><p>依安全、合法性、程序與完整性判定。</p></button>').join("");
+    active=null;dutyQuizQuestion=null;dutyQuizAnswered=false;
     $("dutyResult").textContent="";$("dutyResult").className="feedback";
-    // duty choice click is handled by one stable delegated listener below
+    if(Math.random()<0.24){
+      dutyQuizQuestion=quizzes[Math.floor(Math.random()*quizzes.length)];
+      showMixedQuiz("dutyCase","dutyChoices",dutyQuizQuestion,"data-dutyquiz",resolveDutyQuiz);
+      return;
+    }
+    const unitPool=((officeDuties[s.assignmentType])||(unitDuties[s.unit])||D).slice();
+    const mixedDutyPool=Object.values(modeDuties).flat();
+    const pool=unitPool.concat(mixedDutyPool);
+    active=Math.random()<0.08?lifeEvents[Math.floor(Math.random()*lifeEvents.length)]:pool[Math.floor(Math.random()*pool.length)];
+    $("dutyCase").innerHTML="<b>"+active[0]+"</b><br>"+active[1]+"<br><span class='muted'>"+(s.stationName?("勤務單位："+s.stationName+"｜"):"")+"本次由勤務與職務題庫混合派發</span>";
+    $("dutyChoices").innerHTML=active[2].map((c,i)=>'<button type="button" class="action-card" data-advd="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+c[0]+'</strong><p>依安全、合法性、程序與完整性判定。</p></button>').join("");
   }
   function advancedResolve(i){
     if(s.retired)return toast("已退休，無法繼續勤務");
-    if(!active)return;
+    if(dutyQuizQuestion||!active)return;
     const c=active[2][i],xp=c[1],rep=c[2],en=c[3];
     const isLife=active[3]==="life";
     s.xp+=xp;s.rep=cl(s.rep+rep);s.energy=cl(s.energy+en);s.stress=cl(s.stress+Math.max(0,Math.round(-en*.3)));
@@ -3465,8 +3516,16 @@ loadPoliceDirectory();
     fb("dutyResult",(isLife?"人生事件處理完成：":"勤務完成：")+"+"+xp+" XP，聲望 "+(rep>=0?"+":"")+rep+(isLife?"；家庭收支與健康已更新。":(healthChange<0?"；疲勞或現場風險使健康下降。":"；獎懲考核已同步更新。"))+"遊戲時間前進約 30 天。",xp>=14);
     $("dutyChoices").innerHTML="";active=null;
     save();render();
-    // Answering any option immediately advances to the next duty; no extra button press required.
-    setTimeout(()=>{if(s.unit)newAdvancedDuty()},120);
+    // Keep the result visible briefly, then automatically dispatch the next item.
+    dutyAdvanceTimer=setTimeout(()=>{dutyAdvanceTimer=null;if(s.unit)newAdvancedDuty()},1500);
+  }
+  function resolveDutyQuiz(i){
+    if(!dutyQuizQuestion||dutyQuizAnswered)return;
+    dutyQuizAnswered=true;
+    recordMixedQuizAnswer(dutyQuizQuestion,i,"dutyResult");
+    $("dutyChoices").innerHTML="";
+    save();
+    dutyAdvanceTimer=setTimeout(()=>{dutyAdvanceTimer=null;if(s.unit)newAdvancedDuty()},1500);
   }
 
   function managerRoleText(){
@@ -3509,14 +3568,29 @@ loadPoliceDirectory();
     s.paperwork=Math.min(20,s.paperwork+1);advanceHours(2);rec("主管勤務",positionName()+"｜"+a);save();render();
   }
   function newCommand(){
+    if(commandAdvanceTimer){clearTimeout(commandAdvanceTimer);commandAdvanceTimer=null}
     if(!s.unit||s.retired||!isSupervisor())return toast("完成任用並取得主管職後，才能開始指揮勤務");
+    commandActive=null;commandQuizQuestion=null;commandQuizAnswered=false;
+    $("commandResult").textContent="";$("commandResult").className="feedback";
+    if(Math.random()<0.35){
+      commandQuizQuestion=quizzes[Math.floor(Math.random()*quizzes.length)];
+      showMixedQuiz("commandCase","commandChoices",commandQuizQuestion,"data-cmdquiz",resolveCommandQuiz);
+      return;
+    }
     commandActive=supervisorEvents[Math.floor(Math.random()*supervisorEvents.length)];
     $("commandCase").innerHTML="<b>"+commandActive[0]+"</b><br>"+commandActive[1];
     $("commandChoices").innerHTML=commandActive[2].map((c,i)=>'<div class="action-card" data-cmd="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+c[0]+'</strong></div>').join("");
-    $("commandResult").textContent="";$("commandResult").className="feedback";
     document.querySelectorAll("[data-cmd]").forEach(e=>e.onclick=()=>resolveCommand(Number(e.dataset.cmd)));
   }
+  function resolveCommandQuiz(i){
+    if(!commandQuizQuestion||commandQuizAnswered)return;
+    commandQuizAnswered=true;
+    recordMixedQuizAnswer(commandQuizQuestion,i,"commandResult");
+    $("commandChoices").innerHTML="";save();
+    commandAdvanceTimer=setTimeout(()=>{commandAdvanceTimer=null;newCommand()},1500);
+  }
   function resolveCommand(i){
+    if(!commandActive)return;
     const c=commandActive[2][i];
     s.commandScore=cl(s.commandScore+c[1]);s.morale=cl(s.morale+c[2]);s.publicSatisfaction=cl(s.publicSatisfaction+c[3]);
     if(c[4]>0)addGood(c[4],commandActive[0]); else if(c[4]<0)addBad(-c[4],commandActive[0]);
@@ -3524,6 +3598,7 @@ loadPoliceDirectory();
     if(commandActive[0]==="重大案件指揮"&&c[1]>=10) exceptionalMerit("重大案件指揮得當");
     rec("主管決策",commandActive[0]+"｜"+c[0]);fb("commandResult","決策完成。主管評價 "+(c[1]>=0?"+":"")+c[1]+"，士氣 "+(c[2]>=0?"+":"")+c[2]+"。",c[1]>=5);
     $("commandChoices").innerHTML="";commandActive=null;save();render();
+    commandAdvanceTimer=setTimeout(()=>{commandAdvanceTimer=null;newCommand()},1500);
   }
 
   function latestAppraisalPoints(){
@@ -3559,7 +3634,7 @@ loadPoliceDirectory();
       $("careerPath").className="sequence-grid";
       $("careerPath").innerHTML=seqs.map(n=>{
         const info=sequenceInfo[n],state=pending?"":(n===seq?" current":n>seq?" passed":"");
-        return '<div class="sequence-card'+state+'"><div class="seq-head"><strong>'+sequenceLabel(n)+'</strong><span>'+info.range+'</span></div><p>'+info.examples.join("、")+'</p>'+(n===seq?'<em>目前所在序列</em>':'')+'</div>';
+        return '<div class="sequence-card'+state+'"><div class="seq-head"><strong>'+sequenceLabel(n)+'</strong><span>'+info.range+'</span></div><div class="sequence-rank-reference">'+rankInsigniaHTML(n,true)+'</div><p>'+info.examples.join("、")+'</p>'+(n===seq?'<em>目前所在序列</em>':'')+'</div>';
       }).join("");
     }
     renderOfficerQualification();
