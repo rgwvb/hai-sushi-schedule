@@ -2651,7 +2651,11 @@ loadPoliceDirectory();
   }
   function sequenceLabel(n){return Number(n)===0?"最高職務層級":"第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][n]+"序列"}
   function positionName(){return s.position||s.rank||"警員"}
-  function isSupervisor(){return currentSequenceNo()<=10}
+  function isSupervisor(){
+    const role=String(s.position||s.rank||"");
+    const commandRole=/巡佐|巡官|小隊長|分隊長|警務佐|所長|副所長|組長|隊長|督察|主任|主管|副分局長|分局長|副局長|局長|副署長|署長|總隊長|校長|警政委員/.test(role);
+    return currentSequenceNo()<=10&&commandRole;
+  }
   function isSeniorSupervisor(){return currentSequenceNo()<=7}
   function targetPositions(nextSeq){
     if(nextSeq===3){
@@ -3348,7 +3352,7 @@ loadPoliceDirectory();
     s.paperwork=Math.min(20,s.paperwork+1);advanceHours(2);rec("主管勤務",positionName()+"｜"+a);save();render();
   }
   function newCommand(){
-    if(!isSupervisor())return toast("尚未取得主管職");
+    if(!s.unit||s.retired||!isSupervisor())return toast("完成任用並取得主管職後，才能開始指揮勤務");
     commandActive=supervisorEvents[Math.floor(Math.random()*supervisorEvents.length)];
     $("commandCase").innerHTML="<b>"+commandActive[0]+"</b><br>"+commandActive[1];
     $("commandChoices").innerHTML=commandActive[2].map((c,i)=>'<div class="action-card" data-cmd="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+c[0]+'</strong></div>').join("");
