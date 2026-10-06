@@ -1455,7 +1455,8 @@ const P=[
 let POLICE_DIRECTORY=null;
 let DIRECTORY_READY=false;
 let DIRECTORY_ERROR="";
-let DISTRIBUTION_POSTS=[];
+let DISTRIBUTION_POSTS=[],DISTRIBUTION_POSTS_VERSION=0,DISTRIBUTION_OPTIONS_CACHE="",DISTRIBUTION_OPTIONS_CACHE_VERSION=-1;
+let RENDERED_DIRECTORY_KEY="",RENDERED_STATION_KEY="";
 
 function directoryCounty(city){
   return POLICE_DIRECTORY&&POLICE_DIRECTORY.counties?POLICE_DIRECTORY.counties[city]||null:null;
@@ -1485,6 +1486,7 @@ function divisionGameValues(city,name,index,total){
 function rebuildDistributionPosts(){
   if(!DIRECTORY_READY){
     DISTRIBUTION_POSTS=fallbackDistributionPosts();
+    DISTRIBUTION_POSTS_VERSION++;DISTRIBUTION_OPTIONS_CACHE_VERSION=-1;
     return;
   }
   const out=[];
@@ -1509,6 +1511,7 @@ function rebuildDistributionPosts(){
     }
   }
   DISTRIBUTION_POSTS=out;
+  DISTRIBUTION_POSTS_VERSION++;DISTRIBUTION_OPTIONS_CACHE_VERSION=-1;
 }
 function distributionPost(id){return DISTRIBUTION_POSTS.find(x=>x.id===id)||null}
 rebuildDistributionPosts();
@@ -2069,10 +2072,14 @@ $("trainingBtn").onclick=()=>{if(s.physical===null||s.physical<55)return fb("exa
 if($("examNextPageBtn"))$("examNextPageBtn").onclick=()=>{if(!s.passed)return fb("examMsg","尚未完成錄取流程。",0);go("distribution")};
 function cn(id){let row=distributionPost(id);return row?[row.vacancy,row.threshold]:[20,65]}
 function dist(){
-  const options=directoryOptionsHTML();
+  const options=directoryOptionsHTML(),optionVersion=String(DISTRIBUTION_POSTS_VERSION);
   [1,2,3].forEach(n=>{
-    let e=$("pref"+n),v=e.value;
-    e.innerHTML='<option value="">請選擇分發志願</option>'+options;
+    const e=$("pref"+n);if(!e)return;
+    const v=e.value;
+    if(e.dataset.distributionVersion!==optionVersion){
+      e.innerHTML='<option value="">請選擇分發志願</option>'+options;
+      e.dataset.distributionVersion=optionVersion;
+    }
     if(v&&distributionPost(v))e.value=v;
   });
   if(DIRECTORY_READY){
@@ -2168,21 +2175,29 @@ function renderRotationForecast(){
 }
 function renderStationDirectory(){
   if(!$("stationDirectory"))return;
+  const cacheKey=[s.county,s.precinct,s.stationName,DIRECTORY_READY?1:0].join("|");
+  if(cacheKey===RENDERED_STATION_KEY)return;
   const records=stationRecords();
   $("stationDirectory").style.display=records.length?"block":"none";
-  if(!$("stationDirectoryCards"))return;
+  if(!$("stationDirectoryCards")){RENDERED_STATION_KEY=cacheKey;return;}
   $("stationDirectoryTitle").textContent=(s.precinct||localAgencyName())+" 分駐／派出／駐在所";
   $("stationDirectoryCards").innerHTML=records.map(st=>{
     const name=typeof st==="string"?st:st.name;
     const detail=typeof st==="string"?"":[st.address,st.phone?("☎ "+st.phone):""].filter(Boolean).join("｜");
-    return '<div class="station-directory-item '+(s.stationName===name?"current":"")+'"><b>'+name+'</b><span>'+(detail||stationDutyText())+'</span>'+(s.stationName===name?'<em>目前服務單位</em>':'')+'</div>';
+    return '<div class="station-directory-item '+(s.stationName===name?"current":"")+'"><b>'+name+'</b><span>'+(detail||stationDutyText())+'</span>'+(s.stationName===name?'<em>目前服務單位</em>':"")+'</div>';
   }).join("");
+  RENDERED_STATION_KEY=cacheKey;
 }
+
 function directoryOptionsHTML(){
+  if(DISTRIBUTION_OPTIONS_CACHE_VERSION===DISTRIBUTION_POSTS_VERSION)return DISTRIBUTION_OPTIONS_CACHE;
   const groups=new Map();
   DISTRIBUTION_POSTS.forEach(p=>{if(!groups.has(p.county))groups.set(p.county,[]);groups.get(p.county).push(p)});
-  return [...groups.entries()].map(([city,posts])=>'<optgroup label="'+city+'">'+posts.map(p=>'<option value="'+p.id+'">'+p.label+'</option>').join("")+'</optgroup>').join("");
+  DISTRIBUTION_OPTIONS_CACHE=[...groups.entries()].map(([city,posts])=>'<optgroup label="'+city+'">'+posts.map(p=>'<option value="'+p.id+'">'+p.label+'</option>').join("")+'</optgroup>').join("");
+  DISTRIBUTION_OPTIONS_CACHE_VERSION=DISTRIBUTION_POSTS_VERSION;
+  return DISTRIBUTION_OPTIONS_CACHE;
 }
+
 function renderNationalDirectory(){
   if(!$("directoryCountySelect")||!$("policeDirectoryTree"))return;
   if(!$("directoryCountySelect").options.length){
@@ -2196,12 +2211,15 @@ function renderNationalDirectory(){
       ?("警政署開放資料｜"+(POLICE_DIRECTORY.meta?.divisionCount||0)+" 個分局／警察所｜"+(POLICE_DIRECTORY.meta?.stationCount||0)+" 個分駐／派出／駐在所")
       :(DIRECTORY_ERROR?("名錄載入失敗："+DIRECTORY_ERROR):"正在載入警政署全國警察單位資料…");
   }
+  const q=String($("directorySearch")?.value||"").trim().toLowerCase();
+  const cacheKey=[city,q,DIRECTORY_READY?1:0,DIRECTORY_ERROR].join("|");
+  if(cacheKey===RENDERED_DIRECTORY_KEY)return;
   if(!data){
     $("policeDirectoryTree").innerHTML='<div class="empty-state">'+(DIRECTORY_READY?"此縣市目前沒有可顯示的分局資料。":"全國名錄載入中…")+'</div>';
+    RENDERED_DIRECTORY_KEY=cacheKey;
     return;
   }
-  const q=String($("directorySearch")?.value||"").trim().toLowerCase();
-  let divs=(data.divisions||[]).map(d=>({...d,stations:(d.stations||[]).filter(st=>!q||d.name.toLowerCase().includes(q)||String(st.name||"").toLowerCase().includes(q)||String(st.address||"").toLowerCase().includes(q))}))
+  const divs=(data.divisions||[]).map(d=>({...d,stations:(d.stations||[]).filter(st=>!q||d.name.toLowerCase().includes(q)||String(st.name||"").toLowerCase().includes(q)||String(st.address||"").toLowerCase().includes(q))}))
     .filter(d=>!q||d.name.toLowerCase().includes(q)||d.stations.length);
   $("policeDirectoryTree").innerHTML=divs.map(d=>
     '<details class="directory-division"><summary><b>'+d.name+'</b><span>'+d.stations.length+' 所</span></summary>'+
@@ -2209,10 +2227,12 @@ function renderNationalDirectory(){
       '<div class="directory-stations">'+d.stations.map(st=>'<div class="directory-station"><b>'+st.name+'</b><span>'+[st.address,st.phone?("☎ "+st.phone):""].filter(Boolean).join("｜")+'</span></div>').join("")+'</div>'+
     '</details>'
   ).join("")+(data.unassignedStations?.length?'<details class="directory-division unresolved"><summary><b>尚待來源層級確認</b><span>'+data.unassignedStations.length+' 所</span></summary><div class="directory-stations">'+data.unassignedStations.map(st=>'<div class="directory-station"><b>'+st.name+'</b><span>'+[st.address,st.phone?("☎ "+st.phone):""].filter(Boolean).join("｜")+'</span></div>').join("")+'</div></details>':"");
+  RENDERED_DIRECTORY_KEY=cacheKey;
 }
+
 async function loadPoliceDirectory(){
   try{
-    const res=await fetch("https://rgwvb.github.io/hai-sushi-schedule/police-directory.json?v="+Date.now(),{cache:"no-store"});
+    const res=await fetch("https://rgwvb.github.io/hai-sushi-schedule/police-directory.json",{cache:"default"});
     if(!res.ok)throw new Error("HTTP "+res.status);
     const data=await res.json();
     if(!data||!data.counties||!Object.keys(data.counties).length)throw new Error("資料尚未建立");
@@ -2225,12 +2245,12 @@ async function loadPoliceDirectory(){
     }
     if(Array.isArray(s?.initialOffers)&&s.initialOffers.some(o=>o.stationName==="轄內派出所")){s.initialOffers=[];s.selectedUnit="";}
     if(Array.isArray(s?.rotationOffers)&&s.rotationOffers.some(o=>o.stationName==="轄內派出所")){s.rotationOffers=[];s.selectedUnit="";}
-    dist();renderNationalDirectory();renderStationDirectory();
-    if(s&&s.precinct&&$("unit")?.classList.contains("active"))units();
+    if($("distribution")?.classList.contains("active"))dist();
+    if($("unit")?.classList.contains("active"))units();
   }catch(err){
     DIRECTORY_ERROR=err&&err.message?err.message:String(err);
     console.warn("police directory load failed",err);
-    renderNationalDirectory();
+    if($("distribution")?.classList.contains("active"))renderNationalDirectory();
   }
 }
 function officerVacancyCard(o,extraTag=""){
@@ -2489,15 +2509,13 @@ function render(){
     ["routes",()=>routes()],
     ["study",()=>study()],
     ["exam",()=>exam()],
-    ["distribution",()=>dist()],
-    ["units",()=>units()],
+    ["distribution",()=>{if($("distribution")?.classList.contains("active"))dist()}],
+    ["units",()=>{if($("unit")?.classList.contains("active"))units()}],
     ["duty",()=>duty()],
     ["cases",()=>cases()],
     ["career",()=>career()],
     ["life",()=>life()],
     ["records",()=>records()],
-    ["precinct-org",()=>{if(typeof renderPrecinctOrg==="function")renderPrecinctOrg()}],
-    ["station-directory",()=>{if(typeof renderStationDirectory==="function")renderStationDirectory()}],
     ["rank-insignia",()=>{if(typeof renderRankInsignia==="function")renderRankInsignia()}],
     ["retirement",()=>{if(typeof renderRetirement==="function")renderRetirement()}],
     ["exam-actions",()=>{if(typeof syncExamActionButtons==="function")syncExamActionButtons()}],
