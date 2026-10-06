@@ -43,7 +43,8 @@ if(standaloneIds.every(id=>htmlRaw.includes(`id="${id}"`))){
         click(window,window.document.querySelector('.nav-btn[data-page="unit"]'));await wait(0);
       }
       const shown=[...window.document.querySelectorAll("#unitCards .vacancy-position")].map(x=>x.textContent);
-      for(const title of scenario.expected)assert(shown.includes(title),scenario.position+" rotation missing "+title);
+      const diagnostic="active="+(window.document.querySelector(".page.active")?.id||"")+"; feedback="+(window.document.getElementById("careerMsg")?.textContent||"")+"; banner="+(window.document.getElementById("unitBanner")?.textContent||"")+"; cards="+shown.join("|");
+      for(const title of scenario.expected)assert(shown.includes(title),scenario.position+" rotation missing "+title+"; "+diagnostic);
     }
     click(window,window.document.getElementById("resetBtn"));await wait(0);
     assert(window.document.querySelectorAll("#charHomeCounty option").length===22,"county select should contain 22 options");
