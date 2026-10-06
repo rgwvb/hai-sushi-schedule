@@ -1648,8 +1648,8 @@ function officerRotationOffers(){
 
   const otherAgencies=LOCAL_POLICE_AGENCIES.filter(a=>a[0]!==s.county);
   const agency=otherAgencies[Math.floor(Math.random()*otherAgencies.length)];
-  const comparable=base[Math.floor(Math.random()*base.length)]||{};
-  const external={id:"rotation_external_"+seq+"_"+agency[0],unit:"admin",assignmentType:"administration",unitName:agency[1]+"｜局本部／所屬單位",position:comparable.position||s.position||"警察人員",seq,county:agency[0],localAgency:agency[1],crossCounty:true,desc:"外縣市調任選項，職務序列相當；可轉往"+agency[0]+"服務。"};
+  const externalPosition={0:"警察局局長",1:"警察局副局長",2:"警察局副局長",3:"警察局副局長",4:"分局長",5:"專員",6:"組長",7:"督察員",8:"警務員",9:"巡官"}[seq]||s.position||"警察人員";
+  const external={id:"rotation_external_"+seq+"_"+agency[0],unit:"admin",assignmentType:"administration",unitName:agency[1]+"｜局本部／所屬單位",position:externalPosition,seq,county:agency[0],localAgency:agency[1],crossCounty:true,desc:"外縣市調任選項，職務序列相當；可轉往"+agency[0]+"服務。"};
   const local=pickOfficerOffers(base,Math.min(2,base.length)).map(o=>{if(o.stationName)o.unitName=stationFullName(o.stationName);return o});
   return local.concat(external);
 }
@@ -2151,14 +2151,14 @@ async function loadPoliceDirectory(){
   }
 }
 function officerVacancyCard(o,extraTag=""){
-  const seq=Number(o.seq||9);
+  const seq=Number(o.seq??9);
   const selected=s.selectedUnit===o.id?"selected":"";
   const rank=rankInsigniaHTML(seq,true);
   return '<div class="choice-card officer-vacancy-card '+selected+'" data-o="'+o.id+'">'+
     '<div class="vacancy-card-head"><div><h3>'+o.unitName+'</h3><strong class="vacancy-position">'+o.position+'</strong></div>'+
     '<div class="vacancy-rank">'+rank+'</div></div>'+
     '<p>'+o.desc+'</p>'+
-    '<div class="meta"><span class="tag">第'+seq+'序列職務</span>'+(extraTag?'<span class="tag">'+extraTag+'</span>':'')+'<span class="tag">'+rankInsigniaSpec(seq).label+'</span></div>'+
+    '<div class="meta"><span class="tag">第'+seq+'序列職務</span>'+(o.crossCounty?'<span class="tag">外縣市</span>':'')+(extraTag?'<span class="tag">'+extraTag+'</span>':'')+'<span class="tag">'+rankInsigniaSpec(seq).label+'</span></div>'+
   '</div>';
 }
 function units(){
