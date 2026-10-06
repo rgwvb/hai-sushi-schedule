@@ -2389,7 +2389,7 @@ function units(){
       const seqNow=s.careerStage==="patrol_rotation"?Number(s.careerSequenceNo):effectiveOfficerSequence();
       s.careerSequenceNo=seqNow;
       s.sequence="第"+["零","一","二","三","四","五","六","七","八","九","十","十一"][seqNow]+"序列";
-      const requiredIds=seqNow===10?["station_deputy10","patrol_squad10","station_chief10"]:seqNow===9?["station_deputy","station_chief9"]:seqNow===8?["station_chief"]:seqNow===7?["rotation_detective7","station_chief7"]:seqNow===6?["rotation_detective_deputy6"]:[];
+      const requiredIds=seqNow===10?["station_deputy10","patrol_squad10","station_chief10"]:seqNow===9?["station_deputy","station_chief9"]:seqNow===8?["station_chief"]:seqNow===7?["rotation_detective7","station_chief7"]:seqNow===6?["rotation_detective_deputy6"]:seqNow===5?[agencyRecord(s.county)?.[4]?"metro_specialist5":"county_secretary5"]:seqNow===4?[agencyRecord(s.county)?.[4]?"metro_division4":"county_deputy4"]:seqNow===3?[agencyRecord(s.county)?.[4]?"metro_deputy3":"county_chief3"]:seqNow===2?["npa_sec2"]:seqNow===1?["npa_deputy1"]:[];
       const badOffers=!Array.isArray(s.rotationOffers)||!s.rotationOffers.length||s.rotationOffers.some(o=>Number(o.seq)!==seqNow)||(seqNow===0?s.rotationOffers.some(o=>o.crossCounty||o.crossAgency):!s.rotationOffers.some(o=>o.crossCounty||o.crossAgency))||requiredIds.some(id=>!s.rotationOffers.some(o=>o.id===id));
       if(badOffers){s.rotationOffers=officerRotationOffers();s.selectedUnit="";}
       $("unitBanner").textContent="目前職務："+(s.position||"—")+"｜"+s.sequence+"。依目前陞遷序列挑選相當職務；跨縣市與跨機關職缺會按任職機關類型呈現，已升任警務員時不會再出現第九序列巡官缺額。";
@@ -2468,7 +2468,7 @@ $("confirmUnitBtn").onclick=()=>{
     s.unit=o.unit;
     s.unitName=o.unitName;
     s.assignmentType=o.assignmentType||o.unit;
-    if(o.crossCounty){s.county=o.county;s.localAgency=o.localAgency;s.precinct="";s.selectedStation="";}else if(o.crossAgency||o.unit==="central"){s.county="中央";s.localAgency=o.localAgency||o.unitName;s.precinct="";s.selectedStation="";}
+    if(o.crossCounty){s.county=o.county;s.localAgency=o.localAgency;s.precinct="";s.selectedStation="";}else if(o.crossAgency){s.county=o.county||"中央";s.localAgency=o.localAgency||o.unitName;s.precinct="";s.selectedStation="";}
     s.stationName=o.stationName||"";
     s.position=o.position;
     s.rank=o.position;
