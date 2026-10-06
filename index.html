@@ -1052,8 +1052,8 @@ button:hover{transform:none!important}
         <div class="panel" id="policeMonitorTrainingPanel">
           <div class="panel-head"><h3>警正升警監官等訓練／警監班</h3><span>高階職涯進修</span></div>
           <p class="muted">完成資格審查與訓練後，才可參加第4序列升第3序列的職務甄審。訓練資格依官階、年資及最近三年年終考績模擬。</p>
-          <div class="info-banner" id="policeMonitorTrainingStatus">升至第4序列警正一階職務後，可查看參訓資格。</div>
-          <div class="button-row"><button class="secondary-btn" id="policeMonitorTrainingBtn">申請警正升警監訓練</button></div>
+          <div class="info-banner" id="policeMonitorTrainingStatus" role="status" aria-live="polite">升至第4序列警正一階職務後，可查看參訓資格。</div>
+          <div class="button-row"><button class="secondary-btn" id="policeMonitorTrainingBtn">申請並參加訓練</button></div>
         </div>
         <div class="panel" id="precinctOrgDirectory">
           <div class="panel-head"><h3 id="precinctOrgTitle">服務機關組織概覽</h3><span>依地方警察局／分局層級顯示</span></div>
@@ -2919,31 +2919,51 @@ loadPoliceDirectory();
     const started=parseLocalDateTime(s.positionStartDate||s.joinDate||s.simDate);
     const years=Math.max(0,(simNow().getTime()-started.getTime())/86400000/365.2425);
     const requiredYears=s.route==="cpu"?6:3;
+    const tenureOK=years>=requiredYears;
     const annual=annualAppraisals(3);
     const gradeOK=annual.length>=3&&annual.filter(x=>x.grade==="甲等").length>=2&&annual.every(x=>x.grade==="甲等"||x.grade==="乙等");
-    const ok=seqOK&&rankOK&&routeOK&&years>=requiredYears&&gradeOK&&(s.discipline||0)>=80&&!s.policeMonitorTrainingPassed;
-    return {ok,seqOK,rankOK,routeOK,years,requiredYears,annual,gradeOK,passed:!!s.policeMonitorTrainingPassed};
+    const disciplineOK=(s.discipline||0)>=80;
+    const ok=seqOK&&rankOK&&routeOK&&tenureOK&&gradeOK&&disciplineOK&&!s.policeMonitorTrainingPassed;
+    return {ok,seqOK,rankOK,routeOK,years,requiredYears,tenureOK,annual,gradeOK,disciplineOK,passed:!!s.policeMonitorTrainingPassed};
   }
   function renderPoliceMonitorTraining(){
     const panel=$("policeMonitorTrainingPanel");if(!panel)return;
     const e=policeMonitorTrainingEligibility(),seq=currentSequenceNo();
     panel.style.display=seq<=5?"":"none";
     const grades=e.annual.map(x=>x.grade).join("／")||"尚無正式年度考績";
-    let status=e.passed?"已完成警正升警監訓練；符合條件後可申請第3序列職務甄審。":
-      "目前"+sequenceLabel(seq)+"｜官階："+(s.officialRank||"—")+"｜任職年資："+e.years.toFixed(1)+"／"+e.requiredYears+"年｜近三年年終考績："+grades+"（需至少2甲、其餘乙等以上）｜考試資格："+(e.routeOK?"符合":"尚未取得");
+    const missing=[];
+    if(!e.seqOK)missing.push("須任第4序列職務");
+    if(!e.rankOK)missing.push("官階須為警正一階");
+    if(!e.routeOK)missing.push("須具警大或三等考試等相應資格");
+    if(!e.tenureOK)missing.push("職務年資須滿"+e.requiredYears+"年（目前"+e.years.toFixed(1)+"年）");
+    if(!e.gradeOK)missing.push("近三年年終考績須至少2甲、其餘乙等以上（目前"+grades+"）");
+    if(!e.disciplineOK)missing.push("獎懲操行分須達80分（目前"+(s.discipline||0)+"分）");
+    const last=String(s.policeMonitorTrainingLastResult||"");
+    let status=e.passed
+      ?last||"警監班訓練已完成；符合條件後可申請第3序列職務甄審。"
+      :last+(e.ok?"":"｜目前資格未達："+missing.join("；"));
+    if(!status)status=e.ok
+      ?"參訓資格符合。按下「申請並參加訓練」後，模擬進行28天訓練並在此顯示結果。"
+      :"尚未符合參訓資格："+missing.join("；");
     $("policeMonitorTrainingStatus").textContent=status;
     $("policeMonitorTrainingBtn").disabled=!e.ok;
-    $("policeMonitorTrainingBtn").textContent=e.passed?"已完成訓練":"申請警正升警監訓練";
+    $("policeMonitorTrainingBtn").textContent=e.passed?"已完成訓練":e.ok?"申請並參加訓練":"參訓資格未達";
   }
   function takePoliceMonitorTraining(){
     const e=policeMonitorTrainingEligibility();
-    if(e.passed)return fb("careerMsg","已完成警正升警監訓練。",1);
-    if(!e.ok)return fb("careerMsg","尚未符合警正升警監訓練資格：需第4序列警正一階、相應考試資格、指定職務年資及最近三年考績至少2甲、其餘乙等以上。",0);
+    if(e.passed){$("policeMonitorTrainingStatus").textContent=s.policeMonitorTrainingLastResult||"警監班訓練已完成。";return}
+    if(!e.ok){renderPoliceMonitorTraining();return}
     const score=Math.round(Math.min(100,35+(s.law||0)*.2+(s.knowledge||0)*.15+(s.service||0)*.1+(promotionScore())*.2+Math.random()*15));
     s.policeMonitorTrainingAttempts=(s.policeMonitorTrainingAttempts||0)+1;
     advanceDays(28);
-    if(score>=65){s.policeMonitorTrainingPassed=true;rec("警正升警監官等訓練","警監班結訓及格｜模擬成績 "+score);fb("careerMsg","警正升警監訓練及格！已解鎖第3序列職務甄審資格；仍須依缺額與資績參加陞遷。",1)}
-    else{rec("警正升警監官等訓練","未及格｜模擬成績 "+score);fb("careerMsg","本次訓練未及格，模擬成績 "+score+"；可繼續累積法學、勤務資績後再申請。",0)}
+    if(score>=65){
+      s.policeMonitorTrainingPassed=true;
+      s.policeMonitorTrainingLastResult="警監班訓練完成，模擬成績"+score+"分，及格；已解鎖第3序列職務甄審資格，仍須依缺額與資績甄審。";
+      rec("警正升警監官等訓練","警監班結訓及格｜模擬成績 "+score);
+    }else{
+      s.policeMonitorTrainingLastResult="本次警監班訓練未通過，模擬成績"+score+"分；可繼續累積法學、勤務資績後再申請。";
+      rec("警正升警監官等訓練","未及格｜模擬成績 "+score);
+    }
     save();render();
   }
   function promotionExamEligibility(){
