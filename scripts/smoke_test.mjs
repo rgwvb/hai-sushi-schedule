@@ -92,7 +92,7 @@ if(standaloneIds.every(id=>htmlRaw.includes(`id="${id}"`))){
     assert(choice,"mixed duty scenario choices did not render");
     click(window,choice);await wait(200);
     assert(!window.document.querySelector("#dutyChoices [data-advd]"),"duty result should remain visible before auto-advance");
-    assert(window.document.getElementById("dutyResult").textContent.includes("30天"),"duty result feedback was not visible");
+    assert(window.document.getElementById("dutyResult").textContent.includes("遊戲時間前進約 30 天"),"duty result feedback was not visible");
     await wait(1400);
     assert(window.document.querySelector("#dutyChoices [data-advd]"),"duty scenario did not auto-advance after feedback");
     window.Math.random=()=>0;
