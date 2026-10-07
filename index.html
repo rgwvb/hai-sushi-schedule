@@ -819,6 +819,7 @@ body.topic-quiz-open{overflow:hidden}
 
 </style>
 <meta name="description" content="台灣警察生涯模擬器單檔 HTML 版本；CSS 與 JavaScript 已內嵌。">
+<link rel="stylesheet" href="assets/exam_archive.css?v=20261007">
 </head>
 <body>
 <div class="app-shell">
@@ -1189,6 +1190,28 @@ body.topic-quiz-open{overflow:hidden}
           <div><h2>警察學堂</h2><p>警察制度、共同勤務、犯罪學與實務觀念。內容以遊戲學習為目的。</p></div>
           <div class="chips"><span id="knowledgeChip">知識 0</span><span id="quizChip">測驗 0/0</span></div>
         </div>
+
+        <div class="panel" id="examArchivePanel">
+          <div class="exam-archive-hero">
+            <div><span class="eyebrow">MOEX · 歷屆特考</span><h3>把真實考題，變成每天的練習</h3><p class="muted" id="examArchiveCoverage">警察特考、一般警察特考｜歷屆官方試卷與答案</p></div>
+            <button type="button" class="primary-btn" id="examArchiveOpenBtn">開啟歷屆特考題庫</button>
+          </div>
+          <div id="examArchiveBody" class="exam-archive-body" hidden aria-busy="false">
+            <div class="exam-filters">
+              <label>年份<select id="examYearFilter" aria-label="特考年份"></select></label>
+              <label>考試<select id="examTrackFilter"><option value="">全部考試</option><option>警察特考</option><option>一般警察特考</option></select></label>
+              <label>等別<select id="examGradeFilter"><option value="">全部等別</option><option>二等</option><option>三等</option><option>四等</option><option>五等</option><option>甲等</option><option>乙等</option><option>丙等</option><option>其他</option></select></label>
+              <label>科目<select id="examSubjectFilter"><option value="">全部科目</option></select></label>
+              <label>類科<select id="examCategoryFilter"><option value="">全部類科</option></select></label>
+            </div>
+            <div class="exam-archive-actions"><button type="button" class="primary-btn" id="examMixBtn" disabled>混合練習 20 題</button><button type="button" class="secondary-btn" id="examWrongBtn" disabled>錯題複習</button></div>
+            <p class="exam-archive-status" id="examArchiveStatus" role="status" aria-live="polite"></p>
+            <p class="exam-archive-note">選「全部年份混合」時，每輪抽最多 3 個年份，減少手機載入時間。選擇題依官方答案判定；申論、閱讀、圖表及無法完整核對的題目請查閱原卷。歷屆答案依當年度公布結果，法規可能已修正。</p>
+            <details class="exam-papers-details"><summary>依科目找試卷／查閱完整原卷</summary><div id="examPaperList" class="exam-paper-list"></div>
+            <div class="exam-pagination"><button type="button" class="secondary-btn" id="examListPrev" disabled aria-label="上一頁試卷">上一頁</button><span id="examListPage">1 / 1</span><button type="button" class="secondary-btn" id="examListNext" disabled aria-label="下一頁試卷">下一頁</button></div></details>
+            <details class="exam-archive-note"><summary>資料來源與原卷說明</summary><p id="examArchiveDeclaration"></p><a class="exam-source-link" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx" target="_blank" rel="noopener noreferrer">考選部考畢試題查詢平臺 ↗</a><p>保留完整官方試題、標準答案及更正答案連結。自動作答僅使用能核對題號、四個選項及官方答案的文字題；本網站沒有將答案判定標示為官方詳解。</p></details>
+          </div>
+        </div>
         <div class="panel">
           <div class="panel-head"><h3>警察制度速覽</h3><span>依警政署公開資料整理</span></div>
           <p class="muted">點選主題，立即開始兩題測驗；作答後查看答案分析與官方來源。</p>
@@ -1322,6 +1345,19 @@ body.topic-quiz-open{overflow:hidden}
     <button class="nav-btn mobile-dock-btn" data-page="life"><span class="dock-icon" aria-hidden="true">生</span><span>生活</span></button>
   </nav>
 </div>
+
+
+<dialog id="examQuizDialog" class="topic-quiz-dialog exam-quiz-dialog" aria-labelledby="examQuizTitle">
+  <div class="topic-quiz-head"><div><span class="eyebrow" id="examQuizProgress">歷屆特考</span><h2 id="examQuizTitle">歷屆混合練習</h2></div><button type="button" class="secondary-btn" id="examQuizCloseBtn" aria-label="關閉歷屆練習">關閉</button></div>
+  <div class="topic-quiz-body">
+    <p id="examQuizMeta" class="exam-quiz-meta"></p>
+    <h3 id="examQuizQuestion" class="topic-quiz-question exam-quiz-question" tabindex="-1"></h3>
+    <div id="examQuizChoices"></div>
+    <div id="examQuizSources" class="exam-quiz-sources"></div>
+    <div id="examQuizResult" class="feedback" role="status" aria-live="polite"></div>
+  </div>
+  <div class="topic-quiz-footer"><label class="exam-auto-label"><input id="examAutoNext" type="checkbox" checked>作答後自動下一題（可關閉，慢慢核對）</label><p id="examQuizStatus">選一個答案。</p><button type="button" class="primary-btn" id="examQuizNextBtn" hidden>下一題</button></div>
+</dialog>
 
 <dialog id="topicQuizDialog" class="topic-quiz-dialog" aria-labelledby="topicQuizTitle">
   <div class="topic-quiz-head">
@@ -4388,5 +4424,6 @@ loadPoliceDirectory();
 })();
 
 </script>
+<script src="scripts/exam_archive.js?v=20261007"></script>
 </body>
 </html>

@@ -29,6 +29,8 @@ jobs:
         run: |
           npm install --no-save jsdom@26
           node scripts/smoke_test.mjs
+          node scripts/exam_archive_test.mjs
+          python scripts/validate_exam_archive.py
       - name: Build nationwide police directory
         shell: bash
         run: |
