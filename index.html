@@ -822,7 +822,7 @@ body.topic-quiz-open{overflow:hidden}
 <meta name="description" content="台灣警察生涯模擬器單檔 HTML 版本；CSS 與 JavaScript 已內嵌。">
 <link rel="stylesheet" href="assets/exam_archive.css?v=20261007">
 <link rel="stylesheet" href="assets/workforce_scenarios.css?v=20261007">
-<link rel="stylesheet" href="assets/career_records.css?v=20261007a">
+<link rel="stylesheet" href="assets/career_records.css?v=20261007b">
 </head>
 <body>
 <div class="app-shell">
@@ -1333,17 +1333,13 @@ body.topic-quiz-open{overflow:hidden}
       </section>
 
       <section id="records" class="page">
-        <div class="page-head"><div><h2>生涯紀錄</h2><p>從 2010 年開始，任職經歷與事件紀錄分開呈現。</p></div></div>
+        <div class="page-head"><div><h2>生涯紀錄</h2><p>從 2010 年開始，依年份整理初任至現職的任職、陞任與輪調經歷。</p></div></div>
         <div class="career-records-layout">
           <section class="panel career-record-panel" aria-labelledby="appointmentHistoryTitle">
             <div class="panel-head"><div><span class="career-section-label">APPOINTMENTS · 任職年表</span><h3 id="appointmentHistoryTitle">任職經歷</h3></div><span id="appointmentHistoryCount"></span></div>
             <div id="careerCurrentPost" class="career-current-post"></div>
             <div id="historyList" class="career-record-list"></div>
-            <p class="career-record-note">保留每次任職當時的官階、職務與單位；舊紀錄缺少的資料會標示未記錄。</p>
-          </section>
-          <section class="panel career-events-panel" aria-labelledby="careerEventsTitle">
-            <div class="panel-head"><div><span class="career-section-label">EVENTS · 學習與重要事件</span><h3 id="careerEventsTitle">事件紀錄</h3></div><span id="careerEventsCount"></span></div>
-            <div id="careerEventList" class="career-event-list"></div>
+            <p class="career-record-note">完整保留每次任職經歷。舊經歷會依仍保存的初任與陞遷資料補回，缺少的當時官階或單位會標示未記錄。</p>
           </section>
         </div>
       </section>
@@ -2782,6 +2778,14 @@ function careerAppointmentKey(post){return JSON.stringify([post.time||"",post.ki
 function keepCareerAppointment(post){
   if(!Array.isArray(s.careerAppointments))s.careerAppointments=[];
   if(!post||typeof post!=="object")return;
+  if(post.kind==="職務陞遷"){
+    const same=s.careerAppointments.find(x=>x&&x.kind===post.kind&&x.time===post.time&&x.position===post.position);
+    if(same){
+      if(post.source==="snapshot")Object.assign(same,post);
+      else ["officialRank","unitName"].forEach(key=>{if(!same[key]&&post[key])same[key]=post[key]});
+      return;
+    }
+  }
   const key=careerAppointmentKey(post);
   if(!s.careerAppointments.some(x=>x&&careerAppointmentKey(x)===key))s.careerAppointments.push({...post});
 }
@@ -2795,16 +2799,43 @@ function legacyCareerAppointment(h){
   const unitParts=parts.filter(x=>!x.match(/^(?:警佐|警正|警監)[一二三四特1234]階$/)&&!(role.test(x)&&x===position)&&!/(?:資績|甄審|陞任|層級|保留|得分)/.test(x)&&/(?:市|縣|分局|派出所|分駐所|駐在所|總隊|警政署|警察局|警察大學|中隊|分隊|隊|組|室|中心)/.test(x));
   return {time:h.time||"",year:careerYearFromStamp(h.time),kind:h.title,officialRank:(detail.match(/(?:警佐|警正|警監)[一二三四特1234]階/)||[])[0]||"",position,unitName:unitParts.join("・"),source:"legacy"};
 }
+function careerStampFromSavedDate(value){
+  const text=String(value||"");
+  if(careerYearFromStamp(text)!==null)return text;
+  const m=text.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if(!m)return "";
+  return (Number(m[1])-16)+"年"+Number(m[2])+"月"+Number(m[3])+"日 "+m[4]+":"+m[5];
+}
+function recoverCareerAppointments(){
+  const reviews=(Array.isArray(s.promotionReviews)?s.promotionReviews:[]).filter(x=>x&&x.result==="陞任"&&x.target&&careerYearFromStamp(x.date)!==null);
+  reviews.slice().reverse().forEach(review=>{
+    const post=legacyCareerAppointment({title:"職務陞遷",detail:String(review.target),time:review.date,appointment:review.appointment});
+    if(!post.position)return;
+    post.source=review.appointment?"snapshot":"recovered-review";
+    const existing=s.careerAppointments.find(x=>x.kind==="職務陞遷"&&x.time===post.time&&x.position===post.position);
+    if(existing){
+      ["officialRank","unitName"].forEach(key=>{if(!existing[key]&&post[key])existing[key]=post[key]});
+    }else keepCareerAppointment(post);
+  });
+  const start=careerStampFromSavedDate(s.joinDate),year=careerYearFromStamp(start),route=R.find(x=>x[0]===s.route);
+  const hasCareer=s.careerAppointments.length>0||reviews.length>0;
+  const hasStart=s.careerAppointments.some(x=>careerYearFromStamp(x.time)===year&&/^(初任派職|派出所報到|單位報到|初任資料補記)$/.test(x.kind||""));
+  const earliestYear=Math.min(...s.careerAppointments.map(x=>careerYearFromStamp(x.time)).filter(x=>x!==null));
+  if(start&&route&&hasCareer&&!hasStart&&year<=earliestYear){
+    keepCareerAppointment({time:start,year,kind:"初任資料補記",officialRank:route[7],position:route[8],unitName:"",source:"recovered-start"});
+  }
+}
 function rememberCareerAppointments(){
   if(!Array.isArray(s.careerAppointments))s.careerAppointments=[];
   s.careerAppointments=s.careerAppointments.filter(x=>x&&typeof x==="object");
   (s.history||[]).slice().reverse().filter(isCareerAppointmentEvent).forEach(h=>keepCareerAppointment(legacyCareerAppointment(h)));
+  recoverCareerAppointments();
 }
 function careerText(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;el.textContent=text;return el}
 function records(){
   rememberCareerAppointments();
-  const list=$("historyList"),events=$("careerEventList"),current=$("careerCurrentPost");
-  list.replaceChildren();events.replaceChildren();current.replaceChildren();
+  const list=$("historyList"),current=$("careerCurrentPost");
+  list.replaceChildren();current.replaceChildren();
   const employed=!!s.unit&&!s.retired&&!["考生","待分發"].includes(String(s.position||""));
   const currentLabel=s.retired?"退休前職務":employed?"目前任職":"尚未任職";
   current.append(careerText("span","career-current-label",currentLabel));
@@ -2813,7 +2844,11 @@ function records(){
     current.append(careerText("p","",s.retired?s.lastActiveUnit||"當時單位未記錄":careerPostLocation(s)||"單位未記錄"));
   }else current.append(careerText("p","","完成分發與報到後，這裡會開始記錄你的任職經歷。"));
   const rows=s.careerAppointments.slice().sort((a,b)=>(careerYearFromStamp(a.time)??Infinity)-(careerYearFromStamp(b.time)??Infinity)||String(a.time||"").localeCompare(String(b.time||""),"zh-Hant",{numeric:true}));
-  if(!rows.length&&employed)rows.push({time:rocDateTime(),year:careerYearFromStamp(rocDateTime()),kind:"現職補記",officialRank:s.officialRank,position:s.position,unitName:careerPostLocation(s),source:"current"});
+  const latest=rows[rows.length-1];
+  if(employed&&(!latest||latest.position!==s.position||latest.officialRank!==s.officialRank||careerPostLocation(latest)!==careerPostLocation(s))){
+    const now=rocDateTime();
+    rows.push({time:now,year:careerYearFromStamp(now),kind:rows.length?"目前任職":"現職補記",officialRank:s.officialRank,position:s.position,unitName:careerPostLocation(s),source:"current"});
+  }
   $("appointmentHistoryCount").textContent=rows.length?rows.length+" 筆":"尚無紀錄";
   rows.forEach(post=>{
     const article=document.createElement("article");article.className="career-record";
@@ -2825,18 +2860,12 @@ function records(){
     heading.append(careerText("span","career-appointment-role",post.position||"職務未記錄"));
     copy.append(heading,careerText("p","career-appointment-unit",careerPostLocation(post)||"當時單位未記錄"));
     copy.append(careerText("span","career-appointment-kind",post.kind||"任職紀錄"));
-    if(post.source==="current")copy.append(careerText("p","career-legacy-note","舊存檔未保留報到日期，本筆以目前遊戲年份補記現職。"));
+    if(post.source==="current")copy.append(careerText("p","career-legacy-note",post.kind==="目前任職"?"目前遊戲年份的現職資料。":"舊存檔未保留報到日期，本筆以目前遊戲年份補記現職。"));
+    if(post.source==="recovered-start")copy.append(careerText("p","career-legacy-note","依初任日期與任用路線補記，當時服務單位未留存。"));
+    if(post.source==="recovered-review")copy.append(careerText("p","career-legacy-note","依已核定的陞遷紀錄補回。"));
     article.append(copy);list.append(article);
   });
   if(!rows.length)list.append(careerText("div","empty-state","尚無任職經歷。報到、輪調或陞任後，會自動記錄年份、官階、職務與服務單位。"));
-  const eventRows=(s.history||[]).filter(h=>h&&typeof h==="object"&&!isCareerAppointmentEvent(h));
-  $("careerEventsCount").textContent=eventRows.length?eventRows.length+" 筆 · 最新在前":"尚無紀錄";
-  eventRows.forEach(h=>{
-    const article=document.createElement("article");article.className="career-event";
-    article.append(careerText("time","career-event-date",h.time||"日期未記錄"),careerText("h4","",h.title||"生涯事件"),careerText("p","",h.detail||""));
-    events.append(article);
-  });
-  if(!eventRows.length)events.append(careerText("div","empty-state","考試、訓練、考績、輪調資格與退休等事件會記錄在這裡。"));
 }
 function safeRenderPart(name,fn){
   try{fn()}catch(err){
