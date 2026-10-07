@@ -780,6 +780,43 @@ button:hover{transform:none!important}
 #dashboard .hero-mark{clip-path:none!important;background:transparent!important;filter:none!important;display:grid;place-items:center;width:66px;height:66px}
 #dashboard .hero-mark img{display:block;width:100%;height:100%;object-fit:contain}
 @media(max-width:520px){#dashboard .hero-mark{width:48px;height:48px}}
+
+/* Topic quizzes open where the player taps, including on small screens. */
+#systemKnowledge .knowledge-card{width:100%;text-align:left;color:var(--text);font:inherit;appearance:none}
+.knowledge-title{display:block;font-size:16px;font-weight:750;margin-bottom:6px}
+.knowledge-copy{display:block;color:var(--muted);font-size:12px;line-height:1.6}
+.knowledge-card:focus-visible,.topic-answer:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}
+body.topic-quiz-open{overflow:hidden}
+.topic-quiz-dialog{color:var(--text);background:var(--panel);border:1px solid #36557e;border-radius:20px;padding:0;width:min(680px,calc(100% - 28px));max-height:92vh;max-height:92dvh;box-shadow:0 24px 80px rgba(0,0,0,.55)}
+.topic-quiz-dialog::backdrop{background:rgba(2,6,15,.76);backdrop-filter:blur(5px)}
+.topic-quiz-dialog[open]{display:flex;flex-direction:column}
+.topic-quiz-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line);flex-shrink:0}
+.topic-quiz-head h2{margin:4px 0 0;font-size:21px}.topic-quiz-head .secondary-btn{min-width:58px;min-height:44px}
+.topic-quiz-body{overflow-y:auto;overscroll-behavior:contain;padding:18px 20px;min-height:0}
+.topic-quiz-question{font-size:18px;line-height:1.65;margin:0 0 16px}
+#topicQuizChoices{display:grid;grid-template-columns:1fr;gap:10px}
+.topic-answer{display:flex;align-items:flex-start;gap:12px;width:100%;padding:14px;text-align:left;border:1px solid var(--line);border-radius:12px;background:var(--panel3);color:var(--text);cursor:pointer;min-height:54px;line-height:1.6;font-size:15px}
+.topic-answer-letter{flex-shrink:0;display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#183353;color:#bfdbfe;font-weight:750}
+.topic-answer:hover:not(:disabled){border-color:#60a5fa;background:#152d4b}.topic-answer:disabled{cursor:default;opacity:1}
+.topic-answer.is-correct{border-color:#4ade80;background:#102d28}.topic-answer.is-wrong{border-color:#fb7185;background:#361d2c}
+#topicQuizResult{margin-top:18px;line-height:1.7;border-radius:12px;font-size:14px}
+#topicQuizResult:empty{display:none}
+#topicQuizResult .topic-analysis-question{font-weight:700;margin-top:0}
+#topicQuizResult p{margin:10px 0}
+#topicQuizResult details{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
+#topicQuizResult summary{cursor:pointer;min-height:32px;color:#bfdbfe}
+#topicQuizResult ul{padding-left:21px;margin-bottom:0}#topicQuizResult li{margin:7px 0}
+#topicQuizResult a{color:#93c5fd;text-underline-offset:3px}
+.topic-quiz-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 20px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);flex-shrink:0}
+#topicQuizStatus{margin:0;font-size:12px;line-height:1.6;color:var(--muted)}
+#topicQuizNextBtn{min-height:46px;flex-shrink:0}
+@media(max-width:600px){
+ .topic-quiz-dialog{position:fixed;inset:auto 0 0;margin:0;width:100%;max-width:100%;max-height:94vh;max-height:94dvh;border-radius:22px 22px 0 0}
+ .topic-quiz-head,.topic-quiz-body{padding:16px}.topic-quiz-head h2{font-size:20px}
+ .topic-quiz-footer{padding-left:16px;padding-right:16px}.topic-quiz-question{font-size:17px}
+}
+@media(prefers-reduced-motion:reduce){.topic-quiz-dialog *{scroll-behavior:auto;transition:none}}
+
 </style>
 <meta name="description" content="台灣警察生涯模擬器單檔 HTML 版本；CSS 與 JavaScript 已內嵌。">
 </head>
@@ -1154,6 +1191,7 @@ button:hover{transform:none!important}
         </div>
         <div class="panel">
           <div class="panel-head"><h3>警察制度速覽</h3><span>依警政署公開資料整理</span></div>
+          <p class="muted">點選主題，立即開始兩題測驗；作答後查看答案分析與官方來源。</p>
           <div id="systemKnowledge" class="choice-grid"></div>
         </div>
         <div class="panel">
@@ -1284,6 +1322,23 @@ button:hover{transform:none!important}
     <button class="nav-btn mobile-dock-btn" data-page="life"><span class="dock-icon" aria-hidden="true">生</span><span>生活</span></button>
   </nav>
 </div>
+
+<dialog id="topicQuizDialog" class="topic-quiz-dialog" aria-labelledby="topicQuizTitle">
+  <div class="topic-quiz-head">
+    <div><span class="eyebrow" id="topicQuizProgress">主題測驗</span><h2 id="topicQuizTitle">警察任務</h2></div>
+    <button type="button" class="secondary-btn" id="topicQuizCloseBtn" aria-label="關閉主題測驗">關閉</button>
+  </div>
+  <div class="topic-quiz-body">
+    <h3 id="topicQuizQuestion" class="topic-quiz-question" tabindex="-1"></h3>
+    <div id="topicQuizChoices"></div>
+    <div id="topicQuizResult" class="feedback" role="status" aria-live="polite"></div>
+  </div>
+  <div class="topic-quiz-footer">
+    <p id="topicQuizStatus">選一個答案，即可查看解析。</p>
+    <button type="button" class="primary-btn" id="topicQuizNextBtn" hidden>下一題</button>
+  </div>
+</dialog>
+
 <script id="standaloneBackendConfig">
 // Fill these with your Supabase project values.
 // Project Settings -> API
@@ -3092,6 +3147,451 @@ loadPoliceDirectory();
     ["主管收到部屬疑似違紀通報，較妥適的第一步是？",["先公開認定有罪","保存相關資料、依程序查證並避免預斷","立即銷毀不利資料","要求通報人撤回"],1,"警察實務／法治觀念","調查應依程序並保持客觀，避免預斷；刑事案件另受無罪推定原則拘束。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=C0010001&flno=154","刑事訴訟法第154條"],
     ["警察遇到集會現場交通壅塞，依法執行時較適當的做法是？",["不問危險程度一律解散","先評估具體危險，採必要且侵害較小的交通疏導措施","只要有人抗議就全面扣留","禁止所有路人發言"],1,"憲法／警察實務","處置須同時考量集會自由與現場安全，並遵守法定職權及比例原則。","https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=A0000001&flno=14","憲法第14條"]
   ];
+  // Original practice questions based on the official sources linked in each explanation.
+  const systemTopicQuizRows=[
+  [
+    [
+      "警察任務的法定範圍，何者最完整？",
+      [
+        "只辦刑案，其他求助一律不受理",
+        "依法維持公共秩序、保護社會安全、防止危害並促進人民福利",
+        "由警察代替法院決定有罪與否",
+        "為提高績效，可以不受法律限制"
+      ],
+      1,
+      "警察任務包含秩序、安全、危害防止與人民福利，且以依法執行為前提；犯罪偵查只是其中一部分。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080001&flno=2",
+      "警察法第2條",
+      [
+        "把任務限縮為刑案，漏掉秩序維護、危害防止與為民服務。",
+        "同時涵蓋四項任務，並保留依法執行的要求。",
+        "審判不是警察任務，不能用偵查取代法院裁判。",
+        "績效不能排除依法執行的要求。"
+      ]
+    ],
+    [
+      "員警巡邏遇到迷失方向、無法返家的長者。從警察任務判斷，哪個做法較適當？",
+      [
+        "沒發生犯罪，直接請他離開",
+        "先拍照上網，公開完整個資找家屬",
+        "先確認安全、提供必要協助並聯繫適當支援",
+        "只記下姓名，放任他繼續在車道行走"
+      ],
+      2,
+      "情境分析：協助有危險的民眾，是危害防止與為民服務的實踐。先確保安全，再依情況協尋或轉介，不能把是否已發生犯罪當成唯一標準。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080001&flno=2",
+      "警察法第2條",
+      [
+        "任務不只偵查犯罪；對已呈現的危險仍應提供必要協助。",
+        "協尋應使用適當管道，不能把公開完整個資當成第一步。",
+        "先處理安全與需求，再協調支援，符合危害防止及人民福利的方向。",
+        "僅登記而放任危險持續，沒有達成危害防止的目的。"
+      ]
+    ]
+  ],
+  [
+    [
+      "員警循勤務指定路線機動巡視、防止危害，屬於哪種勤務？",
+      [
+        "巡邏",
+        "值班",
+        "備勤",
+        "守望"
+      ],
+      0,
+      "巡邏的特徵是依指定區域或路線巡視。值班以值勤臺通聯與接受報告為主，備勤是整裝待命，守望則在一定位置瞭望、警戒。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080026&flno=11",
+      "警察勤務條例第11條",
+      [
+        "指定區、線的巡視是巡邏的特徵。",
+        "值班重點在勤務機構的通訊聯絡、傳令與接受報告。",
+        "備勤是勤務機構內整裝待命，等待突發事件或臨時派遣。",
+        "守望在一定位置或劃定區域瞭望，與循路線巡視有別。"
+      ]
+    ],
+    [
+      "員警在勤務機構內整裝待命，準備接受突發事件派遣，屬於哪種勤務？",
+      [
+        "勤區查察",
+        "臨檢",
+        "巡邏",
+        "備勤"
+      ],
+      3,
+      "備勤是保留能迅速投入的機動警力；並非離開勤務機構自行巡視，也不是休息到不需回應派遣。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080026&flno=11",
+      "警察勤務條例第11條",
+      [
+        "勤區查察以警勤區的家戶訪查與犯罪預防等工作為主。",
+        "臨檢是在場所、處所或路段執行臨場檢查或路檢。",
+        "巡邏是在指定區、線巡視，不是在機構內待命。",
+        "整裝待命供突發事件或臨時派遣使用，正是備勤。"
+      ]
+    ]
+  ],
+  [
+    [
+      "下列哪個機關屬於警政署所屬機關？",
+      [
+        "地方戶政事務所",
+        "內政部警政署刑事警察局",
+        "地方法院",
+        "地方衛生局"
+      ],
+      1,
+      "警政署的中央所屬機關包含刑事警察局、航空警察局、國道公路警察局等。名稱中有地方政府，或與公務有關，並不代表隸屬警政署。",
+      "https://www.npa.gov.tw/ch/app/artwebsite/view?id=693&module=artwebsite&serno=97c5ec29-815c-46fb-bdba-fc430ede5b9f",
+      "警政署：組織架構",
+      [
+        "戶政事務所不是警政署所屬警察機關。",
+        "刑事警察局列在警政署的所屬機關中。",
+        "地方法院屬司法體系，不是警政署所屬機關。",
+        "衛生局不是警政署所屬警察機關。"
+      ]
+    ],
+    [
+      "地方警察組織中，哪組名稱較符合一般的分層結構？",
+      [
+        "法院、檢察署、派出所",
+        "警察局、醫院、村里辦公室",
+        "警察局、分局、分駐（派出）所",
+        "警察局、學校、戶政事務所"
+      ],
+      2,
+      "地方警察局設有分局、分駐（派出）所等勤務組織，也有科、室、中心與直屬隊。縣市編制仍應依各機關組織規定確認。",
+      "https://www.npa.gov.tw/ch/app/artwebsite/view?id=693&module=artwebsite&serno=97c5ec29-815c-46fb-bdba-fc430ede5b9f",
+      "警政署：組織架構",
+      [
+        "法院與檢察署不是地方警察局的分層單位。",
+        "醫院及村里辦公室不是警察局的組織層級。",
+        "這組呈現地方警察局與分局、分駐（派出）所的關係。",
+        "學校及戶政事務所不構成這種警察組織分層。"
+      ]
+    ]
+  ],
+  [
+    [
+      "警察人員人事條例所列的三種警察官等是？",
+      [
+        "警監、警正、警佐",
+        "警員、巡佐、所長",
+        "少尉、中尉、上尉",
+        "分局長、局長、署長"
+      ],
+      0,
+      "官等是警監、警正、警佐；警員、巡佐、所長等是職務名稱。判斷人員資格與職位時，應分清官等、官階與職務。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=S0020005&flno=5",
+      "警察人員人事條例第5條",
+      [
+        "這三項是法律明定的警察官等。",
+        "這組是職務名稱，並非三種官等。",
+        "這組是軍職階級名稱，並非警察官等。",
+        "這組是主管職務名稱，並非三種官等。"
+      ]
+    ],
+    [
+      "警正與警佐各分四階，哪一階最高？",
+      [
+        "第四階",
+        "第三階",
+        "第二階",
+        "第一階"
+      ],
+      3,
+      "警正與警佐均以第一階為最高。警監另有特階，不能把不同官等的分階規則混在一起。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=S0020005&flno=5",
+      "警察人員人事條例第5條",
+      [
+        "警正及警佐的第四階不是最高階。",
+        "第三階不是警正及警佐的最高階。",
+        "第二階仍低於同官等的第一階。",
+        "法律明定警正及警佐均以第一階為最高。"
+      ]
+    ]
+  ],
+  [
+    [
+      "要任用於職務等階最高列警正三階以上的職務，除任官資格外，教育條件為何？",
+      [
+        "年資足夠即可，無須教育或訓練",
+        "應經警察大學或警官學校畢業或訓練合格",
+        "任何一次校外研習即可取代",
+        "只需完成遊戲的勤務數量"
+      ],
+      1,
+      "警察人員人事條例第11條區分任官資格與教育條件。符合年資或遊戲分數，不能直接取代法定教育、訓練要求。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=S0020005&flno=11",
+      "警察人員人事條例第11條",
+      [
+        "年資不能取代條文明定的教育或訓練條件。",
+        "這是第11條對該職務等階範圍的教育條件。",
+        "一般研習不能直接視為條文要求的警察教育或訓練。",
+        "遊戲門檻不是現實的法定任用條件。"
+      ]
+    ],
+    [
+      "警政署介紹的基層員警進修、陞遷管道，下列何者確有列入？",
+      [
+        "只靠反覆申請就自動升任巡官",
+        "任何民間證照都等同警正資格",
+        "警佐班第1、2、3類及相關考試、訓練管道",
+        "只有等待退休前統一升官"
+      ],
+      2,
+      "警政署列有多元進修、考試與訓練管道，包括警佐班。報考仍須符合自身條件；完成一項管道也不代表立即取得任何職缺。",
+      "https://www.npa.gov.tw/ch/app/faq/view?id=2144&module=faq&serno=A1083595",
+      "警政署：基層員警陞遷、進修管道",
+      [
+        "反覆申請不會自動取得任用資格與職缺。",
+        "民間證照不能直接替代警察官等資格。",
+        "警政署明列警佐班第1、2、3類等多元管道。",
+        "進修與陞遷有多元制度，不是只等退休前統一辦理。"
+      ]
+    ]
+  ],
+  [
+    [
+      "勤務指揮中心對110報案的核心工作，哪項較正確？",
+      [
+        "受理、指揮、派遣與管制",
+        "代替法院裁判",
+        "只統計電話數，不需處置",
+        "只受理重大刑案，其他一律拒絕"
+      ],
+      0,
+      "勤務指揮中心的職掌包含民眾報案受理與處置，以及110報案指揮、派遣與管制作業流程，讓報案能接到適當警力。",
+      "https://www.npa.gov.tw/ch/app/artwebsite/view?id=804&module=artwebsite&serno=c54377d5-a32e-422f-80de-b1d322c871ab",
+      "警政署勤務指揮中心：業務職掌",
+      [
+        "這些作業將受理報案與警力處置連接起來。",
+        "法院裁判不是勤務指揮中心的職掌。",
+        "統計不能取代受理、派遣與處置。",
+        "其職掌也包含交通事故、聚眾活動與災難事故等。"
+      ]
+    ],
+    [
+      "發生重大交通事故，勤務指揮中心的職掌較接近哪個做法？",
+      [
+        "不接報，等新聞播出再處理",
+        "只通知媒體，不協調警力",
+        "讓各單位完全各自為政",
+        "接報、指揮、處置並通報相關狀況"
+      ],
+      3,
+      "重大交通事故在勤務指揮中心的接報、指揮、處置與通報範圍中。情境上應把資訊傳遞、警力協調與現場處理銜接起來。",
+      "https://www.npa.gov.tw/ch/app/artwebsite/view?id=804&module=artwebsite&serno=c54377d5-a32e-422f-80de-b1d322c871ab",
+      "警政署勤務指揮中心：業務職掌",
+      [
+        "接報與處置是其職掌，不應等待新聞才啟動。",
+        "通知媒體不能取代指揮與必要通報。",
+        "缺乏協調不符合勤務指揮的目的。",
+        "這組動作符合其重大事故業務職掌。"
+      ]
+    ]
+  ],
+  [
+    [
+      "刑事警察局的業務，下列何者較正確？",
+      [
+        "只處理交通號誌維修",
+        "犯罪預防、偵查及刑事鑑識等",
+        "直接判決被告有罪",
+        "只管理學校課表"
+      ],
+      1,
+      "刑事警察局的職掌涵蓋犯罪預防、偵查、犯罪情資與鑑識支援，並非只在案發後抓人，也不取代法院的審判。",
+      "https://www.cib.npa.gov.tw/ch/app/artwebsite/view?id=1389&module=artwebsite&serno=49d63e23-3719-4e04-904e-bc5a6029dd2e",
+      "刑事警察局：組織職掌",
+      [
+        "交通號誌維修不是這裡列舉的刑事核心業務。",
+        "犯罪預防、偵查與鑑識均列入其職掌。",
+        "偵查與審判不同，刑事警察不直接作法院判決。",
+        "學校課表管理不是刑事警察局的核心業務。"
+      ]
+    ],
+    [
+      "刑事案件中，如何看待尚未經審判證明有罪確定的被告？",
+      [
+        "新聞說有罪就視為有罪",
+        "只要沉默就等於認罪",
+        "推定無罪，犯罪事實依證據認定",
+        "由承辦員警憑直覺決定有罪"
+      ],
+      2,
+      "偵查須與證據及程序連結。未經審判證明有罪確定前推定無罪；沒有證據，不得認定犯罪事實。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=C0010001&flno=154",
+      "刑事訴訟法第154條",
+      [
+        "媒體報導不能取代證據與法院審判。",
+        "沉默不能直接取代犯罪事實的證明。",
+        "這是第154條的無罪推定與證據要求。",
+        "員警直覺不是認定犯罪事實的證據。"
+      ]
+    ]
+  ],
+  [
+    [
+      "警政署督察室的公開組織中，第二組負責哪項工作？",
+      [
+        "勤務督導",
+        "核發護照",
+        "法院判決",
+        "醫療費用核銷"
+      ],
+      0,
+      "督察室第二組為勤務督導，第三組涉及風紀、考核及督察人事，第四組涉及特種勤務。",
+      "https://www.npa.gov.tw/ch/app/artwebsite/view?id=812&module=artwebsite&serno=d5d69c57-17d5-41c2-8b81-1434eaa74e6a",
+      "警政署督察室：組織編制",
+      [
+        "勤務督導是公開組織編制列明的第二組工作。",
+        "核發護照不是這項督察業務。",
+        "法院判決不是督察室的職掌。",
+        "醫療費用核銷不是第二組列示的工作。"
+      ]
+    ],
+    [
+      "警政署督察室公開列示的第三組工作包含何者？",
+      [
+        "交通號誌設計",
+        "戶籍登記",
+        "海關稅則審查",
+        "風紀、考核與督察人事"
+      ],
+      3,
+      "風紀與考核屬督察體系的重要工作之一；公開組織編制把這些事項列在第三組。",
+      "https://www.npa.gov.tw/ch/app/artwebsite/view?id=812&module=artwebsite&serno=d5d69c57-17d5-41c2-8b81-1434eaa74e6a",
+      "警政署督察室：組織編制",
+      [
+        "交通號誌設計不是第三組列示的工作。",
+        "戶籍登記不屬這項督察工作。",
+        "海關稅則審查不是警政署督察室第三組業務。",
+        "這些項目是第三組公開列明的工作。"
+      ]
+    ]
+  ],
+  [
+    [
+      "直轄市政府警察局下，常見有哪些組織？",
+      [
+        "只有局長室，沒有外勤單位",
+        "科、室、中心、直屬隊、分局與分駐（派出）所等",
+        "全部都改稱刑事警察局",
+        "只有法院與檢察署"
+      ],
+      1,
+      "直轄市警察局同時有業務、輔助與外勤組織，並非只有一種單位。實際名稱與數量依各市組織規定。",
+      "https://www.npa.gov.tw/ch/app/artwebsite/view?id=693&module=artwebsite&serno=97c5ec29-815c-46fb-bdba-fc430ede5b9f",
+      "警政署：組織架構",
+      [
+        "地方警察局有外勤與多種內部組織。",
+        "這組符合警政署列示的直轄市警察局組織。",
+        "地方警察局與中央刑事警察局是不同機關。",
+        "法院與檢察署不是警察局下設單位。"
+      ]
+    ],
+    [
+      "下列哪個配對符合警察組織架構？",
+      [
+        "國道公路警察局—地方戶政單位",
+        "地方法院—縣市警察局分局",
+        "國道公路警察局—警政署所屬機關",
+        "地方衛生局—警政署所屬警察機關"
+      ],
+      2,
+      "全國警察組織包含中央的專業警察機關與地方警察局。國道公路警察局是警政署所屬機關，與地方戶政、衛生或司法機關不同。",
+      "https://www.npa.gov.tw/ch/app/artwebsite/view?id=693&module=artwebsite&serno=97c5ec29-815c-46fb-bdba-fc430ede5b9f",
+      "警政署：組織架構",
+      [
+        "國道公路警察局不是地方戶政單位。",
+        "法院不是地方警察局的分局。",
+        "警政署的所屬機關清單列有國道公路警察局。",
+        "地方衛生局不是警政署所屬警察機關。"
+      ]
+    ]
+  ],
+  [
+    [
+      "警察人員三等考試及格者，依法取得哪項任官資格？",
+      [
+        "警正四階",
+        "警監特階",
+        "警佐四階",
+        "直接取得署長職位"
+      ],
+      0,
+      "第12條列明三等警察人員考試及格者取得警正四階任官資格。取得資格與實際職缺任用須分開理解；無相當官階職務時另有低一官階任官規定。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=S0020005&flno=12",
+      "警察人員人事條例第12條",
+      [
+        "警正四階是三等考試及格對應的任官資格。",
+        "三等考試及格不是取得警監特階資格。",
+        "警佐四階對應的是條文中的五等考試資格。",
+        "考試取得任官資格，不會直接取得署長職位。"
+      ]
+    ],
+    [
+      "警察人員四等考試及格者，依法取得哪項任官資格？",
+      [
+        "警監四階",
+        "警正一階",
+        "直接取得分局長職位",
+        "警佐三階"
+      ],
+      3,
+      "第12條區分各等級考試的任官資格，四等考試及格取得警佐三階任官資格，仍須依法辦理實際任用。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=S0020005&flno=12",
+      "警察人員人事條例第12條",
+      [
+        "警監四階不是四等考試及格直接取得的資格。",
+        "警正一階不是四等考試及格對应的資格。",
+        "考試及格不等於直接獲派分局長職缺。",
+        "警佐三階是四等考試及格對應的任官資格。"
+      ]
+    ]
+  ],
+  [
+    [
+      "警察勤務條例稱為警察勤務「基本單位」的是？",
+      [
+        "整個直轄市",
+        "警勤區",
+        "中央警政署",
+        "任意臨時工作小組"
+      ],
+      1,
+      "警勤區是警察勤務基本單位，由一名員警負責。它與派出所、分局等勤務機構的層次不同。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080026&flno=5",
+      "警察勤務條例第5條",
+      [
+        "整個直轄市不是第5條規定的勤務基本單位。",
+        "第5條明定警勤區為勤務基本單位。",
+        "警政署不是條文所稱的警察勤務基本單位。",
+        "基本單位不是由臨時工作小組任意替代。"
+      ]
+    ],
+    [
+      "派出所、分駐所依警察勤務條例屬於何種機構？",
+      [
+        "法院的審判機構",
+        "只辦文書的內部單位",
+        "勤務執行機構，負責警勤區規劃、勤務執行與督導",
+        "每個案件臨時成立的組織"
+      ],
+      2,
+      "派出所、分駐所是勤務執行機構，負責警勤區規劃、勤務執行及督導；偏遠警勤區另有設置駐在所的規定。",
+      "https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0080026&flno=7",
+      "警察勤務條例第7條",
+      [
+        "派出所、分駐所不屬法院的審判機構。",
+        "其責任包含勤務執行與督導，不只是文書工作。",
+        "這是現行第7條明定的機構性質與責任。",
+        "派出所、分駐所不是每件案件臨時成立的組織。"
+      ]
+    ]
+  ]
+];
+  const systemTopicQuizzes=systemTopicQuizRows.map((rows,i)=>rows.map(q=>[q[0],q[1],q[2],systemTopics[i][0],q[3],q[4],q[5],q[6]]));
+  let topicQuizRun=null,topicQuizAdvanceTimer=null;
   let currentQuiz=null;
   let quizAnswered=false,quizAdvanceTimer=null;
   let dutyQuizQuestion=null,dutyQuizAnswered=false,dutyAdvanceTimer=null;
@@ -3350,10 +3850,100 @@ loadPoliceDirectory();
     if(!$("systemKnowledge"))return;
     $("knowledgeChip").textContent="知識 "+s.knowledge;
     $("quizChip").textContent="測驗 "+s.quizCorrect+"/"+s.quizTotal;
-    $("systemKnowledge").innerHTML=systemTopics.map((x,i)=>'<div class="choice-card knowledge-card" data-know="'+i+'"><h3>'+x[0]+'</h3><p>'+x[1]+'</p><div class="meta"><span class="tag">閱讀 +1 知識</span></div></div>').join("");
-    document.querySelectorAll("[data-know]").forEach(e=>e.onclick=()=>{s.knowledge++;e.querySelector(".tag").textContent="✓ 已閱讀";save();renderEnhancements()});
+    $("systemKnowledge").innerHTML=systemTopics.map((x,i)=>'<button type="button" class="choice-card knowledge-card" data-know="'+i+'" aria-haspopup="dialog" aria-controls="topicQuizDialog"><span class="knowledge-title">'+x[0]+'</span><span class="knowledge-copy">'+x[1]+'</span><span class="meta"><span class="tag">開始測驗 · '+systemTopicQuizzes[i].length+' 題</span></span></button>').join("");
+    $("systemKnowledge").querySelectorAll("[data-know]").forEach(e=>e.onclick=()=>openTopicQuiz(Number(e.dataset.know)));
     $("criminologyCards").innerHTML=crimeTopics.map(x=>'<div class="choice-card"><h3>'+x[0]+'</h3><p>'+x[1]+'</p></div>').join("");
   }
+
+  function clearTopicQuizTimer(){
+    if(topicQuizAdvanceTimer){clearTimeout(topicQuizAdvanceTimer);topicQuizAdvanceTimer=null}
+  }
+  function openTopicQuiz(topicId){
+    if(!systemTopicQuizzes[topicId])return;
+    clearTopicQuizTimer();
+    if(quizAdvanceTimer){clearTimeout(quizAdvanceTimer);quizAdvanceTimer=null}
+    topicQuizRun={topicId,index:0,answers:[],complete:false};
+    $("topicQuizTitle").textContent=systemTopics[topicId][0];
+    $("topicQuizResult").replaceChildren();$("topicQuizResult").className="feedback";
+    showTopicQuizQuestion();
+    const dialog=$("topicQuizDialog");
+    if(!dialog.open){
+      if(typeof dialog.showModal==="function")dialog.showModal();
+      else dialog.setAttribute("open","");
+    }
+    document.body.classList.add("topic-quiz-open");
+    $("topicQuizCloseBtn").focus();
+  }
+  function closeTopicQuiz(){
+    clearTopicQuizTimer();
+    const topicId=topicQuizRun&&topicQuizRun.topicId,dialog=$("topicQuizDialog");
+    if(typeof dialog.close==="function")dialog.close();else dialog.removeAttribute("open");
+    document.body.classList.remove("topic-quiz-open");
+    topicQuizRun=null;
+    const card=$("systemKnowledge").querySelector('[data-know="'+topicId+'"]');
+    if(card)card.focus();
+  }
+  function showTopicQuizQuestion(){
+    if(!topicQuizRun)return;
+    const run=topicQuizRun,pool=systemTopicQuizzes[run.topicId],q=pool[run.index];
+    $("topicQuizProgress").textContent="主題測驗 · 第 "+(run.index+1)+" / "+pool.length+" 題";
+    $("topicQuizQuestion").textContent=q[0];
+    $("topicQuizChoices").replaceChildren();
+    q[1].forEach((text,i)=>{
+      const button=document.createElement("button");button.type="button";button.className="topic-answer";button.dataset.topicAnswer=i;
+      const letter=document.createElement("span");letter.className="topic-answer-letter";letter.textContent=String.fromCharCode(65+i);
+      const label=document.createElement("span");label.textContent=text;
+      button.append(letter,label);button.onclick=()=>answerTopicQuiz(i);$("topicQuizChoices").append(button);
+    });
+    $("topicQuizNextBtn").hidden=true;
+    $("topicQuizStatus").textContent=run.answers.length?"繼續作答；下方保留上一題解析。":"選一個答案，即可查看解析。";
+  }
+  function answerTopicQuiz(i){
+    const run=topicQuizRun;
+    if(!run||run.complete||run.answers.length>run.index)return;
+    const q=systemTopicQuizzes[run.topicId][run.index];
+    if(!Number.isInteger(i)||!q[1][i])return;
+    const correct=recordMixedQuizAnswer(q,i,"topicQuizResult");
+    run.answers.push({choice:i,correct});
+    const result=$("topicQuizResult");
+    const heading=document.createElement("p");heading.className="topic-analysis-question";heading.textContent="第 "+(run.index+1)+" 題解析："+q[0];result.prepend(heading);
+    const selected=document.createElement("p");selected.textContent="你的答案："+String.fromCharCode(65+i)+". "+q[1][i]+"。";
+    const answer=document.createElement("p");answer.textContent="正確答案："+String.fromCharCode(65+q[2])+". "+q[1][q[2]]+"。";
+    const reasoning=document.createElement("p");reasoning.textContent="選項分析："+q[7][i];
+    const details=document.createElement("details"),summary=document.createElement("summary"),list=document.createElement("ul");
+    summary.textContent="查看全部選項解析";
+    q[7].forEach((reason,index)=>{const item=document.createElement("li");item.textContent=String.fromCharCode(65+index)+". "+reason;list.append(item)});
+    details.append(summary,list);result.append(selected,answer,reasoning,details);
+    $("topicQuizChoices").querySelectorAll("[data-topic-answer]").forEach(button=>{
+      const n=Number(button.dataset.topicAnswer);button.disabled=true;
+      if(n===q[2])button.classList.add("is-correct");
+      if(n===i&&!correct)button.classList.add("is-wrong");
+    });
+    $("topicQuizNextBtn").hidden=false;
+    $("topicQuizNextBtn").textContent=run.index+1<systemTopicQuizzes[run.topicId].length?"下一題":"查看成績";
+    $("topicQuizStatus").textContent=run.index+1<systemTopicQuizzes[run.topicId].length?"稍後自動出下一題，解析會保留。":"稍後顯示本主題成績，解析會保留。";
+    save();renderEnhancements();
+    topicQuizAdvanceTimer=setTimeout(()=>{topicQuizAdvanceTimer=null;nextTopicQuiz()},1500);
+  }
+  function nextTopicQuiz(){
+    clearTopicQuizTimer();
+    const run=topicQuizRun;
+    if(!run||!$("topicQuizDialog").open)return;
+    if(run.complete){openTopicQuiz(run.topicId);return}
+    if(run.answers.length<=run.index)return;
+    const pool=systemTopicQuizzes[run.topicId],shouldFocusQuestion=$("topicQuizChoices").contains(document.activeElement)||document.activeElement===$("topicQuizNextBtn");
+    if(run.index+1<pool.length){
+      run.index++;showTopicQuizQuestion();
+      if(shouldFocusQuestion)$("topicQuizQuestion").focus();
+    }else{
+      run.complete=true;
+      const correct=run.answers.filter(x=>x.correct).length;
+      $("topicQuizProgress").textContent="主題完成 · 答對 "+correct+" / "+pool.length+" 題";
+      $("topicQuizStatus").textContent="本次正確率 "+Math.round(correct/pool.length*100)+"%。可查看解析或再練一次。";
+      $("topicQuizNextBtn").hidden=false;$("topicQuizNextBtn").textContent="再練一次";
+    }
+  }
+
   function newQuiz(){
     if(quizAdvanceTimer){clearTimeout(quizAdvanceTimer);quizAdvanceTimer=null}
     currentQuiz=quizzes[Math.floor(Math.random()*quizzes.length)];
@@ -3763,6 +4353,12 @@ loadPoliceDirectory();
   }
 
   migrate();
+  if($("topicQuizCloseBtn"))$("topicQuizCloseBtn").onclick=closeTopicQuiz;
+  if($("topicQuizNextBtn"))$("topicQuizNextBtn").onclick=nextTopicQuiz;
+  if($("topicQuizDialog")){
+    $("topicQuizDialog").addEventListener("cancel",e=>{e.preventDefault();closeTopicQuiz()});
+    $("topicQuizDialog").addEventListener("click",e=>{if(e.target===$("topicQuizDialog"))closeTopicQuiz()});
+  }
   if($("newQuizBtn"))$("newQuizBtn").onclick=newQuiz;
   if($("closeYearBtn"))$("closeYearBtn").onclick=closeYear;
   if($("nextCommandBtn"))$("nextCommandBtn").onclick=newCommand;
