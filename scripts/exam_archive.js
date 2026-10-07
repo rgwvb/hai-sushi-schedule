@@ -28,10 +28,17 @@
   };
   function loadJSON(file) {
     if (!cache.has(file)) {
-      const request = fetch('data/exams/' + file).then(r => {
+      const controller = typeof AbortController === 'function' ? new AbortController() : null;
+      let timeout;
+      const deadline = new Promise((_, reject) => {
+        timeout = setTimeout(() => { controller?.abort(); reject(new Error('題庫載入逾時')); }, 6000);
+      });
+      const response = fetch('data/exams/' + file, controller ? {signal: controller.signal} : undefined).then(r => {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
-      }).catch(err => { cache.delete(file); throw err; });
+      });
+      const request = Promise.race([response, deadline])
+        .catch(err => { cache.delete(file); throw err; }).finally(() => clearTimeout(timeout));
       cache.set(file, request);
     }
     return cache.get(file);
@@ -152,6 +159,63 @@
     }
     return output;
   }
+  // The game shares the archive cache, but requests a small shuffled round only
+  // after the player starts a quiz. No catalogs or banks load at game startup.
+  let gameQueue = [], gameYears = [], gameLoading = null;
+  async function refillGameQuestions() {
+    manifest = await loadJSON('manifest.json');
+    if (!gameYears.length) {
+      gameYears = shuffle(manifest.years.filter(y => y.questionCount === undefined || y.questionCount > 0));
+    }
+    if (!gameYears.length) throw new Error('沒有可作答年份');
+    const attempts = Math.min(3, gameYears.length);
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      const year = gameYears.shift();
+      try {
+        const catalog = await loadJSON(year.catalogFile);
+        // Shared exam papers may occur in several categories. Prefer the
+        // administrative police citation and count each original question once.
+        const relevant = catalog.papers.filter(p => p.questionCount > 0 &&
+          !/消防|水上|海巡/.test(p.subject) &&
+          /警察|憲法|法學|法律|行政法|刑法|刑事|犯罪|偵查/.test(subjectKey(p.subject)))
+          .sort((a, b) => Number(/行政警察/.test(b.category)) - Number(/行政警察/.test(a.category)));
+        if (!relevant.length) continue;
+        const data = await loadJSON(year.bankFile);
+        const seen = new Set(), items = [];
+        for (const paper of relevant) {
+          for (const row of data.banks[paper.bank] || []) {
+            const key = paper.year + ':' + paper.bank + ':' + row[0];
+            if (seen.has(key)) continue;
+            seen.add(key); items.push({paper, row});
+          }
+        }
+        if (items.length) { gameQueue = shuffle(items).slice(0, 24); return; }
+      } catch (err) { throw err; /* The next game request retries with another year. */ }
+    }
+    throw new Error('歷屆題庫暫時無法載入');
+  }
+  window.policeHistoricalQuestions = Object.freeze({
+    async next() {
+      while (!gameQueue.length) {
+        if (!gameLoading) gameLoading = refillGameQuestions().finally(() => { gameLoading = null; });
+        await gameLoading;
+      }
+      const item = gameQueue.pop(), {paper, row} = item;
+      const title = '民國 ' + paper.year + ' 年｜' + subjectKey(paper.subject) + '｜原題 ' + row[0];
+      const note = (row[5] ? '官方更正：' + row[5] + '。' : '') +
+        '依當年度官方答案判定；歷屆法規可能修正，原卷未提供詳解。';
+      return [row[1], row[2], row[3][0], title, note,
+        paper.correctionUrl || paper.answerUrl, '考選部' + (paper.correctionUrl ? '更正答案' : '標準答案'), null,
+        {historical: true, accepted: row[3], item, declaration: manifest.declaration}];
+    },
+    record(question, correct) {
+      const item = question[8]?.item;
+      if (item) {
+        saveProgress(item, correct);
+        if (papers.length && $('examArchiveBody').getAttribute('aria-busy') !== 'true') renderList(false);
+      }
+    }
+  });
   async function startRound(selected, wrongOnly = false, wholePaper = false) {
     const version = ++startVersion;
     const filterAtStart = filterVersion;

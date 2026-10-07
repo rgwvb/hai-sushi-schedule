@@ -24,7 +24,7 @@ button{transition:.18s ease}.app-shell{max-width:1500px;margin:auto;padding:22px
 .feedback{min-height:0;margin-top:12px;border-radius:10px;color:#c7d7ea;font-size:13px;line-height:1.6}.feedback:not(:empty){padding:11px 12px;border:1px solid #2d4667;background:#0d1c30}.feedback.good{border-color:#21683f;background:#0c2a1c;color:#a7f3d0}.feedback.bad{border-color:#703136;background:#2a1115;color:#fecaca}
 .choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.choice-card,.county-card,.action-card{background:#0f1b2e;border:1px solid var(--line);border-radius:12px;padding:15px;cursor:pointer}.choice-card:hover,.county-card:hover,.action-card:hover{border-color:#4d75a6;background:#13243c}.choice-card.selected,.county-card.selected{outline:2px solid var(--accent);background:#132946}.choice-card h3,.county-card h3{margin:0 0 6px;font-size:16px}.choice-card p,.county-card p,.action-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}.choice-card .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.tag{font-size:11px;padding:4px 7px;border-radius:999px;background:#172a46;border:1px solid #29476c;color:#bbd5f5}
 .action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-#dutyChoices [data-advd]{color:var(--text);text-align:left;width:100%;font:inherit}.action-card strong{display:block;font-size:14px;margin-bottom:5px}.action-card.disabled{opacity:.45;cursor:not-allowed}.progress-stack{display:grid;gap:14px}.progress-stack>div>span{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.muted{color:var(--muted);font-size:13px;line-height:1.65}
+#dutyChoices [data-advd]{color:var(--text);text-align:left;width:100%;font:inherit}.action-grid button.action-card{color:var(--text);text-align:left;width:100%;min-height:48px;line-height:1.6;white-space:normal}.action-card strong{display:block;font-size:14px;margin-bottom:5px}.action-card.disabled{opacity:.45;cursor:not-allowed}.progress-stack{display:grid;gap:14px}.progress-stack>div>span{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.muted{color:var(--muted);font-size:13px;line-height:1.65}
 .exam-stepper{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}.step{display:flex;align-items:center;gap:8px;background:#0f1b2e;border:1px solid var(--line);padding:10px;border-radius:11px;color:var(--muted)}.step span{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#172a46;font-size:12px}.step.active,.step.done{border-color:#376dab;color:#e8f2ff}.step.done span{background:#166534;color:#dcfce7}.exam-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.exam-summary>div{padding:12px;border-radius:10px;background:#0b1626;border:1px solid #21344f}.exam-summary span{display:block;color:var(--muted);font-size:11px}.exam-summary b{display:block;margin-top:6px;font-size:16px}
 .toolbar{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end}.county-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.county-card{padding:12px}.county-card .numbers{display:flex;justify-content:space-between;gap:8px;margin-top:8px;color:#b7c8dd;font-size:11px}.info-banner{padding:11px 12px;border:1px solid #2b4668;background:#0d1b2e;border-radius:10px;color:#bdd0e8;font-size:13px;margin-bottom:13px}
 .radio-panel{border-color:#334a6e}.radio-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;font-weight:700}.dispatch-box{background:#091522;border:1px solid #314663;border-radius:12px;padding:16px;min-height:88px;line-height:1.65;margin-bottom:11px}.case-list{display:grid;gap:10px}.case-item{border:1px solid var(--line);background:#0d1828;border-radius:11px;padding:13px}.case-item h3{margin:0 0 5px;font-size:14px}.case-item .case-meta{font-size:11px;color:var(--muted);margin-bottom:7px}.case-item p{margin:0;color:#c0cfe0;font-size:13px;line-height:1.55}
@@ -1223,7 +1223,7 @@ body.topic-quiz-open{overflow:hidden}
         </div>
         <div class="panel">
           <div class="panel-head"><h3>隨堂測驗｜混合題庫</h3><button class="secondary-btn" id="newQuizBtn">開始／換一題</button></div>
-          <p class="muted">警察法規、憲法、法學緒論、行政法、刑事訴訟與警察勤務隨機出題；答題後顯示解析與法源，接著自動出下一題。</p>
+          <p class="muted">歷屆特考的警察法規、憲法、法學、刑事與勤務題目直接混合抽題；答題後顯示官方答案、年份與原卷來源，接著自動出下一題。歷屆題依當年度答案判定。</p>
           <div id="quizQuestion" class="dispatch-box">按「開始／換一題」開始。</div>
           <div id="quizChoices" class="action-grid"></div>
           <div id="quizResult" class="feedback"></div>
@@ -3632,13 +3632,15 @@ loadPoliceDirectory();
   let quizAnswered=false,quizAdvanceTimer=null;
   let dutyQuizQuestion=null,dutyQuizAnswered=false,dutyAdvanceTimer=null;
   let commandQuizQuestion=null,commandQuizAnswered=false,commandAdvanceTimer=null;
+  let quizRequest=0,dutyQuizRequest=0,commandQuizRequest=0;
 
   function recordMixedQuizAnswer(q,i,resultId){
-    const correct=i===q[2];
+    const accepted=q[8]?.accepted||[q[2]];
+    const correct=accepted.includes(i);
     s.quizTotal=(s.quizTotal||0)+1;
     if(correct){s.quizCorrect=(s.quizCorrect||0)+1;s.knowledge=(s.knowledge||0)+3}
-    const correctText=String.fromCharCode(65+q[2])+". "+q[1][q[2]];
-    fb(resultId,(correct?"答對了，知識 +3。":"答錯了，正確答案是 "+correctText+"。")+q[4],correct);
+    const correctText=accepted.map(n=>String.fromCharCode(65+n)+". "+q[1][n]).join(" 或 ");
+    fb(resultId,(q[8]?.historical?q[3]+"｜":"")+(correct?"答對了，知識 +3。":"答錯了，正確答案是 "+correctText+"。")+q[4],correct);
     const box=$(resultId);
     if(box&&q[5]){
       const prefix=document.createElement("span");
@@ -3647,14 +3649,49 @@ loadPoliceDirectory();
       link.href=q[5];link.target="_blank";link.rel="noopener noreferrer";link.textContent=q[6]||"官方法規／考試資料";
       box.append(prefix,link);
     }
+    if(box&&q[8]?.historical){
+      const paper=q[8].item.paper;
+      const original=document.createElement("a");
+      original.href=paper.questionUrl;original.target="_blank";original.rel="noopener noreferrer";original.textContent="｜完整試題 PDF";
+      box.append(original);
+      if(paper.correctionUrl&&paper.answerUrl){
+        const standard=document.createElement("a");standard.href=paper.answerUrl;standard.target="_blank";standard.rel="noopener noreferrer";standard.textContent="｜原標準答案";box.append(standard);
+      }
+      if(q[8].declaration){
+        const details=document.createElement("details"),summary=document.createElement("summary"),text=document.createElement("p");
+        summary.textContent="考選部資料宣示";text.textContent=q[8].declaration;details.append(summary,text);box.append(details);
+      }
+      window.policeHistoricalQuestions?.record(q,correct);
+    }
     const chip=$("quizChip");
     if(chip)chip.textContent="測驗 "+(s.quizCorrect||0)+"/"+(s.quizTotal||0);
     return correct;
   }
   function showMixedQuiz(caseId,choicesId,q,attribute,handler){
-    $(caseId).innerHTML="<span class=\"tag\">"+q[3]+"</span><br><b>"+q[0]+"</b>";
-    $(choicesId).innerHTML=q[1].map((choice,i)=>'<div class="action-card" '+attribute+'="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+choice+'</strong></div>').join("");
-    $(choicesId).querySelectorAll("["+attribute+"]").forEach(card=>card.onclick=()=>handler(Number(card.getAttribute(attribute))));
+    const tag=document.createElement("span"),question=document.createElement("b");
+    tag.className="tag";tag.textContent=q[3];question.textContent=q[0];question.style.whiteSpace="pre-line";
+    $(caseId).replaceChildren(tag,document.createElement("br"),question);
+    $(choicesId).replaceChildren();
+    q[1].forEach((choice,i)=>{
+      const card=document.createElement("button"),label=document.createElement("strong");
+      card.type="button";card.className="action-card";card.setAttribute(attribute,String(i));
+      label.textContent=String.fromCharCode(65+i)+". "+choice;card.append(label);card.onclick=()=>handler(i);$(choicesId).append(card);
+    });
+  }
+  function requestMixedQuiz(caseId,choicesId,resultId,valid,ready){
+    const fallback=()=>quizzes[Math.floor(Math.random()*quizzes.length)];
+    if(!window.policeHistoricalQuestions){ready(fallback());return}
+    $(caseId).textContent="正在抽取歷屆特考題目…";$(choicesId).replaceChildren();
+    $(choicesId).setAttribute("aria-busy","true");
+    let finished=false;
+    const finish=(q,failed=false)=>{
+      if(finished)return;finished=true;clearTimeout(timeout);
+      if(!valid())return;
+      $(choicesId).setAttribute("aria-busy","false");ready(q);
+      if(failed)$(resultId).textContent="歷屆題庫暫時無法載入，先練基礎題；換題時會再試。";
+    };
+    const timeout=setTimeout(()=>finish(fallback(),true),8000);
+    Promise.resolve().then(()=>window.policeHistoricalQuestions.next()).then(q=>finish(q),()=>finish(fallback(),true));
   }
 
   const dutyModes=[
@@ -3980,19 +4017,21 @@ loadPoliceDirectory();
     }
   }
 
-  function newQuiz(){
+  function newQuiz(keepResult=false){
     if(quizAdvanceTimer){clearTimeout(quizAdvanceTimer);quizAdvanceTimer=null}
-    currentQuiz=quizzes[Math.floor(Math.random()*quizzes.length)];
-    quizAnswered=false;
-    showMixedQuiz("quizQuestion","quizChoices",currentQuiz,"data-q",answerQuiz);
-    $("quizResult").textContent="";$("quizResult").className="feedback";
+    const token=++quizRequest,owner=s;
+    currentQuiz=null;quizAnswered=false;
+    if(keepResult!==true){$("quizResult").textContent="";$("quizResult").className="feedback";}
+    requestMixedQuiz("quizQuestion","quizChoices","quizResult",()=>token===quizRequest&&s===owner,q=>{
+      currentQuiz=q;showMixedQuiz("quizQuestion","quizChoices",q,"data-q",answerQuiz);
+    });
   }
   function answerQuiz(i){
     if(!currentQuiz||quizAnswered)return;
     quizAnswered=true;
     recordMixedQuizAnswer(currentQuiz,i,"quizResult");
     $("quizChoices").innerHTML="";save();renderEnhancements();
-    quizAdvanceTimer=setTimeout(()=>{quizAdvanceTimer=null;newQuiz()},1500);
+    quizAdvanceTimer=setTimeout(()=>{quizAdvanceTimer=null;newQuiz(true)},1500);
   }
 
   function appraisalScore(){
@@ -4101,14 +4140,17 @@ loadPoliceDirectory();
   };
 
   function newAdvancedDuty(){
+    const token=++dutyQuizRequest,owner=s;
+    $("dutyChoices").setAttribute("aria-busy","false");
     if(dutyAdvanceTimer){clearTimeout(dutyAdvanceTimer);dutyAdvanceTimer=null}
     if(s.retired)return toast("已退休，勤務系統已關閉");
     if(!s.unit)return toast("請先完成單位分發");
     active=null;dutyQuizQuestion=null;dutyQuizAnswered=false;
     $("dutyResult").textContent="";$("dutyResult").className="feedback";
     if(Math.random()<0.24){
-      dutyQuizQuestion=quizzes[Math.floor(Math.random()*quizzes.length)];
-      showMixedQuiz("dutyCase","dutyChoices",dutyQuizQuestion,"data-dutyquiz",resolveDutyQuiz);
+      requestMixedQuiz("dutyCase","dutyChoices","dutyResult",()=>token===dutyQuizRequest&&s===owner&&s.unit&&!s.retired,q=>{
+        dutyQuizQuestion=q;showMixedQuiz("dutyCase","dutyChoices",q,"data-dutyquiz",resolveDutyQuiz);
+      });
       return;
     }
     const unitPool=((officeDuties[s.assignmentType])||(unitDuties[s.unit])||D).slice();
@@ -4194,13 +4236,16 @@ loadPoliceDirectory();
     s.paperwork=Math.min(20,s.paperwork+1);advanceHours(2);rec("主管勤務",positionName()+"｜"+a);save();render();
   }
   function newCommand(){
+    const token=++commandQuizRequest,owner=s;
+    $("commandChoices").setAttribute("aria-busy","false");
     if(commandAdvanceTimer){clearTimeout(commandAdvanceTimer);commandAdvanceTimer=null}
     if(!s.unit||s.retired||!isSupervisor())return toast("完成任用並取得主管職後，才能開始指揮勤務");
     commandActive=null;commandQuizQuestion=null;commandQuizAnswered=false;
     $("commandResult").textContent="";$("commandResult").className="feedback";
     if(Math.random()<0.35){
-      commandQuizQuestion=quizzes[Math.floor(Math.random()*quizzes.length)];
-      showMixedQuiz("commandCase","commandChoices",commandQuizQuestion,"data-cmdquiz",resolveCommandQuiz);
+      requestMixedQuiz("commandCase","commandChoices","commandResult",()=>token===commandQuizRequest&&s===owner&&s.unit&&!s.retired&&isSupervisor(),q=>{
+        commandQuizQuestion=q;showMixedQuiz("commandCase","commandChoices",q,"data-cmdquiz",resolveCommandQuiz);
+      });
       return;
     }
     commandActive=supervisorEvents[Math.floor(Math.random()*supervisorEvents.length)];
@@ -4424,6 +4469,6 @@ loadPoliceDirectory();
 })();
 
 </script>
-<script src="scripts/exam_archive.js?v=20261007"></script>
+<script src="scripts/exam_archive.js?v=20261007-game"></script>
 </body>
 </html>

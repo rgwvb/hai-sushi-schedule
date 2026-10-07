@@ -24,7 +24,7 @@ w.setTimeout=fn=>{timers.set(++timerId,fn);return timerId;};w.clearTimeout=id=>t
 w.eval('var s = {quizTotal:0, quizCorrect:0, knowledge:0, simEpoch:123456789};');
 w.eval(source);
 const click=id=>{const el=typeof id==='string'?d.getElementById(id):id;assert(el,'missing target '+id);el.click();};
-const settle=async()=>{for(let i=0;i<18;i++)await Promise.resolve();};
+const settle=async()=>{for(let i=0;i<60;i++)await Promise.resolve();};
 assert(requests.length===0,'banks must not load during game startup');
 click('examArchiveOpenBtn');await settle();assert(d.getElementById('examArchiveStatus').textContent.includes('失敗'),'load error should be visible');
 click('examArchiveOpenBtn');await settle();
