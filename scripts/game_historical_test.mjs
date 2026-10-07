@@ -57,6 +57,7 @@ try {
   const choice=d.querySelector('#quizChoices [data-q="2"]');click(choice);click(choice);
   assert(state().quizTotal===total+1 && state().quizCorrect===correctCount+1,'accepted C should score once');
   assert(d.getElementById('quizResult').textContent.includes('第4題答A或C者均給分'),'official correction missing');
+  assert(d.getElementById('quizResult').textContent.includes('官方答案：A.') && d.getElementById('quizResult').textContent.includes('或 C.'),'correct answers should remain readable after auto-next');
   assert(d.querySelector('#quizResult a').href.includes('t=M'),'corrected answer must link to correction');
   assert(d.querySelectorAll('#quizResult a').length===3,'question, standard and correction links should remain available');
   assert(d.getElementById('quizResult').textContent.includes('官方資料宣示'),'source declaration missing');
@@ -76,7 +77,8 @@ try {
   assert(d.getElementById('dutyCase').textContent.includes('民國 115 年'),'duty practice did not use historical questions');
   const dutyChoice=d.querySelector('#dutyChoices [data-dutyquiz="0"]');click(dutyChoice);click(dutyChoice);
   assert(d.querySelector('#dutyResult a')?.href.includes('t=M'),'duty should show official correction');
-  stopAdvance();
+  runTimer(1500);await settle();
+  assert(d.getElementById('dutyResult').textContent.includes('第4題答A或C') && d.querySelectorAll('#dutyChoices [data-dutyquiz]').length===4,'duty auto-next must retain official feedback');
   Object.assign(state(),{position:'分局長',rank:'分局長',positionLevel:6,careerSequenceNo:4});
   click('nextCommandBtn');await settle();
   assert(d.getElementById('commandCase').textContent.includes('民國 115 年'),'command practice did not use historical questions');

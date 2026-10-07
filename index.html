@@ -22,6 +22,7 @@ button{transition:.18s ease}.app-shell{max-width:1500px;margin:auto;padding:22px
 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.form-grid label,.toolbar label{font-size:12px;color:var(--muted)}input,select{width:100%;margin-top:6px;background:#0b1626;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:11px 12px;outline:none}input:focus,select:focus{border-color:#4b83c8;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
 .button-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.primary-btn,.secondary-btn,.ghost-btn,.danger-btn{border:1px solid transparent;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:700}.primary-btn{background:var(--accent);color:white}.primary-btn:hover{background:var(--accent2);transform:translateY(-1px)}.secondary-btn{background:#223853;color:white;border-color:#355170}.secondary-btn:hover{background:#2a4669}.ghost-btn{background:#12223a;color:#dceaff;border-color:#294666}.ghost-btn:hover{background:#1a3150}.danger-btn{background:#7f1d1d;color:#fee2e2;border-color:#9f2929}.danger-btn:hover{background:#991b1b}
 .feedback{min-height:0;margin-top:12px;border-radius:10px;color:#c7d7ea;font-size:13px;line-height:1.6}.feedback:not(:empty){padding:11px 12px;border:1px solid #2d4667;background:#0d1c30}.feedback.good{border-color:#21683f;background:#0c2a1c;color:#a7f3d0}.feedback.bad{border-color:#703136;background:#2a1115;color:#fecaca}
+.feedback a{color:inherit;text-decoration:underline;text-underline-offset:3px}.feedback details{margin-top:8px}
 .choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.choice-card,.county-card,.action-card{background:#0f1b2e;border:1px solid var(--line);border-radius:12px;padding:15px;cursor:pointer}.choice-card:hover,.county-card:hover,.action-card:hover{border-color:#4d75a6;background:#13243c}.choice-card.selected,.county-card.selected{outline:2px solid var(--accent);background:#132946}.choice-card h3,.county-card h3{margin:0 0 6px;font-size:16px}.choice-card p,.county-card p,.action-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}.choice-card .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.tag{font-size:11px;padding:4px 7px;border-radius:999px;background:#172a46;border:1px solid #29476c;color:#bbd5f5}
 .action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 #dutyChoices [data-advd]{color:var(--text);text-align:left;width:100%;font:inherit}.action-grid button.action-card{color:var(--text);text-align:left;width:100%;min-height:48px;line-height:1.6;white-space:normal}.action-card strong{display:block;font-size:14px;margin-bottom:5px}.action-card.disabled{opacity:.45;cursor:not-allowed}.progress-stack{display:grid;gap:14px}.progress-stack>div>span{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.muted{color:var(--muted);font-size:13px;line-height:1.65}
@@ -3640,7 +3641,7 @@ loadPoliceDirectory();
     s.quizTotal=(s.quizTotal||0)+1;
     if(correct){s.quizCorrect=(s.quizCorrect||0)+1;s.knowledge=(s.knowledge||0)+3}
     const correctText=accepted.map(n=>String.fromCharCode(65+n)+". "+q[1][n]).join(" 或 ");
-    fb(resultId,(q[8]?.historical?q[3]+"｜":"")+(correct?"答對了，知識 +3。":"答錯了，正確答案是 "+correctText+"。")+q[4],correct);
+    fb(resultId,(q[8]?.historical?q[3]+"｜":"")+(correct?"答對了，知識 +3。"+(q[8]?.historical?"官方答案："+correctText+"。":""):"答錯了，正確答案是 "+correctText+"。")+q[4],correct);
     const box=$(resultId);
     if(box&&q[5]){
       const prefix=document.createElement("span");
@@ -4139,14 +4140,14 @@ loadPoliceDirectory();
     ]
   };
 
-  function newAdvancedDuty(){
+  function newAdvancedDuty(keepResult=false){
     const token=++dutyQuizRequest,owner=s;
     $("dutyChoices").setAttribute("aria-busy","false");
     if(dutyAdvanceTimer){clearTimeout(dutyAdvanceTimer);dutyAdvanceTimer=null}
     if(s.retired)return toast("已退休，勤務系統已關閉");
     if(!s.unit)return toast("請先完成單位分發");
     active=null;dutyQuizQuestion=null;dutyQuizAnswered=false;
-    $("dutyResult").textContent="";$("dutyResult").className="feedback";
+    if(keepResult!==true){$("dutyResult").textContent="";$("dutyResult").className="feedback";}
     if(Math.random()<0.24){
       requestMixedQuiz("dutyCase","dutyChoices","dutyResult",()=>token===dutyQuizRequest&&s===owner&&s.unit&&!s.retired,q=>{
         dutyQuizQuestion=q;showMixedQuiz("dutyCase","dutyChoices",q,"data-dutyquiz",resolveDutyQuiz);
@@ -4185,7 +4186,7 @@ loadPoliceDirectory();
     $("dutyChoices").innerHTML="";active=null;
     save();render();
     // Keep the result visible briefly, then automatically dispatch the next item.
-    dutyAdvanceTimer=setTimeout(()=>{dutyAdvanceTimer=null;if(s.unit)newAdvancedDuty()},1500);
+    dutyAdvanceTimer=setTimeout(()=>{dutyAdvanceTimer=null;if(s.unit)newAdvancedDuty(true)},1500);
   }
   function resolveDutyQuiz(i){
     if(!dutyQuizQuestion||dutyQuizAnswered)return;
@@ -4193,7 +4194,7 @@ loadPoliceDirectory();
     recordMixedQuizAnswer(dutyQuizQuestion,i,"dutyResult");
     $("dutyChoices").innerHTML="";
     save();
-    dutyAdvanceTimer=setTimeout(()=>{dutyAdvanceTimer=null;if(s.unit)newAdvancedDuty()},1500);
+    dutyAdvanceTimer=setTimeout(()=>{dutyAdvanceTimer=null;if(s.unit)newAdvancedDuty(true)},1500);
   }
 
   function managerRoleText(){
@@ -4235,13 +4236,13 @@ loadPoliceDirectory();
     if(a==="meeting"){s.comm=cl(s.comm+1);s.morale=cl(s.morale+2);s.commandScore=cl(s.commandScore+1)}
     s.paperwork=Math.min(20,s.paperwork+1);advanceHours(2);rec("主管勤務",positionName()+"｜"+a);save();render();
   }
-  function newCommand(){
+  function newCommand(keepResult=false){
     const token=++commandQuizRequest,owner=s;
     $("commandChoices").setAttribute("aria-busy","false");
     if(commandAdvanceTimer){clearTimeout(commandAdvanceTimer);commandAdvanceTimer=null}
     if(!s.unit||s.retired||!isSupervisor())return toast("完成任用並取得主管職後，才能開始指揮勤務");
     commandActive=null;commandQuizQuestion=null;commandQuizAnswered=false;
-    $("commandResult").textContent="";$("commandResult").className="feedback";
+    if(keepResult!==true){$("commandResult").textContent="";$("commandResult").className="feedback";}
     if(Math.random()<0.35){
       requestMixedQuiz("commandCase","commandChoices","commandResult",()=>token===commandQuizRequest&&s===owner&&s.unit&&!s.retired&&isSupervisor(),q=>{
         commandQuizQuestion=q;showMixedQuiz("commandCase","commandChoices",q,"data-cmdquiz",resolveCommandQuiz);
@@ -4258,7 +4259,7 @@ loadPoliceDirectory();
     commandQuizAnswered=true;
     recordMixedQuizAnswer(commandQuizQuestion,i,"commandResult");
     $("commandChoices").innerHTML="";save();
-    commandAdvanceTimer=setTimeout(()=>{commandAdvanceTimer=null;newCommand()},1500);
+    commandAdvanceTimer=setTimeout(()=>{commandAdvanceTimer=null;newCommand(true)},1500);
   }
   function resolveCommand(i){
     if(!commandActive)return;
