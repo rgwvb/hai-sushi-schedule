@@ -83,6 +83,57 @@ if(standaloneIds.every(id=>htmlRaw.includes(`id="${id}"`))){
     assert(!window.document.querySelector("#quizChoices [data-q]"),"quiz answer choices should clear after one answer");
     window.Math.random=()=>0.99;await wait(1400);window.Math.random=randomBeforeQuiz;
     assert(window.document.getElementById("quizQuestion").textContent!==firstMixedQuestion,"study quiz did not automatically advance");
+
+    // Topic cards must launch their own questions, without awarding points just for opening.
+    const stateBeforeTopic=JSON.parse(window.localStorage.getItem("twPoliceCareerSaveV1")||"{}");
+    const topicNames=[...window.document.querySelectorAll("#systemKnowledge [data-know]")].map(x=>x.querySelector(".knowledge-title")?.textContent);
+    assert(topicNames.length===11,"academy topic cards are incomplete");
+    for(let topicId=0;topicId<topicNames.length;topicId++){
+      const topicCard=window.document.querySelector('#systemKnowledge [data-know="'+topicId+'"]');
+      assert(topicCard.tagName==="BUTTON","topic cards should be keyboard accessible buttons");
+      click(window,topicCard);await wait(0);
+      assert(window.document.getElementById("topicQuizDialog").open,"topic card did not open a quiz dialog");
+      assert(window.document.getElementById("topicQuizTitle").textContent===topicNames[topicId],"topic dialog opened the wrong subject");
+      assert(window.document.querySelectorAll("#topicQuizChoices button[data-topic-answer]").length===4,"topic quiz did not show four tappable answers");
+      click(window,window.document.getElementById("topicQuizCloseBtn"));await wait(0);
+      assert(!window.document.getElementById("topicQuizDialog").open,"topic quiz did not close");
+    }
+    const stateAfterOpen=JSON.parse(window.localStorage.getItem("twPoliceCareerSaveV1")||"{}");
+    assert(stateAfterOpen.knowledge===stateBeforeTopic.knowledge&&stateAfterOpen.quizTotal===stateBeforeTopic.quizTotal,"opening topics must not award reading or answer points");
+    click(window,window.document.querySelector('#systemKnowledge [data-know="0"]'));await wait(0);
+    const firstTopicQuestion=window.document.getElementById("topicQuizQuestion").textContent;
+    assert(firstTopicQuestion.includes("警察任務"),"police tasks topic did not show a relevant question");
+    const wrongTopicChoice=window.document.querySelector('#topicQuizChoices [data-topic-answer="0"]');
+    click(window,wrongTopicChoice);click(window,wrongTopicChoice);await wait(200);
+    const firstTopicAnalysis=window.document.getElementById("topicQuizResult").textContent;
+    assert(firstTopicAnalysis.includes("你的答案")&&firstTopicAnalysis.includes("正確答案")&&firstTopicAnalysis.includes("選項分析"),"topic feedback must explain the selected and correct answer");
+    assert(window.document.querySelectorAll("#topicQuizResult details li").length===4,"topic feedback did not explain all four options");
+    assert(window.document.querySelector("#topicQuizResult a")?.href.includes("law.moj.gov.tw"),"topic feedback did not link to the official source");
+    assert(window.document.querySelector("#topicQuizChoices .is-correct")&&window.document.querySelector("#topicQuizChoices .is-wrong"),"topic answer highlights are missing");
+    assert([...window.document.querySelectorAll("#topicQuizChoices button")].every(x=>x.disabled),"topic answers must be single-use");
+    assert(JSON.parse(window.localStorage.getItem("twPoliceCareerSaveV1")).quizTotal===stateBeforeTopic.quizTotal+1,"repeated topic answer click was scored twice");
+    await wait(1400);
+    assert(window.document.getElementById("topicQuizQuestion").textContent!==firstTopicQuestion,"topic quiz did not advance automatically");
+    assert(window.document.getElementById("topicQuizTitle").textContent==="警察任務","automatic next question left the selected topic");
+    assert(window.document.getElementById("topicQuizResult").textContent===firstTopicAnalysis,"automatic next question erased the previous analysis");
+    click(window,window.document.querySelector('#topicQuizChoices [data-topic-answer="2"]'));await wait(0);
+    click(window,window.document.getElementById("topicQuizNextBtn"));await wait(0);
+    assert(window.document.getElementById("topicQuizProgress").textContent.includes("答對 1 / 2"),"topic completion score is incorrect");
+    assert(window.document.getElementById("topicQuizNextBtn").textContent==="再練一次","completed topic should offer another practice round");
+    assert(window.document.getElementById("topicQuizResult").textContent.includes("先確認安全"),"completed topic erased the last explanation");
+    click(window,window.document.getElementById("topicQuizCloseBtn"));await wait(0);
+    // Closing a pending quiz must cancel its timer before another subject is opened.
+    click(window,window.document.querySelector('#systemKnowledge [data-know="1"]'));await wait(0);
+    click(window,window.document.querySelector('#topicQuizChoices [data-topic-answer="0"]'));await wait(0);
+    click(window,window.document.getElementById("topicQuizCloseBtn"));await wait(0);
+    click(window,window.document.querySelector('#systemKnowledge [data-know="10"]'));await wait(0);
+    const stationTopicQuestion=window.document.getElementById("topicQuizQuestion").textContent;
+    await wait(1600);
+    assert(window.document.getElementById("topicQuizQuestion").textContent===stationTopicQuestion,"closed topic timer advanced a new topic");
+    assert(!window.document.getElementById("topicQuizResult").textContent,"new topic retained unrelated analysis");
+    click(window,window.document.getElementById("topicQuizCloseBtn"));await wait(0);
+    assert(!window.document.body.classList.contains("topic-quiz-open"),"closing the topic quiz left page scrolling locked");
+
     const savedState=JSON.parse(window.localStorage.getItem("twPoliceCareerSaveV1")||"{}");Object.assign(savedState,{created:true,route:"tpa",passed:true,county:"臺北市",localAgency:"臺北市政府警察局",precinct:"中正第一分局",unit:"station",unitName:"臺北市政府警察局中正第一分局忠孝西路派出所",assignmentType:"station",stationName:"忠孝西路派出所",selectedStation:"忠孝西路派出所",selectedUnit:"station",position:"警員",rank:"警員",careerSequenceNo:11,sequence:"第十一序列",careerStage:"basic_active",unitSelectionOpen:false,joinDate:"2026-01-01T08:00:00"});window.localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(savedState));click(window,window.document.getElementById("manualLoadBtn"));await wait(0);
     click(window,window.document.querySelector('.nav-btn[data-page="duty"]'));await wait(0);
     assert(!window.document.querySelector("#dutyModeCards [data-dmode]"),"duty types should be mixed instead of selectable");
@@ -156,3 +207,4 @@ if(standaloneIds.every(id=>htmlRaw.includes(`id="${id}"`))){
     if(errors.length)throw new Error("Runtime console errors:\n"+errors.join("\n"));console.log("SMOKE_OK",{appRef,systemsRef});
   }catch(err){console.error("SMOKE_FAIL",err.stack||err);if(errors.length)console.error(errors.join("\n"));process.exit(1)}finally{window.close()}
 }
+
