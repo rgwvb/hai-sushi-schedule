@@ -821,6 +821,7 @@ body.topic-quiz-open{overflow:hidden}
 </style>
 <meta name="description" content="台灣警察生涯模擬器單檔 HTML 版本；CSS 與 JavaScript 已內嵌。">
 <link rel="stylesheet" href="assets/exam_archive.css?v=20261007">
+<link rel="stylesheet" href="assets/workforce_scenarios.css?v=20261007">
 </head>
 <body>
 <div class="app-shell">
@@ -1114,6 +1115,10 @@ body.topic-quiz-open{overflow:hidden}
           <div><h2>勤務中心</h2><p id="dutySubtitle">完成單位分發後即可上勤。</p></div>
           <div class="chips"><span id="shiftChip">08:00 值班</span><span id="energyChip">體力 100</span></div>
         </div>
+        <div class="panel workforce-entry" data-workforce-entry="duty">
+          <div><span class="eyebrow">案件情境</span><h3 data-workforce-entry-title>現場分工與支援回報</h3><p class="muted" data-workforce-entry-description>依案件安排先到場人員，判斷需要多少支援。</p></div>
+          <button type="button" class="primary-btn" data-workforce-open>開始情境演練</button>
+        </div>
         <div class="panel duty-mode-panel">
           <div class="panel-head"><h3>勤務與法規混合派題</h3><span>勤務事件推進約30天；單純答法規題不推進日期</span></div>
           <div id="dutyModeCards" class="info-banner"></div>
@@ -1192,6 +1197,10 @@ body.topic-quiz-open{overflow:hidden}
           <div class="chips"><span id="knowledgeChip">知識 0</span><span id="quizChip">測驗 0/0</span></div>
         </div>
 
+        <div class="panel workforce-entry" data-workforce-entry="academy">
+          <div><span class="eyebrow">SCENARIO · 案件情境</span><h3 data-workforce-entry-title>人力與分工情境演練</h3><p class="muted" data-workforce-entry-description>交通事故、走失協尋與活動勤務，練習判斷人力與處置順序。</p></div>
+          <button type="button" class="primary-btn" data-workforce-open>開始情境演練</button>
+        </div>
         <div class="panel" id="examArchivePanel">
           <div class="exam-archive-hero">
             <div><span class="eyebrow">MOEX · 歷屆特考</span><h3>把真實考題，變成每天的練習</h3><p class="muted" id="examArchiveCoverage">警察特考、一般警察特考｜歷屆官方試卷與答案</p></div>
@@ -1274,6 +1283,10 @@ body.topic-quiz-open{overflow:hidden}
           <div class="empty-state">目前仍是基層職位。陞任巡佐以上後會逐步開放主管玩法。</div>
         </div>
         <div id="commandContent" style="display:none">
+          <div class="panel workforce-entry" data-workforce-entry="command">
+            <div><span class="eyebrow">案件指揮</span><h3 data-workforce-entry-title>人力配置與派遣規劃</h3><p class="muted" data-workforce-entry-description>安排各組人數、申請支援並保留機動警力。</p></div>
+            <button type="button" class="primary-btn" data-workforce-open>開始人力配置</button>
+          </div>
           <div class="stat-grid four">
             <div class="stat-card"><span>可用警力</span><strong id="staffStat">8</strong></div>
             <div class="stat-card"><span>待處理公文</span><strong id="paperworkStat">3</strong></div>
@@ -1358,6 +1371,33 @@ body.topic-quiz-open{overflow:hidden}
     <div id="examQuizResult" class="feedback" role="status" aria-live="polite"></div>
   </div>
   <div class="topic-quiz-footer"><label class="exam-auto-label"><input id="examAutoNext" type="checkbox" checked>作答後自動下一題（可關閉，慢慢核對）</label><p id="examQuizStatus">選一個答案。</p><button type="button" class="primary-btn" id="examQuizNextBtn" hidden>下一題</button></div>
+</dialog>
+
+<dialog id="workforceScenarioDialog" class="topic-quiz-dialog wf-dialog" aria-labelledby="workforceScenarioTitle">
+  <div class="wf-head">
+    <div><span class="eyebrow" id="workforceScenarioRole">案件情境演練</span><h2 id="workforceScenarioTitle">案件人力配置</h2></div>
+    <button type="button" class="secondary-btn" id="workforceScenarioClose" aria-label="關閉情境演練">關閉</button>
+  </div>
+  <div class="wf-body">
+    <div class="wf-case"><span class="wf-case-number" id="workforceCaseNumber"></span><h3 id="workforceCaseTitle" tabindex="-1"></h3><p id="workforceCaseStory"></p><ul id="workforceCaseFacts"></ul></div>
+    <p class="wf-mode-note" id="workforceModeNote"></p>
+    <form id="workforceScenarioForm">
+      <fieldset class="wf-priority"><legend>1 · 先做哪件事？</legend><div id="workforcePriorityChoices"></div></fieldset>
+      <section class="wf-allocation" aria-labelledby="workforceAllocationTitle">
+        <h3 id="workforceAllocationTitle">2 · 配置人力與分工</h3>
+        <div id="workforceResources" class="wf-resources"></div>
+        <div id="workforceSupportControl"></div>
+        <p id="workforceBudget" class="wf-budget" role="status" aria-live="polite"></p>
+        <div id="workforceTaskControls" class="wf-tasks"></div>
+      </section>
+      <fieldset class="wf-coordination"><legend>3 · 通報與協作</legend><label><input type="checkbox" id="workforceNotify">回報勤務指揮中心，說明現況、分工與支援需求</label><label id="workforceMedicalLabel"><input type="checkbox" id="workforceMedical">聯繫消防／救護，交代傷者及現場狀況</label></fieldset>
+      <div class="wf-actions"><button type="submit" class="primary-btn" id="workforceSubmit">送出並分析配置</button><button type="button" class="secondary-btn" id="workforceNext" hidden>下一件情境</button></div>
+    </form>
+    <p id="workforceScenarioStatus" class="wf-status" role="status" aria-live="polite"></p>
+    <section id="workforceAnalysis" class="wf-analysis" hidden aria-label="配置分析" tabindex="-1"></section>
+    <label class="wf-auto"><input type="checkbox" id="workforceAutoNext" checked>分析後 6 秒自動換案（可關閉）</label>
+    <details class="wf-sources"><summary>情境設定與官方參考資料</summary><p>案件、工作量、人數及評分為遊戲情境設定，各工作假設同時進行、每人只分配一項；可有多種可行配置。官方資料用於通報、協調與安全原則，人數不是官方固定編制。</p><div id="workforceSourceLinks"></div></details>
+  </div>
 </dialog>
 
 <dialog id="topicQuizDialog" class="topic-quiz-dialog" aria-labelledby="topicQuizTitle">
@@ -4431,6 +4471,7 @@ loadPoliceDirectory();
       if(typeof renderRotationForecast==="function")renderRotationForecast();
       if(typeof renderRankInsignia==="function")renderRankInsignia();
       if(typeof syncExamActionButtons==="function")syncExamActionButtons();
+      if(window.policeWorkforceScenarios)window.policeWorkforceScenarios.refresh();
     }catch(err){console.error("[enhancements]",err)}
   }
 
@@ -4454,6 +4495,26 @@ loadPoliceDirectory();
   });
   window.__policeNewDuty=newAdvancedDuty;
   window.__policeResolveDuty=advancedResolve;
+  function scenarioContext(){
+    const employed=!!s.unit&&!s.retired&&!["考生","待分發"].includes(String(s.position||""));
+    const mode=employed?(isSupervisor()?"command":"officer"):"training";
+    const key=JSON.stringify([mode,s.name||"",s.position||"",s.unit||"",s.unitName||"",s.stationName||"",!!s.retired]);
+    return {mode,key,role:s.position||"考生",employed};
+  }
+  window.policeScenarioGame=Object.freeze({
+    context:scenarioContext,
+    record(result){
+      if(result.contextKey!==scenarioContext().key)throw new Error("職位已變更，請重新演練");
+      if(!Number.isInteger(result.score)||result.score<0||result.score>100)throw new Error("無效的情境分數");
+      if(!s.scenarioPractice||typeof s.scenarioPractice!=="object")s.scenarioPractice={};
+      const key=result.id+"|"+scenarioContext().mode,previous=s.scenarioPractice[key]||{attempts:0,best:0,awarded:false};
+      const knowledge=!previous.awarded&&result.score>=80?2:0;
+      s.scenarioPractice[key]={attempts:previous.attempts+1,best:Math.max(previous.best,result.score),latest:result.score,awarded:previous.awarded||knowledge>0};
+      if(knowledge)s.knowledge=cl((s.knowledge||0)+knowledge);
+      if(!previous.attempts||result.score>previous.best)rec("情境演練",result.title+"｜"+result.score+"分｜"+(scenarioContext().mode==="officer"?"現場分工與支援回報":"人力配置規劃"));
+      save();render();return {knowledge};
+    }
+  });
   if($("promotionBtn"))$("promotionBtn").onclick=enhancedPromotion;
   if($("policeMonitorTrainingBtn"))$("policeMonitorTrainingBtn").onclick=takePoliceMonitorTraining;
   if($("promotionExamBtn"))$("promotionExamBtn").onclick=takePromotionExam;
@@ -4471,5 +4532,6 @@ loadPoliceDirectory();
 
 </script>
 <script src="scripts/exam_archive.js?v=20261007-game"></script>
+<script src="scripts/workforce_scenarios.js?v=20261007"></script>
 </body>
 </html>
