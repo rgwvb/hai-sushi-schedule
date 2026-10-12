@@ -3317,7 +3317,7 @@ loadPoliceDirectory();
     const score=promotionScore();
     const latest=(s.appraisals||[])[0]?.grade;
     const ok=score>=50&&rewardsOutweighPenalties()&&(s.discipline||0)>=80&&latest!=="丙等";
-    return {ok,score,latest:latest||"尚無",reward:rewardPoints(),penalty:penaltyPoints()};
+    return {ok,score,latest:latest||"尚無",reward:rewardPoints(),penalty:penaltyPoints(),performance:performanceContribution()};
   }
   function class1Eligibility(){
     const pos=/巡佐|小隊長|警務佐|教育班長|偵查佐/.test(positionName());
@@ -3405,7 +3405,7 @@ loadPoliceDirectory();
     const p=patrolOfficerPerformanceGate();
     const a1=class1Eligibility(),a2=class2Eligibility(),a3=class3Eligibility(),pe=promotionExamEligibility();
     return '<div class="qualification-grid">'+
-      '<div><span>績效／資績</span><b class="'+(p.ok?"ok":"no")+'">'+(p.ok?"符合":"未符合")+'</b><small>資績 '+p.score+'｜獎 '+p.reward+'／懲 '+p.penalty+'｜紀律 '+(s.discipline||0)+'</small></div>'+
+      '<div><span>績效／資績</span><b class="'+(p.ok?"ok":"no")+'">'+(p.ok?"符合":"未符合")+'</b><small>資績 '+p.score.toFixed(1)+'｜獎 '+p.reward+'／懲 '+p.penalty+'｜紀律 '+(s.discipline||0)+'<br>勤務實績 +'+p.performance.total.toFixed(1)+'（品質 '+p.performance.quality.toFixed(1)+'／服務 '+p.performance.service.toFixed(1)+(isSupervisor()?'／決策 '+p.performance.command.toFixed(1):'')+'）</small></div>'+
       '<div><span>警正官等資格</span><b class="'+(s.policeZhengQualified?"ok":"no")+'">'+(s.policeZhengQualified?"已取得":"未取得")+'</b><small>'+(s.promotionExamPassed?"警正升官等考試及格":s.promotionTrainingPassed?"晉升警正官等訓練及格":s.thirdGradeUpgradePassed?"三等警察特考／訓練完成":"可經升官等考試、晉升訓練或三等考試取得")+'</small></div>'+
       '<div><span>警大教育／訓練資格</span><b class="'+(s.officerEducationQualified?"ok":"no")+'">'+(s.officerEducationQualified?"已取得":"未取得")+'</b><small>'+(s.sergeantClassPassed?("警佐班"+s.sergeantClassPassed+"完成"):["cpu","g3"].includes(s.route)?"原警官任用路線":"可走警佐班第1、2、3類等管道")+'</small></div>'+
       '<div><span>巡官甄審資格</span><b class="'+(patrolOfficerQualified()?"ok":"no")+'">'+(patrolOfficerQualified()?"可參加":"尚未具備")+'</b><small>須同時具備官等資格、警大教育資格、績效與獎懲條件</small></div>'+
@@ -4458,6 +4458,7 @@ loadPoliceDirectory();
     if(dutyCaseKey!==roleCaseOwnerKey()){syncRoleCaseQueues();return;}
     if(dutyQuizQuestion||!active)return;
     const c=active[2][i];if(!c)return;const xp=c[1],rep=c[2],en=c[3];
+    const scoreBefore=promotionScore();
     const isLife=active[3]==="life";
     s.xp+=xp;s.rep=cl(s.rep+rep);s.energy=cl(s.energy+en);s.stress=cl(s.stress+Math.max(0,Math.round(-en*.3)));
     let healthChange=0;
@@ -4475,7 +4476,7 @@ loadPoliceDirectory();
     const cid=String(Date.now()).slice(-7);
     s.cases.unshift({id:cid,type:active[0],action:c[0],result:xp>=18?"優良":xp>=14?"良好":xp<=4?"重大缺失":"尚可",xp,date:rocDateTime()});
     rec(isLife?"人生事件":"完成勤務",active[0]+"｜+"+xp+" XP｜"+positionName());
-    fb("dutyResult",(isLife?"人生事件處理完成：":"勤務完成：")+"+"+xp+" XP，聲望 "+(rep>=0?"+":"")+rep+(isLife?"；家庭收支與健康已更新。":(healthChange<0?"；疲勞或現場風險使健康下降。":"；獎懲考核已同步更新。"))+"遊戲時間前進約 30 天。"+(active.analysis?" 處置分析："+active.analysis:""),xp>=14);
+    fb("dutyResult",(isLife?"人生事件處理完成：":"勤務完成：")+"+"+xp+" XP，聲望 "+(rep>=0?"+":"")+rep+(isLife?"；家庭收支與健康已更新。":(healthChange<0?"；疲勞或現場風險使健康下降。":"；獎懲考核已同步更新。"))+"遊戲時間前進約 30 天。"+performanceProgressText(scoreBefore)+(active.analysis?" 處置分析："+active.analysis:""),xp>=14);
     $("dutyChoices").innerHTML="";active=null;
     save();render();
     // Keep the result visible briefly, then automatically dispatch the next item.
@@ -4554,11 +4555,15 @@ loadPoliceDirectory();
     if(commandCaseKey!==roleCaseOwnerKey()){syncRoleCaseQueues();return;}
     if(!commandActive)return;
     const c=commandActive[2][i];if(!c)return;
+    const scoreBefore=promotionScore();
     s.commandScore=cl(s.commandScore+c[1]);s.morale=cl(s.morale+c[2]);s.publicSatisfaction=cl(s.publicSatisfaction+c[3]);
+    if(c[1]>=8)s.service=cl(s.service+2);
+    else if(c[1]>=4)s.service=cl(s.service+1);
+    else if(c[1]<=1)s.service=cl(s.service-1);
     if(c[4]>0)addGood(c[4],commandActive[0]); else if(c[4]<0)addBad(-c[4],commandActive[0]);
     s.paperwork=Math.min(20,s.paperwork+1);advanceHours(3);
     if(commandActive[0]==="重大案件指揮"&&c[1]>=10) exceptionalMerit("重大案件指揮得當");
-    rec("主管決策",commandActive[0]+"｜"+c[0]);fb("commandResult","決策完成。主管評價 "+(c[1]>=0?"+":"")+c[1]+"，士氣 "+(c[2]>=0?"+":"")+c[2]+"。"+(commandActive.analysis?" 決策分析："+commandActive.analysis:""),c[1]>=5);
+    rec("主管決策",commandActive[0]+"｜"+c[0]);fb("commandResult","決策完成。主管評價 "+(c[1]>=0?"+":"")+c[1]+"，士氣 "+(c[2]>=0?"+":"")+c[2]+"。"+performanceProgressText(scoreBefore)+(commandActive.analysis?" 決策分析："+commandActive.analysis:""),c[1]>=5);
     $("commandChoices").innerHTML="";commandActive=null;save();render();
     commandAdvanceTimer=setTimeout(()=>{commandAdvanceTimer=null;newCommand(true)},1500);
   }
@@ -4568,6 +4573,18 @@ loadPoliceDirectory();
     if(!a.length)return 4;
     return a.reduce((sum,x)=>sum+(x.grade==="甲等"?3:x.grade==="乙等"?2:0),0);
   }
+  function performanceContribution(){
+    const points=(value,max)=>{
+      const number=Number(value),stat=Number.isFinite(number)?cl(number):50;
+      return Math.round(Math.max(0,stat-50)/50*max*10)/10;
+    };
+    const quality=points(s.quality,5),service=points(s.service,5),command=isSupervisor()?points(s.commandScore,2):0;
+    return {quality,service,command,total:Math.round((quality+service+command)*10)/10};
+  }
+  function performanceProgressText(before){
+    const after=promotionScore(),difference=Math.round((after-before)*10)/10;
+    return " 資績 "+before.toFixed(1)+" → "+after.toFixed(1)+"（"+(difference>=0?"+":"")+difference.toFixed(1)+"）。";
+  }
   function promotionScore(){
     const edu={"高中畢業":8,"大學在學":10,"大學畢業":14,"研究所畢業":16}[s.education]||8;
     const exam=String(s.officialRank||"").startsWith("警正")?20:String(s.officialRank||"").startsWith("警佐")?14:0;
@@ -4575,8 +4592,9 @@ loadPoliceDirectory();
     const appraisal=Math.min(12,latestAppraisalPoints()*2);
     const reward=(s.commend||0)*0.1+(s.merit||0)*0.3+(s.greatMerit||0);
     const penalty=(s.admonition||0)*0.1+(s.demerit||0)*0.3+(s.greatDemerit||0);
-    const conduct=Math.max(0,Math.min(10,(s.discipline||100)/10));
-    return Math.max(0,Math.round((edu+exam+seniority+appraisal+reward-penalty+conduct)*10)/10);
+    const discipline=Number(s.discipline),conduct=Math.max(0,Math.min(10,(Number.isFinite(discipline)?discipline:100)/10));
+    const performance=performanceContribution().total;
+    return Math.max(0,Math.round((edu+exam+seniority+appraisal+reward-penalty+conduct+performance)*10)/10);
   }
   function renderCareerUpgrade(){
     if(!$("careerMsg"))return;
@@ -4588,7 +4606,7 @@ loadPoliceDirectory();
     if($("careerOfficialRank"))$("careerOfficialRank").textContent=pending?"尚未任官":(s.officialRank||"—");
     if($("careerPosition"))$("careerPosition").textContent=positionName();
     if($("careerSequence"))$("careerSequence").textContent=pending?"尚未任官":sequenceLabel(seq);
-    if($("promotionScoreBox"))$("promotionScoreBox").textContent=pending?"完成分發與派職後，才開始計算陞遷資績。":"資績模擬分："+s.promotionScore+"｜最近考績："+((s.appraisals&&s.appraisals[0]?.grade)||"尚無")+"｜獎懲："+(s.commend||0)+"嘉獎／"+(s.merit||0)+"記功／"+(s.admonition||0)+"申誡／"+(s.demerit||0)+"記過";
+    if($("promotionScoreBox"))$("promotionScoreBox").textContent=pending?"完成分發與派職後，才開始計算陞遷資績。":"資績模擬分："+s.promotionScore.toFixed(1)+"｜勤務實績 +"+performanceContribution().total.toFixed(1)+"｜最近考績："+((s.appraisals&&s.appraisals[0]?.grade)||"尚無")+"｜獎懲："+(s.commend||0)+"嘉獎／"+(s.merit||0)+"記功／"+(s.admonition||0)+"申誡／"+(s.demerit||0)+"記過";
     const nextSeq=pending?null:(seq>0?seq-1:null);
     if($("promotionRuleText"))$("promotionRuleText").textContent=pending?"完成考試、分發與派職後，才會開始計算職務陞遷。":(nextSeq!==null?(seq===10?"目前第十序列；升任第九序列巡官等警官職務前，須先完成官等、警大教育／訓練、績效與獎懲資格。":"目前 "+sequenceLabel(seq)+"；可依缺額與資格參加 "+sequenceLabel(nextSeq)+" 職務甄審。"):"目前已到最高職務層級。");
     if($("careerPath")){
