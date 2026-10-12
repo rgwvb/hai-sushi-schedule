@@ -8,7 +8,10 @@
     duty: ['警察勤務條例：勤務規劃、機動警力與指揮協調', 'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0080026'],
     traffic: ['警政署：道路交通事故處理事項', 'https://www.npa.gov.tw/ch/app/data/view?id=2306&module=wg076&serno=007a0e28-43f1-4f22-8e49-41908d78fc66'],
     missing: ['警政署：協尋失蹤人口政策宣導', 'https://police.npa.gov.tw/ch/app/video/view?id=1839&module=video&serno=a9f9e168-cea1-4596-9771-db18abc87170'],
-    crowd: ['臺北市警察局：活動人車疏導與安全', 'https://td.police.gov.taipei/News_Content.aspx?n=B19CFD7B4346611D&s=D36D8F6F60AA48A8&sms=72544237BBE4C5F6']
+    crowd: ['臺北市警察局：活動人車疏導與安全', 'https://td.police.gov.taipei/News_Content.aspx?n=B19CFD7B4346611D&s=D36D8F6F60AA48A8&sms=72544237BBE4C5F6'],
+    organization: ['警察分局組織規程：各組隊及主管權責', 'https://laws.gov.taipei/law/LawSearch/LawArticleContent/FL034460'],
+    command: ['警政署勤務指揮中心：跨機關指揮協調職掌', 'https://www.npa.gov.tw/ch/app/artwebsite/view?id=804&module=artwebsite&serno=c54377d5-a32e-422f-80de-b1d322c871ab'],
+    criminal: ['刑事警察局：偵查規劃、督導與案件協作職掌', 'https://www.cib.npa.gov.tw/ch/app/artwebsite/view?id=1393&module=artwebsite&serno=bb9e0641-655d-4f7d-9fae-6a569dc50500']
   };
   const task = (label, hint, minimum, initial) => ({label, hint, minimum, initial});
   const cases = [
@@ -44,7 +47,7 @@
       tasks:[task('行人穿越點協助','兩處穿越點各需一人；先到場先處理最繁忙的一處。',2,1),task('接送車流引導','一人引導接送車輛，避免危險停等。',1,1),task('學校窗口與通報','一人保持與學校及勤務中心的聯繫。',1,0)]}
   ];
   const autoKey = 'twPoliceWorkforceAutoNextV1';
-  let run = null, cursor = 0, timer = null, focusBefore = null, overflowBefore = '';
+  let run = null, cursor = 0, poolKey = '', currentCases = cases, timer = null, focusBefore = null, overflowBefore = '';
   const node = (tag,text,className) => {const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;};
   const total = values => values.reduce((sum,n)=>sum+n,0);
   const isOfficer = () => run.context.mode === 'officer';
@@ -59,11 +62,14 @@
       const location=entry.dataset.workforceEntry;
       const title=entry.querySelector('[data-workforce-entry-title]'),desc=entry.querySelector('[data-workforce-entry-description]');
       if(context.mode==='officer') {
-        title.textContent='現場分工與支援回報';
-        desc.textContent='安排自己與同仁的 2 人先到場分工，判斷應回報多少支援。';
+        title.textContent=(context.profile?.id==='patrol'?'現場分工與支援回報':context.profile?.label+'｜本組分工與支援回報');
+        desc.textContent='安排自己與同仁的 2 人分工，判斷應回報多少支援。';
       } else if(context.mode==='command') {
-        title.textContent='案件指揮｜人力配置與派遣規劃';
-        desc.textContent='依各組工作量安排人數、申請支援並保留機動警力。';
+        title.textContent=(context.profile?.label||'案件指揮')+'｜人力與協作規劃';
+        desc.textContent=context.profile?.scope+'。依工作量安排分工，支援需依權責核定。';
+      } else if(context.mode==='staff') {
+        title.textContent=context.profile?.label+'｜承辦分工規劃';
+        desc.textContent='練習資料查驗、業務聯繫與呈報方案；須送主管審議。';
       } else {
         title.textContent='學堂情境｜人力配置練習';
         desc.textContent='用案件練習人力與處置順序，完成分析後不推進遊戲日期。';
@@ -96,7 +102,16 @@
   function nextCase() {
     clearTimer();
     const previous=run?.report||null;
-    run={scenario:cases[cursor++%cases.length],context:game.context(),counts:[],support:0,priority:-1,notify:false,medical:false,answered:false,report:null};
+    const context=game.context(),key=context.mode+'|'+(context.profile?.id||'base');
+    if(poolKey!==key){poolKey=key;cursor=0;}
+    currentCases=context.workforceCases?.length?context.workforceCases:cases;
+    const original=currentCases[cursor++%currentCases.length],scenario={...original,priority:original.priority.slice()};
+    if(scenario.planning){
+      const choices=scenario.priority.map((text,index)=>({text,correct:index===scenario.correct}));
+      for(let i=choices.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[choices[i],choices[j]]=[choices[j],choices[i]];}
+      scenario.priority=choices.map(x=>x.text);scenario.correct=choices.findIndex(x=>x.correct);
+    }
+    run={scenario,context,counts:[],support:0,priority:-1,notify:false,medical:false,answered:false,report:null};
     run.counts=run.scenario.tasks.map(()=>0);if(!isOfficer())run.counts.push(0);
     showCase();
     if(previous){renderAnalysis(previous,true);$('workforceScenarioStatus').textContent='新案件已準備好；上一案分析保留在下方。';}
@@ -113,24 +128,25 @@
   }
   function showCase() {
     const c=run.scenario,officer=isOfficer();
-    $('workforceScenarioRole').textContent=run.context.mode==='training'?'學堂模擬 · 不影響任用':run.context.role+(officer?' · 現場回報':' · 指揮配置');
-    $('workforceScenarioTitle').textContent=officer?'現場分工與支援回報':'案件人力配置';
-    $('workforceCaseNumber').textContent='情境 '+((cursor-1)%cases.length+1)+' / '+cases.length+' · 人數與工作量為題目設定';
+    $('workforceScenarioRole').textContent=run.context.mode==='training'?'學堂模擬 · 不影響任用':run.context.role+' · '+run.context.profile.label+(run.context.mode==='staff'?' · 呈報規劃':officer?(c.planning?' · 本組回報':' · 現場回報'):(c.planning?' · 依權責協作':' · 指揮配置'));
+    $('workforceScenarioTitle').textContent=officer?(c.planning?'本組分工與支援回報':'現場分工與支援回報'):c.planning?'業務人力與協作規劃':'案件人力配置';
+    $('workforceCaseNumber').textContent='情境 '+((cursor-1)%currentCases.length+1)+' / '+currentCases.length+' · 人數與工作量為題目設定';
     $('workforceCaseTitle').textContent=c.title;$('workforceCaseStory').textContent=c.story;
     $('workforceCaseFacts').replaceChildren(...c.facts.map(f=>node('li',f)));
-    $('workforceModeNote').textContent=officer?'本題你是先到場警員，只安排現場 2 人。增援為向勤務中心提出的需求，核定、到場與完整派遣由主管協調。':'本題規劃支援到場後的完整分工，尚未到場的支援不可當作已到場警力。先到場人員仍需優先處理急迫風險。';
+    $('workforceModeNote').textContent=officer?(c.planning?'本題只安排你與同仁的 2 人初期分工。其餘工作向主管提出支援需求，尚未核定到位的人員不能先列為本組可用人力。':'本題你是先到場警員，只安排現場 2 人。增援為向勤務中心提出的需求，核定、到場與完整派遣由主管協調。'):(c.modeNote||'本題規劃支援到場後的完整分工，尚未到場的支援不可當作已到場警力。先到場人員仍需優先處理急迫風險。');
     $('workforcePriorityChoices').replaceChildren(...c.priority.map((text,index)=>{
       const label=node('label'),input=node('input');input.type='radio';input.name='workforce-priority';input.value=String(index);input.dataset.workforcePriority='true';label.append(input,node('span',text));return label;
     }));
-    const resources=officer?[['先到場警員','2 人'],['完整處理工作',total(c.tasks.map(t=>t.minimum))+' 人'],['申請支援上限','6 人']]:[['可調用本班警力',c.local+' 人'],['可申請支援上限','4 人'],['機動備援目標','1 人']];
+    const resources=officer?[[c.planning?'本組可安排人員':'先到場警員','2 人'],['完整處理工作',total(c.tasks.map(t=>t.minimum))+' 人'],['申請支援上限','6 人']]:[[c.resourceLabel||'可調用本班警力',c.local+' 人'],['可申請支援上限','4 人'],[c.planning?'工作備援目標':'機動備援目標','1 人']];
     $('workforceResources').replaceChildren(...resources.map(([label,value])=>{const box=node('div');box.append(node('span',label),node('b',value));return box;}));
     $('workforceSupportControl').replaceChildren();
     const support=node('div',undefined,'wf-task'),supportText=node('div');supportText.append(node('strong',officer?'申請增援人數':'支援到場後納入規劃的人數'),node('p',officer?'需求送交勤務中心，這些人尚未到場，不能先分配進你的 2 人分工。':'支援需先提出需求並等待核定，本題只模擬到場後的配置。'));support.append(supportText,stepper('支援','support'));$('workforceSupportControl').append(support);
     $('workforceTaskControls').replaceChildren();
     const tasks=c.tasks.map(t=>({label:t.label,hint:t.hint}));
-    if(!officer)tasks.push({label:'機動備援',hint:'保留一人，避免下一件急迫案件無人可用。'});
+    if(!officer)tasks.push({label:c.reserveLabel||'機動備援',hint:c.reserveHint||'保留一人，避免下一件急迫案件無人可用。'});
     tasks.forEach((t,index)=>{const row=node('div',undefined,'wf-task'),text=node('div');text.append(node('strong',t.label),node('p',t.hint));row.append(text,stepper(t.label,'task',index));$('workforceTaskControls').append(row);});
     $('workforceNotify').checked=false;$('workforceMedical').checked=false;$('workforceMedicalLabel').hidden=!c.medical;
+    $('workforceNotifyText').textContent=c.notifyPrompt||'回報勤務指揮中心，說明現況、分工與支援需求';
     $('workforceNext').hidden=true;$('workforceSubmit').hidden=false;$('workforceAnalysis').hidden=true;
     $('workforceScenarioStatus').textContent='先選處置順序，再用 ＋／− 安排人數並勾選通報。';
     $('workforceSourceLinks').replaceChildren(...[sources.duty,...(c.source==='duty'?[]:[sources[c.source]])].map(([title,url])=>{
@@ -148,7 +164,7 @@
       button.disabled=run.answered||(delta<0?value===0:support?value>=(isOfficer()?6:4):assigned>=limit);
     }
     for(const input of dialog.querySelectorAll('#workforceScenarioForm input'))input.disabled=run.answered;
-    $('workforceBudget').textContent=isOfficer()?'現場已分工 '+assigned+' / 2 人 · 尚有 '+Math.max(0,2-assigned)+' 人未安排 · 已申請支援 '+run.support+' 人（未到場）':'已配置 '+assigned+' / '+limit+' 人 · 本班 '+run.scenario.local+' + 規劃支援 '+run.support+' · 尚餘 '+Math.max(0,limit-assigned)+' 人未安排';
+    $('workforceBudget').textContent=isOfficer()?(run.scenario.planning?'本組':'現場')+'已分工 '+assigned+' / 2 人 · 尚有 '+Math.max(0,2-assigned)+' 人未安排 · 已申請支援 '+run.support+' 人'+(run.scenario.planning?'（未核定到位）':'（未到場）'):'已配置 '+assigned+' / '+limit+' 人 · '+(run.scenario.planning?'本組':'本班')+' '+run.scenario.local+' + 規劃支援 '+run.support+' · 尚餘 '+Math.max(0,limit-assigned)+' 人未安排';
     $('workforceBudget').classList.toggle('over-budget',assigned>limit);
     $('workforceSubmit').disabled=run.answered||assigned>limit;
     if(assigned>limit)$('workforceScenarioStatus').textContent='配置超過可用人數，請減少分工人數或調整支援需求。';
@@ -159,20 +175,20 @@
     const issues=[],notes=[];let score=Math.round(covered/required*(officer?40:50));
     targets.forEach((target,i)=>{if(run.counts[i]<target)issues.push(c.tasks[i].label+'少 '+(target-run.counts[i])+' 人；'+c.tasks[i].hint);});
     if(run.priority===c.correct)score+=officer?25:20;else issues.push('優先順序需調整：'+c.priority[c.correct]+'。');
-    if(run.notify)score+=c.medical?10:15;else issues.push('尚未勾選回報勤務指揮中心，支援需求與分工需同步通報。');
+    if(run.notify)score+=c.medical?10:15;else issues.push(c.notifyPrompt?'尚未勾選「'+c.notifyPrompt+'」，分工與資源需求需同步回報。':'尚未勾選回報勤務指揮中心，支援需求與分工需同步通報。');
     if(c.medical){if(run.medical)score+=5;else issues.push('本案有傷者或身體不適者，尚未聯繫救護。');}
     if(officer) {
       const need=neededSupport();score+=need?Math.round(Math.min(run.support,need)/need*20):20;
-      if(run.support<need)issues.push('完整工作需 '+total(c.tasks.map(t=>t.minimum))+' 人，已到場 2 人，尚須申請至少 '+need+' 人支援；目前少 '+(need-run.support)+' 人。');
-      else notes.push('增援需求涵蓋後續工作；仍需等待勤務中心核定與到場。');
+      if(run.support<need)issues.push('完整工作需 '+total(c.tasks.map(t=>t.minimum))+' 人，'+(c.planning?'本組可安排':'已到場')+' 2 人，尚須申請至少 '+need+' 人支援；目前少 '+(need-run.support)+' 人。');
+      else notes.push(c.planning?'支援需求涵蓋後續工作；仍需等待主管或權責窗口核定到位。':'增援需求涵蓋後續工作；仍需等待勤務中心核定與到場。');
       if(run.support>need+1){score-=5;notes.push('申請支援超過本題工作缺口，可再說明額外需求或減少占用。');}
     } else {
-      if(run.counts.at(-1)>=1)score+=10;else notes.push('尚未安排機動備援；可把未分配警力列為備援，或申請支援。');
+      if(run.counts.at(-1)>=1)score+=10;else notes.push('尚未安排'+(c.reserveLabel||'機動備援')+'；可把未分配人力列為備援，或申請支援。');
       const efficient=total(run.counts)<=total(targets)+2&&run.support<=Math.max(0,total(targets)+1-c.local)+1;
       if(efficient)score+=5;else notes.push('部分人力超過本題需求，調整後可保留更多警力處理其他案件。');
     }
     score=Math.max(0,Math.min(100,score));
-    return {id:c.id,title:c.title,contextKey:run.context.key,mode:run.context.mode,score,issues,notes,
+    return {id:c.id,title:c.title,contextKey:run.context.key,mode:run.context.mode,score,issues,notes,reserveLabel:c.reserveLabel||'機動備援',
       status:issues.length?'需要調整':score>=85?'配置可行':'配置尚可',
       rows:c.tasks.map((t,i)=>({label:t.label,actual:run.counts[i],target:targets[i],full:t.minimum})),
       reserve:officer?null:run.counts.at(-1),support:run.support,referenceSupport:officer?neededSupport():Math.max(0,total(c.tasks.map(t=>t.minimum))+1-c.local),
@@ -186,7 +202,7 @@
     const table=node('table'),thead=node('thead'),head=node('tr');
     for(const title of ['工作','你的安排','本題最低需求'])head.append(node('th',title));thead.append(head);table.append(thead);
     const body=node('tbody');for(const row of report.rows){const tr=node('tr');tr.append(node('td',row.label),node('td',row.actual+' 人'),node('td',row.target+' 人'+(report.mode==='officer'?'（初期）':'')));body.append(tr);}
-    if(report.reserve!==null){const tr=node('tr');tr.append(node('td','機動備援'),node('td',report.reserve+' 人'),node('td','1 人'));body.append(tr);}table.append(body);box.append(table);
+    if(report.reserve!==null){const tr=node('tr');tr.append(node('td',report.reserveLabel||'機動備援'),node('td',report.reserve+' 人'),node('td','1 人'));body.append(tr);}table.append(body);box.append(table);
     if(report.issues.length){box.append(node('h4','需要調整的地方'));const list=node('ul');list.append(...report.issues.map(t=>node('li',t)));box.append(list);}
     if(report.notes.length){const list=node('ul');list.append(...report.notes.map(t=>node('li',t)));box.append(list);}
     const details=node('details'),title=node('summary','參考配置與處置順序');details.append(title,node('p','優先處置：'+report.priority),node('p','支援參考：'+report.referenceSupport+' 人；你提出 '+report.support+' 人。這是本題需求推算，可有其他可行配置。'));

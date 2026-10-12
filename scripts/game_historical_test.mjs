@@ -86,9 +86,9 @@ try {
   assert(d.querySelector('#commandResult a')?.href.includes('wwwq.moex.gov.tw'),'command should show official answer');
   stopAdvance();
   Object.assign(state(),{position:'警員',rank:'警員',positionLevel:0,careerSequenceNo:11});
-  const commandBefore=d.getElementById('commandCase').textContent;
+  const commandBefore=state().commandScore,requestsBeforeBlockedCommand=requests.length;
   click('nextCommandBtn');await settle();
-  assert(d.getElementById('commandCase').textContent===commandBefore,'ordinary officer must not start command practice');
+  assert(!d.querySelector('#commandChoices button')&&state().commandScore===commandBefore&&requests.length===requestsBeforeBlockedCommand,'ordinary officer must not start command practice');
 
   // Out-of-order responses must never replace the newest requested question.
   const real=w.policeHistoricalQuestions, pending=[];
@@ -113,3 +113,4 @@ try {
   assert(!errors.length,errors.join('\n'));
   console.log('GAME_HISTORY_OK lazy shared cache, original provenance, corrected answers, progress, auto-next, duty, command gates, stale responses, duplicate scores, fallback and retry');
 } finally { w.close(); }
+

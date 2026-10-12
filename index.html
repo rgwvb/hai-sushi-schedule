@@ -1398,7 +1398,7 @@ body.topic-quiz-open{overflow:hidden}
         <p id="workforceBudget" class="wf-budget" role="status" aria-live="polite"></p>
         <div id="workforceTaskControls" class="wf-tasks"></div>
       </section>
-      <fieldset class="wf-coordination"><legend>3 · 通報與協作</legend><label><input type="checkbox" id="workforceNotify">回報勤務指揮中心，說明現況、分工與支援需求</label><label id="workforceMedicalLabel"><input type="checkbox" id="workforceMedical">聯繫消防／救護，交代傷者及現場狀況</label></fieldset>
+      <fieldset class="wf-coordination"><legend>3 · 通報與協作</legend><label><input type="checkbox" id="workforceNotify"><span id="workforceNotifyText">回報勤務指揮中心，說明現況、分工與支援需求</span></label><label id="workforceMedicalLabel"><input type="checkbox" id="workforceMedical">聯繫消防／救護，交代傷者及現場狀況</label></fieldset>
       <div class="wf-actions"><button type="submit" class="primary-btn" id="workforceSubmit">送出並分析配置</button><button type="button" class="secondary-btn" id="workforceNext" hidden>下一件情境</button></div>
     </form>
     <p id="workforceScenarioStatus" class="wf-status" role="status" aria-live="polite"></p>
@@ -3051,6 +3051,174 @@ loadPoliceDirectory();
     return currentSequenceNo()<=10&&commandRole;
   }
   function isSeniorSupervisor(){return currentSequenceNo()<=7}
+  // Authored role scenarios; institutional sources describe responsibilities, not these fictional cases or staffing numbers.
+  const roleCaseDecks={
+    station_lead:{label:"派出所帶班與所務",field:"station",source:"organization",scope:"本所勤務、交接、帶教與現場支援",events:[
+      ["所務調度｜請假與勤務衝突","本所兩名同仁臨時請假，放學護童與一般報案仍需維持服務。",["核對最低勤務需求，調整交接並向分局提出支援方案","先維持原班表，等第一個勤務點缺員再調整","將報案服務全部停掉，把所有人放在同一勤務點"],["勤務需求盤點","班表與交接安排","分局支援聯繫","民眾服務銜接"],"先看風險與服務需求，再調班、交接及回報支援；備援不能與固定勤務重複計算。"],
+      ["案件覆核｜交接資料不完整","交接時發現數件受理案件缺少後續聯絡紀錄，民眾已再次來電。",["逐件確認處理進度，指定承辦、補齊紀錄並安排追蹤","只先回覆最近一位來電民眾，其餘留待下班再看","直接把未完成的案件標記結案"],["案件與紀錄核對","承辦人聯繫","民眾進度說明","交接追蹤"],"覆核應回到原始資料，避免以結案數取代實際進度。"],
+      ["帶班任務｜新進同仁與大型活動","本所新人首次參與活動散場勤務，兩個勤務點需要交接與引導。",["安排資深同仁搭配，說明風險、通聯與交接責任","讓新人先自行熟悉勤務，活動開始後再補說明","讓所有資深同仁離開，只由新人獨立處理"],["勤前說明與帶教","勤務點交接","活動窗口聯繫","進度與風險回報"],"帶班重點是讓每個人知道自己的任務、回報對象與交接時機。"]]},
+    precinct:{label:"分局跨所隊協調",field:"admin",source:"organization",scope:"跨派出所、組隊的轄區勤務與案件協調",events:[
+      ["分局決策｜三所勤務同時吃緊","轄內三所分別有活動交管、走失協尋與一般報案，人力申請互相重疊。",["由指揮中心彙整急迫性，分配跨所支援並維持基本勤務","先滿足最先提出申請的派出所，其他需求稍後再處理","要求每所自行解決，不建立共同通報"],["三所需求與風險彙整","跨所勤務銜接","局本部支援窗口","通報與進度追蹤"],"分局層級應處理跨所隊的優先順序與銜接，不是代替每名警員處理單一報案。"],
+      ["轄區專案｜案件集中在兩個所轄區","近期同類案件集中在相鄰兩所轄區，偵查隊與兩所資料格式不同。",["建立共通案件資料與協作窗口，核對關聯後分工追蹤","只增加每所報表數量，月底再比績效","把案件歸責其中一所，停止跨所交換資料"],["案件資料整合","所隊協作與追蹤","勤務資源評估","局本部報告"],"先解決資訊與責任銜接，再評估專案勤務成效；不能只用件數判斷。"],
+      ["分局協調｜大型活動與施工撞期","大型活動散場與道路施工重疊，派出所、交通組和主辦單位各有不同動線版本。",["召集權責窗口確認一致動線、替代路線與緊急通道","先採用主辦單位的版本，活動開始後再請交通組確認","讓各所自行公告不同交通措施"],["活動與道路資訊核對","所隊工作分配","交通及主辦窗口","公告與通報統整"],"跨所隊計畫需有一致版本、變更窗口與備援安排。"]]},
+    bureau:{label:"警察局政策與資源決策",field:"admin",source:"organization",scope:"全局政策、跨分局資源、行政風險與執行成效",events:[
+      ["全局決策｜跨分局大型活動支援","三個分局同時提出活動支援需求，局本部需要核對資源並保留其他地區基本勤務。",["依風險、時段與既有負荷整合支援方案，追蹤實際執行","照各分局申請人數平均分配，月底再檢查負荷","把所有備援都調往單一活動，不評估其他地區需求"],["跨分局需求分析","資源與輪替方案","市縣府及協力窗口","全局進度與風險彙整"],"局長決策重點是全局資源及跨機關協調；平均分配不一定符合風險。"],
+      ["政策檢討｜防詐成效與勤務負荷","各分局報告防詐成果成長，但有單位反映回報口徑不同且例行勤務被擠壓。",["統一資料口徑，核對實際效果及負荷後修正政策","只追蹤成果最高的分局，其他單位維持原作法","要求各分局調高成果數字以符合預期"],["成效資料查驗","勤務負荷評估","分局意見與政策調整","對外說明準備"],"政策成效須能查驗，也要檢查成本、人力負荷與副作用。"],
+      ["資源審議｜裝備更新與維護預算","多個分局提出裝備更新需求，局本部可用預算有限，也有既有設備急需維護。",["盤點安全風險與維護急迫性，依程序比較方案並留下審議紀錄","先買最新型設備，後續再調整維護經費","未審查需求就指定由熟識廠商直接供應"],["需求與風險查驗","預算方案比較","採購及維護窗口","審議紀錄與追蹤"],"首長應掌握需求與程序風險，不能以個人偏好取代正式審議。"]]},
+    npa:{label:"警政署全國警政協調",field:"admin",source:"command",scope:"全國政策、跨縣市協調與署屬機關資源",events:[
+      ["全國協調｜多縣市豪雨通報","數個縣市同時提出支援需求，地方通報格式及資源到位時間不同。",["建立一致情勢摘要，協調跨縣市與署屬機關窗口並追蹤資源","按縣市申請順序處理，暫不比對災情急迫程度","直接替所有地方機關決定每一個現場人員的個別動作"],["跨縣市情勢彙整","資源需求與可用量核對","署屬及地方窗口協調","全國通報與追蹤"],"署層級處理全國協調與資源需求，具體現場處置仍由權責指揮體系銜接。"],
+      ["政策推行｜各縣市回報標準不一","新政策試辦後，各縣市成果表的定義與統計期間不一致，難以比較成效。",["訂出共同定義與回報格式，試核資料並蒐集地方執行困難","直接比較表面成果高低，先公布排名","要求地方依預設名次修改報表"],["回報口徑整理","地方執行意見核對","政策及法規協作","成果說明與追蹤"],"全國政策要先確保資料可比較，也要有地方回饋與修正管道。"],
+      ["署層審議｜跨機關系統更新","地方與署屬機關需要更新通報系統，但既有流程、訓練與維護時程不同。",["盤點需求與銜接風險，分階段試辦、教育訓練並保留備援","一次全面切換，遇到問題再請各機關自行處理","為趕時程略過權限、紀錄與維護需求審查"],["跨機關需求與風險盤點","試辦與維護方案","訓練及機關窗口","決策紀錄與成效追蹤"],"系統更新須同時處理流程、訓練與持續服務，而非只交付設備。"]]},
+    criminal:{label:"刑事偵查與專案協作",field:"detective",source:"criminal",scope:"案件關聯、證據交接、偵查協作與資訊保護",events:[
+      ["刑事專案｜跨縣市詐欺案件關聯","多地被害資料顯示部分線索可能重疊，各承辦單位尚未核對關聯與管轄窗口。",["核對案件關聯與資料來源，依權責協調承辦及專業支援","先把所有案件合併為一案，之後再確認資料來源","向媒體公布未核實的關聯人姓名"],["被害與案件資料核對","線索與證據交接","跨機關承辦窗口","進度與可公開資訊審查"],"專案需先驗證關聯、保留來源與交接紀錄，對外資訊須守住權責與隱私。"],
+      ["證據管制｜交接編號不一致","專案接收數批資料，清冊編號與收件紀錄有差異，尚未釐清是轉錄錯誤或缺漏。",["比對原始清冊與收件流程，保留差異紀錄並安排覆核","先採用最完整的一份清冊，其他紀錄暫時封存","刪掉不一致的編號讓報表一致"],["清冊與來源比對","收件交接紀錄查驗","承辦與專業窗口","差異管制與覆核"],"資料一致性應透過查驗建立，不能刪改原始紀錄來消除差異。"],
+      ["專案溝通｜偵查進度與媒體詢問","重大刑案受到關注，媒體詢問尚未完成查證的案情，各承辦單位說法不同。",["核對已確認事實，統一合法可公開範圍與發言窗口","先以最新傳聞回應，後續再補充更正","讓各承辦人各自公開未確認的偵查細節"],["已確認事實彙整","案件與偵查資訊核對","權責與發言窗口","回應紀錄與後續追蹤"],"資訊發布需要一致窗口與查證，避免影響案件、人權與證據品質。"]]},
+    traffic:{label:"交通勤務與交維規劃",field:"traffic",source:"organization",scope:"交通風險、交維、事故資料及勤務成效",events:[
+      ["交通專案｜事故熱點勤務調整","近期事故集中在兩個路口，尖峰車流、行人動線與勤務時段需要重新評估。",["核對事故及現場動線資料，協調改善並安排成效追蹤","只增加取締件數，月底再查看事故是否下降","把沒有改善的事故從統計中刪除"],["事故與動線資料","勤務時段與分工","道路及地方窗口","改善成效追蹤"],"交通成效應看風險是否改善，並銜接道路權責機關。"],
+      ["交維協作｜施工與活動散場重疊","兩項活動與道路施工重疊，救護車、公車及行人動線需要保持銜接。",["核對各版動線，協調分流、緊急通道與變更窗口","先照活動單位的圖執行，遇到壅塞再調整","各勤務點自行改道，不必通知其他單位"],["動線與道路資料核對","勤務點分工與交接","施工及運輸窗口","變更通報與追蹤"],"交維需一致版本及即時變更聯繫，不能各點各自改動。"],
+      ["交通督導｜事故處理資料品質","多件事故資料的照片索引與紀錄欄位不完整，需要在期限內補齊。",["逐件核對缺漏，安排承辦補正與覆核並確認時效","只補最近一件，其餘等民眾詢問才處理","未檢查就全部標記資料完整"],["事故清單盤點","照片與紀錄核對","承辦補正聯繫","時效與覆核追蹤"],"資料品質與可查驗性是後續處理的基礎。"]]},
+    highway:{label:"國道勤務與路段協調",field:"highway",source:"command",scope:"國道路段事件、跨隊協作、交通與救援窗口",events:[
+      ["國道協調｜兩路段事故與回堵","不同路段同時通報事故與長距離回堵，跨大隊資訊及救援到位時間需要統整。",["核對路段位置與急迫性，協調警力、道路管理及救援窗口","只處理最先通報的路段，其他路段暫不追蹤","讓各隊自行改變勤務區段，不建立交接"],["路段事件核對","跨隊勤務銜接","道路與救援窗口","壅塞情勢及通報"],"國道勤務需清楚路段位置、跨隊交接與權責窗口。"],
+      ["連假計畫｜交流道與服務區負荷","連假車潮預估增加，交流道回堵與服務區秩序需求需要分別評估。",["依流量與風險安排時段、輪替及備援，與道路管理窗口確認","每個路段配置完全相同人數，不檢查流量","只看取締件數，忽略回堵與人員負荷"],["流量與風險資料","路段勤務及輪替","道路管理協作","即時回報與檢討"],"勤務配置應兼顧流量、工作量及持續服務。"],
+      ["路段銜接｜事件結束後未完整交接","事故排除後，兩個單位對交通措施何時恢復有不同紀錄。",["核對解除條件、交接窗口與現場回報，統一措施版本","先恢復所有措施，再確認各點是否完成","各隊自行宣布解除，不需共通紀錄"],["解除條件查驗","跨隊交接","道路及現場聯繫","措施版本與紀錄"],"事件解除也需要明確的責任、版本與通報。"]]},
+    rail:{label:"鐵路警務與站點協調",field:"rail",source:"organization",scope:"車站、列車與站點窗口的安全及服務協作",events:[
+      ["鐵路協作｜多站點活動人潮","活動散場後旅客分散到三個車站，站方與鐵路警察的回報時間及人潮預估不同。",["核對站點風險與站方資訊，協調人流服務及跨站支援","每站平均分配人力，不確認列車時刻與人潮","忽略站方訊息，由各站自行應付"],["站點與人潮資訊","跨站勤務分工","站方與運輸窗口","通報及服務追蹤"],"鐵路警務需要站方與警察權責銜接，不能只套用派出所班表。"],
+      ["站點服務｜物品與旅客資訊交接","旅客報案與物品查詢涉及不同列車及下一站，資料在數個窗口之間交接。",["核對車次、時間及交接資訊，明確指定追蹤窗口","先請旅客各站自行詢問，之後再彙整紀錄","公開旅客完整個資作為查找公告"],["報案與車次資料","跨站資訊核對","旅客及站方聯繫","交接與進度追蹤"],"服務跨站銜接要有資料來源、責任窗口與個資保護。"],
+      ["勤務檢討｜列車延誤造成站內壅塞","列車延誤後旅客集中在站內，原先活動勤務配置需要調整。",["與站方核對運行資訊，調整安全引導、服務與回報分工","只增加單一入口人力，暫不處理站內資訊需求","發布未確認的列車恢復時間"],["運行與人潮資訊","安全與服務分工","站方窗口","公告與動態追蹤"],"先確保資訊可靠及人流安全，再評估如何調整資源。"]]},
+    airport:{label:"航警與航廈跨機關協作",field:"airport",source:"organization",scope:"航廈秩序、安全需求及機場權責窗口",events:[
+      ["航廈協調｜多班航班延誤","多班航班延誤，兩個航廈的旅客服務、秩序與資訊需求同時增加。",["與航站及航空公司確認資訊，依風險安排服務及秩序協作","先要求旅客離開，暫不確認航班及服務資訊","自行宣布所有航班恢復時間"],["航班與航廈資訊","服務及秩序分工","航站與航空公司窗口","公告及進度追蹤"],"航警應銜接航站與航空公司權責，不能自行替代其運務決策。"],
+      ["專業協作｜公共區域安全通報","航廈公共區域收到安全通報，現場單位需聯繫專業安檢與航站窗口。",["核對已知風險、聯繫專業窗口並維持安全與通報分工","先公開全部未確認細節，等待各方自行處理","未經確認就自行處理專業安檢事項"],["現況與通報核對","安全及旅客服務銜接","專業及航站窗口","資訊管制與追蹤"],"先確認事實與專業權責，再協調資源和可公開資訊。"],
+      ["航警勤務｜交班與權責窗口更新","航廈活動跨越兩個班次，臨時窗口名單變更而交班資料尚未更新。",["核對窗口名單、工作進度與責任，完成兩班交接","維持舊名單執行，遇到聯繫失敗再找新窗口","只口頭交接，不保留變更紀錄"],["窗口名單核對","兩班勤務交接","航站及專業聯繫","變更紀錄與回報"],"跨機關勤務要保持窗口與交接資料一致。"]]},
+    security:{label:"保安與機動勤務協作",field:"security",source:"command",scope:"活動勤務、機動支援、人員輪替與協力窗口",events:[
+      ["保安調度｜長時活動與輪替","支援活動延長，現有人員疲勞且接替單位的到位時間尚未確認。",["核對負荷與必要勤務，協調輪替、交接及備援","先要求所有人持續服勤，活動結束後再檢查疲勞","讓人員自行離勤，不安排接替"],["勤務與負荷盤點","輪替交接方案","主辦及接替窗口","風險與進度追蹤"],"持續勤務須顧到疲勞、服務和正式交接。"],
+      ["活動協作｜主辦單位臨時改動動線","主辦單位調整活動出口，支援警力與地方機關收到不同版本。",["確認新舊版本及風險，與權責單位統一分工和公告","只通知自己單位，其他機關下班再補通報","各單位自行選擇版本"],["動線與風險核對","支援勤務銜接","地方及主辦窗口","公告與變更紀錄"],"機動支援仍需共同版本、權責與通聯。"],
+      ["資源檢核｜多單位支援要求重疊","兩個支援計畫同時列入同一批人員與裝備，可能造成實際缺口。",["核對重複配置，調整需求並回報需另行核定的支援","先照兩份計畫執行，到場缺員再協調","把同一人同時算進兩處勤務"],["人員及裝備清冊","勤務重疊核對","支援核定窗口","交接與執行追蹤"],"人員及裝備不能重複配置，提出需求也不代表已核定到位。"]]},
+    dispatch:{label:"勤務中心接報與派遣協調",field:"admin",source:"command",scope:"接報、風險分類、權責窗口及派遣進度",events:[
+      ["接報分流｜同時多件110通報","多件通報同時進線，其中一件可能有人受傷，兩件是同一地點的重複報案。",["核對位置與急迫性，建立關聯並依權責追蹤派遣進度","先按來電順序逐件完成，暫不分辨急迫性","把重複來電全部刪除，不保留通報來源"],["接報與位置核對","急迫性及重複案件整理","派遣及專業窗口","到位與進度追蹤"],"接報需辨識風險及重複案件，仍要保留來源與處理紀錄。"],
+      ["通聯備援｜部分勤務回報延遲","部分單位無線電回報延遲，派遣資訊與到位紀錄尚不一致。",["核對到位狀況，啟用既有備援聯繫並留下更正紀錄","把所有單位先標記到場，稍後再確認","中止全部通報，不建立替代聯繫"],["派遣清單核對","到位資訊查驗","備援及單位聯繫","更正與進度記錄"],"到位狀態應核實，通聯備援不應抹除原始紀錄。"],
+      ["權責銜接｜案件跨兩個轄區","報案地點接近轄區邊界，兩個單位各有部分資訊而尚未明確交接。",["確認位置、權責與已知資訊，指定聯繫窗口並追蹤交接","請兩個單位自行協調，中心暫不留追蹤紀錄","因管轄未定就先拒絕受理"],["位置與通報資料","權責與交接查驗","兩單位聯繫","處理進度追蹤"],"管轄確認與服務銜接應同步處理，不宜讓責任空檔延誤急迫需求。"]]},
+    inspection:{label:"督察與勤務品質查核",field:"admin",source:"organization",scope:"資料保全、程序查核、客觀調查與改善追蹤",events:[
+      ["督察查核｜執勤影片與紀錄差異","民眾提供部分執勤影片，內容與勤務紀錄有差異，尚不能判斷原因。",["保全完整資料，釐清時間線並依程序聽取相關說明","只採用對單位有利的片段，先對外說明","未調查就公開認定同仁有違失"],["影片與原始資料","勤務時間線核對","程序及相關窗口","調查紀錄與追蹤"],"督察須客觀查核與保全資料，不能預設結果。"],
+      ["勤務稽核｜重複簽到與服務空檔","抽查發現兩處勤務簽到時間重疊，同時有人反映服務空檔。",["比對原始紀錄及實際任務，釐清差異並提出改善要求","只請單位重填一份表，暫不查明原因","刪除重疊時間來避免查核"],["原始紀錄保全","時間與任務查驗","單位及人員說明","改善與追蹤"],"查核要回到實際勤務與資料來源，避免只修報表。"],
+      ["改善追蹤｜缺失補正期限將屆","前次查核發現的交接及裝備管理缺失到期，部分單位只提供文字說明。",["核對改善證明與實施情形，區分已完成與仍待補正事項","只收文字回覆就結案，下一年度再檢查","要求所有單位先填寫已改善"],["缺失與期限盤點","改善證明核對","受查單位聯繫","補正與成效追蹤"],"改善追蹤需有可查驗的證明，不能把回覆當作完成。"]]},
+    education:{label:"警察教育與訓練管理",field:"admin",source:"organization",scope:"課程、實習、帶教、安全與教育資源",events:[
+      ["警校規劃｜課程與實習需求銜接","學生實習回饋顯示課堂內容與近期勤務程序有落差，教學與實習單位有不同建議。",["核對課程目標與實習回饋，分階段更新內容並安排評量","只增加授課時數，暫不處理內容落差","把實習疑問當成學生問題，不需檢討課程"],["課程與需求彙整","實習及評量設計","教學與實習窗口","課程修正追蹤"],"教育管理著重課程與實務銜接，並以評量確認學習效果。"],
+      ["實習管理｜帶教與工作量不均","不同實習單位帶教能力與工作量不同，部分學生反映交接和回饋不足。",["盤點帶教資源及實習風險，安排窗口、回饋與必要調整","依原計畫分發即可，期末再一次彙整問題","讓學生自行負責高風險任務而不指定帶教"],["實習資料與風險","帶教及回饋安排","實習單位聯繫","學習與安全追蹤"],"實習必須有明確帶教、權責和回饋，不能以人力補缺代替教育。"],
+      ["訓練資源｜設備更新與課程排程","訓練設備需維修，數個班次即將使用，同時有新的教育需求。",["核對設備安全與需求，協調班次、替代方案及維護時程","維持全部原排程，遇到設備問題再取消課程","未檢查安全就讓所有班次繼續使用"],["設備安全與需求","課程及班次協調","維護與教學窗口","替代方案及追蹤"],"教育資源配置應先確保安全，再維持訓練與學習銜接。"]]},
+    staff:{label:"警政業務與幕僚審查",field:"admin",source:"organization",scope:"承辦、資料查驗、方案研擬與主管審議",events:[
+      ["業務管考｜跨單位案件即將到期","多個業務案件即將到期，來源單位缺少部分附件，主管需要可靠的審議摘要。",["盤點期限與缺漏，協調補件並明確呈報仍待確認事項","先呈報最完整的一案，其他等期限過後再處理","直接把缺漏附件標記齊全"],["案件期限與附件","資料及方案核對","來源單位聯繫","審議摘要與追蹤"],"幕僚需提供可查驗資料及待決事項，並送有權主管核定。"],
+      ["方案審查｜預算資料與需求不一致","裝備需求表與經費估算有差異，仍未確認哪些屬必要維護。",["核對原始需求及估算，比較可行方案並呈報主管審議","先採用較低金額的版本，暫不核對內容差異","自行承諾超出核定範圍的採購"],["需求及估算資料","方案與差異核對","權責業務窗口","審議紀錄及追蹤"],"承辦不等於首長核定；方案需要清楚的資料與權責。"],
+      ["制度銜接｜新程序教育說明","新程序將上路，第一線同仁提出不同操作問題，既有表單也需要更新。",["核對正式規定，整理一致說明、表單與提問窗口並呈核","只寄出通知，暫不處理表單與實務疑問","以個人印象替代正式程序對外說明"],["規定與問題盤點","表單及說明核對","訓練與業務窗口","主管審議與追蹤"],"程序說明要有正式依據、共通版本及回饋窗口。"]]},
+    prevention:{label:"防治與社區警政業務",field:"admin",source:"organization",scope:"婦幼、失蹤、社區服務與協力窗口",events:[
+      ["防治協作｜多單位關懷需求重疊","派出所、學校與社福窗口提出部分重疊的關懷需求，後續聯繫紀錄不完整。",["核對需求與權責，指定追蹤窗口並保護當事人資料","先按來源機關分開辦理，暫不比對重疊事項","公開個案完整資料請所有人協助查找"],["需求與資料核對","關懷進度彙整","學校社福及所隊窗口","權責與追蹤"],"防治業務需銜接服務，並保持當事人資訊必要且有權限的流通。"],
+      ["社區專案｜宣導資源與實際需求","社區宣導場次增加，但部分高風險區域沒有銜接到適合的服務。",["比較需求與服務覆蓋，與所隊及地方窗口調整方案","只增加場次，先完成數量目標","忽略沒有參加活動的高需求族群"],["需求與覆蓋資料","宣導及服務方案","所隊與地方窗口","成效與缺口追蹤"],"成效不只看場次，也要檢查是否接到實際需求。"],
+      ["協尋管考｜跨所通報進度不一致","多所參與協尋案件，但最新資訊尚未同步至所有承辦窗口。",["核對最新資訊、權責與聯繫來源，建立一致進度與交接","只把最新訊息轉給一所，其他所自行詢問","未確認就先宣布案件完成"],["協尋資料查驗","跨所進度彙整","家屬與承辦窗口","資訊版本及追蹤"],"跨所管考應保留資訊來源及一致進度。"]]},
+    civil:{label:"民防與防災業務協作",field:"admin",source:"organization",scope:"演習、協勤、防災資源及權責機關協調",events:[
+      ["防災整備｜多個避難點資料未更新","演習前發現幾個避難點聯繫資料與開放狀態不同，協力單位需要共同確認。",["核對場地、窗口與資源狀態，分工確認並更新正式資料","照舊名單先演習，結束後再修改","未查驗就對外宣布所有場地可用"],["場地與資料盤點","狀態與資源查驗","協力及地方窗口","版本與整備追蹤"],"整備應先查驗可用狀態，避免紙上資源與實際資源不同。"],
+      ["演習協調｜協勤名單重複","不同演習需求列入同一批協勤人力，可能發生重複配置。",["核對人力、時段與權責，協調替代方案並呈報核定","暫不調整名單，現場遇到缺員再說","把同一人同時計入兩處演習"],["人力與時段盤點","重疊需求核對","協勤及機關窗口","核定與交接追蹤"],"人力不可重複配置，協勤與正式勤務權責也應清楚。"],
+      ["災情協作｜豪雨前的需求盤點","預報可能發生豪雨，各單位需更新道路、避難與協力資訊。",["整合風險與可用資源，確認權責窗口與動態回報方式","先增加回報表數量，暫不比對資源可用性","把尚未核定支援當作已可使用"],["風險及資源彙整","需求與可用量查驗","防災及地方窗口","通報及更新追蹤"],"預先盤點應區分提出需求、核定與實際可用資源。"]]},
+    protection:{label:"保防與機關安全業務",field:"admin",source:"organization",scope:"安全通報、資料權限、窗口與教育防護",events:[
+      ["機關防護｜聯繫與安全通報待核實","機關收到安全通報，部分資訊來自轉傳，責任窗口需要確認。",["核對資訊來源與已知風險，依權責聯繫並保留追蹤紀錄","先公開轉傳資訊提醒所有人，稍後再查證","不留紀錄，口頭要求各單位自行處理"],["資訊與來源核對","風險與權責查驗","機關及專業窗口","通報與進度追蹤"],"機關安全業務需要可靠來源、明確權責及必要資訊流通。"],
+      ["資料保護｜共用名單權限不清","多個單位使用同一份聯繫名單，部分帳號用途與權限尚未查明。",["盤點用途與權限，依程序確認必要存取並記錄調整","把名單寄給所有人以免聯繫不到","用共用帳號讓所有人修改，不保留紀錄"],["名單用途盤點","權限與必要性核對","系統及業務窗口","調整紀錄與追蹤"],"資料便利性需與必要權限、紀錄及個資保護一併考量。"],
+      ["安全教育｜外部合作資料交接","機關與協力單位準備交接資料，部分內容需要先確認可提供範圍。",["核對權責、資料必要性與交接方式，呈核後留存紀錄","先交付完整資料，再請對方刪掉不需要部分","以私人帳號任意轉傳全部名單"],["資料與用途核對","必要範圍及程序","協力與權責窗口","核定與交接紀錄"],"交接應先確定可提供範圍與正式程序。"]]}
+  };
+  const roleCaseBags=new Map();
+  function roleCaseProfile(){
+    const role=String(s.position||s.rank||""),name=String(s.unitName||""),type=String(s.assignmentType||""),unit=String(s.unit||"");
+    let id="staff";
+    if(/署長/.test(role))id="npa";
+    else if(/校長/.test(role))id="education";
+    else if(/分局長/.test(role))id="precinct";
+    else if(/局長/.test(role))id=/刑事警察局/.test(name)?"criminal":/國道/.test(name)?"highway":/鐵路/.test(name)?"rail":/航空|航警/.test(name)?"airport":"bureau";
+    else if(/總隊長/.test(role))id="security";
+    else if(/所長/.test(role))id="station_lead";
+    else if(/督察/.test(role)||type==="inspection")id="inspection";
+    else if(/警察大學|警察專科學校/.test(name)||type==="central_school"||/教育班長|教官|區隊長/.test(role))id="education";
+    else if(/國道/.test(name)||unit==="highway")id="highway";
+    else if(/鐵路/.test(name)||unit==="rail")id="rail";
+    else if(/航空警察|航警/.test(name)||unit==="airport")id="airport";
+    else if(/勤務指揮中心/.test(name)||type==="command_center")id="dispatch";
+    else if(/刑事警察局|刑事警察大隊|偵查隊|偵查大隊|科技犯罪|刑事鑑識|數位鑑識/.test(name)||type==="central_cib"||unit==="detective"||unit==="cyber"||type==="detective"||/偵查|調查員/.test(role))id="criminal";
+    else if(type==="traffic_office"||type==="traffic"||unit==="traffic"||/交通組|交通警察|交通分隊/.test(name))id="traffic";
+    else if(type==="prevention"||/防治/.test(name))id="prevention";
+    else if(type==="civil_defense"||/民防/.test(name))id="civil";
+    else if(type==="security_affairs"||/保防/.test(name))id="protection";
+    else if(unit==="security"||type==="guard"||/保安警察|警備隊/.test(name))id="security";
+    else if(/警政署/.test(name)||type==="central_command")id="npa";
+    else if(unit==="station"||type==="station_command"||/派出所|分駐所|駐在所/.test(name))id=isSupervisor()?"station_lead":"patrol";
+    const level=/副/.test(role)?"deputy":/^(署長|局長|分局長|總隊長|校長)$/.test(role)?"head":/所長|組長|科長|隊長|主任|督察長|督察長/.test(role)?"unit":/巡官|巡佐|警務佐/.test(role)?"team":isSupervisor()?"unit":"staff";
+    const deck=roleCaseDecks[id]||{label:"警員現場勤務",field:"station",source:"organization",scope:"本人與搭檔的現場執勤、受理與支援回報"};
+    const authority=level==="deputy"?"協助正主管研擬及追蹤方案，超出授權範圍須呈報核定。":level==="head"?"統籌機關層級決策、資源與執行成效，依權責協調下級與協力機關。":level==="unit"?"統籌所屬業務與分工，跨單位資源仍須依權責協調核定。":level==="team"?"在授權及本單位範圍內帶班或協調，不等同機關首長決策權。":id==="patrol"?"只處理本人與搭檔的勤務，完整調度由主管及權責窗口協調。":"承辦資料與方案，呈報主管審議；提出需求不代表已取得調度權。";
+    return {id,level,label:deck.label,field:deck.field,source:deck.source,scope:deck.scope,authority,role};
+  }
+  function roleCaseOwnerKey(){const p=roleCaseProfile();return JSON.stringify([s.name||"",p.id,p.level,p.role,s.unit||"",s.unitName||"",s.assignmentType||"",s.stationName||"",s.county||"",!!s.retired]);}
+  function roleDecisionRows(profile){
+    const deck=roleCaseDecks[profile.id];if(!deck)return [];
+    return deck.events.map((e,i)=>{
+      const prefix=profile.level==="deputy"?"副職協作｜":profile.level==="staff"?"業務承辦｜":profile.level==="team"?"授權協調｜":"";
+      const request=profile.level==="deputy"?" 正主管請你整合方案、協助協調並提出待核定事項。":profile.level==="staff"?" 主管請你查驗資料、聯繫窗口並呈報處理方案。":profile.level==="team"?" 你負責授權範圍的協調與回報，跨單位資源需依權責核定。":"";
+      const best=profile.level==="deputy"?"協助正主管："+e[2][0]:profile.level==="staff"?"承辦並呈報："+e[2][0]:profile.level==="team"?"依授權協調："+e[2][0]:e[2][0];
+      const row=[prefix+e[0],e[1]+request,[[best,10,5,5,1],[e[2][1],4,1,1,0],[e[2][2],1,-6,-5,-1]]];
+      row.roleCaseId=profile.id+"-"+profile.level+"-"+i;row.analysis=e[4];return row;
+    });
+  }
+  function pickRoleCase(rows,key){
+    if(!rows.length)throw new Error("本職務題組尚未建立");
+    const identity=rows.map(x=>x.roleCaseId||x[0]).join("|");
+    let bag=roleCaseBags.get(key);
+    if(!bag||bag.identity!==identity)bag={identity,left:[],last:-1};
+    if(!bag.left.length){
+      bag.left=rows.map((_,i)=>i);
+      for(let i=bag.left.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag.left[i],bag.left[j]]=[bag.left[j],bag.left[i]];}
+      if(bag.left.length>1&&bag.left.at(-1)===bag.last)[bag.left[0],bag.left[bag.left.length-1]]=[bag.left.at(-1),bag.left[0]];
+    }
+    const index=bag.left.pop();bag.last=index;roleCaseBags.set(key,bag);
+    const original=rows[index],row=original.slice();row[2]=original[2].map(c=>c.slice());
+    for(let i=row[2].length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[row[2][i],row[2][j]]=[row[2][j],row[2][i]];}
+    row.analysis=original.analysis||"";row.roleCaseId=original.roleCaseId||original[0];return row;
+  }
+  function roleDutyPool(profile){
+    if(profile.id!=="patrol"&&(isSupervisor()||["staff","npa","precinct","bureau","dispatch","inspection","education","prevention","civil","protection"].includes(profile.id))){
+      return roleDecisionRows(profile).map(row=>{const e=row.slice();e[2]=row[2].map(c=>[c[0],c[1]>=8?18:c[1]>=4?12:3,c[1]>=8?5:c[1]>=4?2:-7,c[1]>=8?-5:-3]);e.analysis=row.analysis;e.roleCaseId=row.roleCaseId;return e;});
+    }
+    const field=profile.id==="criminal"&&s.unit==="cyber"?"cyber":profile.field;
+    const pool=((officeDuties[s.assignmentType])||unitDuties[field]||unitDuties.station).slice();
+    return profile.id==="patrol"?pool.concat(Object.values(modeDuties).flat()):pool;
+  }
+  function roleWorkforceCases(profile){
+    if(["patrol","station_lead"].includes(profile.id))return [];
+    const deck=roleCaseDecks[profile.id];if(!deck)return [];
+    return deck.events.map((e,i)=>{
+      const minimum=i===1?[2,1,1,1]:[2,2,1,1],local=i===1?5:6;
+      return {id:"role-"+profile.id+"-"+i,title:e[0],story:e[1]+" 本題安排本單位工作小組的協作分工。",local,medical:false,source:deck.source,planning:true,
+        facts:["本題可使用 "+local+" 名協作人員，各人同一時間只能負責一項工作。","四項工作最低需 "+minimum.join("、")+" 人，另保留一名工作備援。",profile.authority],
+        priority:e[2].slice(),correct:0,tasks:e[3].map((label,n)=>({label,hint:"本題工作量設定需 "+minimum[n]+" 人，聯繫與查驗應留下紀錄。",minimum:minimum[n],initial:n<2?1:0})),
+        resourceLabel:"可用協作人員",reserveLabel:"工作備援",reserveHint:"保留一人處理臨時補件、聯繫或追蹤工作。",notifyPrompt:"向主管或權責窗口回報進度、分工與資源需求",modeNote:profile.authority+" 本題支援人員尚需核定到位，只模擬協作分工方案。"};
+    });
+  }
+  let roleQueueKey=null,dutyCaseKey=null,commandCaseKey=null;
+  function renderRoleSituation(id,row,profile){
+    const title=document.createElement("b"),story=document.createElement("p"),meta=document.createElement("p"),scope=document.createElement("p");
+    title.textContent=row[0];story.textContent=row[1];meta.className="muted";scope.className="muted";
+    meta.textContent="職務："+profile.role+"｜題組："+profile.label+"｜單位："+(s.unitName||"未記錄");
+    scope.textContent=profile.authority;
+    $(id).replaceChildren(title,story,meta,scope);$(id).dataset.roleProfile=profile.id;
+  }
+  function syncRoleCaseQueues(){
+    const key=roleCaseOwnerKey();if(roleQueueKey===key)return;
+    const changed=roleQueueKey!==null;roleQueueKey=key;
+    if(!changed)return;
+    dutyQuizRequest++;commandQuizRequest++;
+    if(dutyAdvanceTimer){clearTimeout(dutyAdvanceTimer);dutyAdvanceTimer=null;}
+    if(commandAdvanceTimer){clearTimeout(commandAdvanceTimer);commandAdvanceTimer=null;}
+    active=null;dutyQuizQuestion=null;commandActive=null;commandQuizQuestion=null;
+    dutyCaseKey=null;commandCaseKey=null;
+    ["dutyChoices","commandChoices"].forEach(id=>{$(id).replaceChildren();$(id).setAttribute("aria-busy","false")});
+    const p=roleCaseProfile();
+    $("dutyCase").textContent="職務或單位已變更。按「開始／換一題」抽取「"+p.label+"」題目。";
+    $("commandCase").textContent="職務或單位已變更。按「下一個主管事件」開始目前職務的決策題。";
+  }
+
   function targetPositions(nextSeq){
     if(nextSeq===3){
       const metroAgency=metroCities.includes(s.county)?localAgencyName():LOCAL_POLICE_AGENCIES.find(x=>x[4])?.[1]||"臺北市政府警察局";
@@ -4029,43 +4197,6 @@ loadPoliceDirectory();
   ];
   lifeEvents.forEach(e=>e[2].push(["先與家人及主管溝通，依現有資源協調安排",10,3,2,0,1]));
 
-  const supervisorEvents=[
-    ["勤務缺員","今晚臨時有2名同仁請假，但轄區仍有大型活動與一般巡邏勤務。",[
-      ["重新評估風險、調整勤務優先順序並協調支援",8,5,4,1],
-      ["要求所有人無條件超時工作且不說明",2,-7,-4,-1],
-      ["取消所有巡邏只保留辦公室人力",3,-5,-5,-1]
-    ]],
-    ["民眾申訴員警態度","民眾具名申訴同仁執法過程態度不佳，並提供部分錄影。",[
-      ["保全資料、聽取雙方說法並依程序查處與回覆",9,4,5,1],
-      ["為保護同仁直接把申訴丟掉",1,-10,-8,-2],
-      ["未調查就先公開處分同仁",3,-6,-4,-1]
-    ]],
-    ["重大案件指揮","轄區同時發生重大事故與群眾聚集，需要跨單位協調。",[
-      ["開設指揮機制、分工警力、保持通報與資源調度",10,6,5,2],
-      ["所有決策都自己做且禁止回報",3,-7,-3,-1],
-      ["離開現場不指定代理人",1,-10,-7,-2]
-    ]],
-    ["部屬疑似違紀","督察單位通知有同仁疑似違反勤務紀律，需要主管配合釐清。",[
-      ["依程序保全資料、迴避偏袒並配合調查",9,2,6,1],
-      ["先通知部屬刪除相關資料",0,-12,-12,-3],
-      ["完全不做任何紀錄",2,-8,-8,-2]
-    ]],
-    ["勤務績效壓力","上級要求改善治安績效，但同仁反映現有勤務已接近負荷上限。",[
-      ["分析案件與勤務成效，調整重點而非只追求數字",8,5,4,1],
-      ["要求同仁灌水數字",0,-12,-10,-3],
-      ["完全拒絕檢討任何績效",3,-5,-4,-1]
-    ]],
-    ["新人帶教","單位分發一批新人，實務經驗不足。",[
-      ["安排資深同仁帶教、案例檢討與漸進式任務",8,7,3,1],
-      ["直接讓新人獨自處理高風險案件",2,-8,-5,-1],
-      ["只要求新人自己看舊資料",4,-3,-2,0]
-    ]],
-    ["媒體關切案件","重大案件引發媒體關注，但偵查仍在進行且資訊尚未完整。",[
-      ["統一窗口、確認可公開資訊並避免影響偵查與隱私",9,3,6,1],
-      ["為搶版面公開未證實細節",1,-9,-8,-2],
-      ["讓不同同仁各自對外說法",3,-5,-6,-1]
-    ]]
-  ];
   let commandActive=null;
 
   function addGood(n,reason){
@@ -4275,7 +4406,8 @@ loadPoliceDirectory();
   }
   function renderDutyModes(){
     if(!$("dutyModeCards"))return;
-    $("dutyModeCards").textContent="系統直接混合巡邏、臨檢、守望、值班、備勤、單位職務與警察法規題目，不必先選勤務類型。";
+    const p=roleCaseProfile();
+    $("dutyModeCards").textContent=p.label+"｜"+p.scope+"。系統依現任職務與服務單位派案，也會穿插共同法規題。";
   }
   const officeDuties={
     administration:[
@@ -4301,30 +4433,31 @@ loadPoliceDirectory();
   };
 
   function newAdvancedDuty(keepResult=false){
+    syncRoleCaseQueues();
     const token=++dutyQuizRequest,owner=s;
     $("dutyChoices").setAttribute("aria-busy","false");
     if(dutyAdvanceTimer){clearTimeout(dutyAdvanceTimer);dutyAdvanceTimer=null}
     if(s.retired)return toast("已退休，勤務系統已關閉");
     if(!s.unit)return toast("請先完成單位分發");
+    const profile=roleCaseProfile();dutyCaseKey=roleCaseOwnerKey();
     active=null;dutyQuizQuestion=null;dutyQuizAnswered=false;
     if(keepResult!==true){$("dutyResult").textContent="";$("dutyResult").className="feedback";}
     if(Math.random()<0.24){
-      requestMixedQuiz("dutyCase","dutyChoices","dutyResult",()=>token===dutyQuizRequest&&s===owner&&s.unit&&!s.retired,q=>{
+      requestMixedQuiz("dutyCase","dutyChoices","dutyResult",()=>token===dutyQuizRequest&&s===owner&&s.unit&&!s.retired&&dutyCaseKey===roleCaseOwnerKey(),q=>{
         dutyQuizQuestion=q;showMixedQuiz("dutyCase","dutyChoices",q,"data-dutyquiz",resolveDutyQuiz);
       });
       return;
     }
-    const unitPool=((officeDuties[s.assignmentType])||(unitDuties[s.unit])||D).slice();
-    const mixedDutyPool=Object.values(modeDuties).flat();
-    const pool=unitPool.concat(mixedDutyPool);
-    active=Math.random()<0.08?lifeEvents[Math.floor(Math.random()*lifeEvents.length)]:pool[Math.floor(Math.random()*pool.length)];
-    $("dutyCase").innerHTML="<b>"+active[0]+"</b><br>"+active[1]+"<br><span class='muted'>"+(s.stationName?("勤務單位："+s.stationName+"｜"):"")+"本次由勤務與職務題庫混合派發</span>";
+    const pool=roleDutyPool(profile);
+    active=Math.random()<0.08?pickRoleCase(lifeEvents,"life-"+profile.id):pickRoleCase(pool,"duty-"+profile.id+"-"+profile.level);
+    renderRoleSituation("dutyCase",active,profile);
     $("dutyChoices").innerHTML=active[2].map((c,i)=>'<button type="button" class="action-card" data-advd="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+c[0]+'</strong><p>依安全、合法性、程序與完整性判定。</p></button>').join("");
   }
   function advancedResolve(i){
     if(s.retired)return toast("已退休，無法繼續勤務");
+    if(dutyCaseKey!==roleCaseOwnerKey()){syncRoleCaseQueues();return;}
     if(dutyQuizQuestion||!active)return;
-    const c=active[2][i],xp=c[1],rep=c[2],en=c[3];
+    const c=active[2][i];if(!c)return;const xp=c[1],rep=c[2],en=c[3];
     const isLife=active[3]==="life";
     s.xp+=xp;s.rep=cl(s.rep+rep);s.energy=cl(s.energy+en);s.stress=cl(s.stress+Math.max(0,Math.round(-en*.3)));
     let healthChange=0;
@@ -4342,13 +4475,14 @@ loadPoliceDirectory();
     const cid=String(Date.now()).slice(-7);
     s.cases.unshift({id:cid,type:active[0],action:c[0],result:xp>=18?"優良":xp>=14?"良好":xp<=4?"重大缺失":"尚可",xp,date:rocDateTime()});
     rec(isLife?"人生事件":"完成勤務",active[0]+"｜+"+xp+" XP｜"+positionName());
-    fb("dutyResult",(isLife?"人生事件處理完成：":"勤務完成：")+"+"+xp+" XP，聲望 "+(rep>=0?"+":"")+rep+(isLife?"；家庭收支與健康已更新。":(healthChange<0?"；疲勞或現場風險使健康下降。":"；獎懲考核已同步更新。"))+"遊戲時間前進約 30 天。",xp>=14);
+    fb("dutyResult",(isLife?"人生事件處理完成：":"勤務完成：")+"+"+xp+" XP，聲望 "+(rep>=0?"+":"")+rep+(isLife?"；家庭收支與健康已更新。":(healthChange<0?"；疲勞或現場風險使健康下降。":"；獎懲考核已同步更新。"))+"遊戲時間前進約 30 天。"+(active.analysis?" 處置分析："+active.analysis:""),xp>=14);
     $("dutyChoices").innerHTML="";active=null;
     save();render();
     // Keep the result visible briefly, then automatically dispatch the next item.
     dutyAdvanceTimer=setTimeout(()=>{dutyAdvanceTimer=null;if(s.unit)newAdvancedDuty(true)},1500);
   }
   function resolveDutyQuiz(i){
+    if(dutyCaseKey!==roleCaseOwnerKey()){syncRoleCaseQueues();return;}
     if(!dutyQuizQuestion||dutyQuizAnswered)return;
     dutyQuizAnswered=true;
     recordMixedQuizAnswer(dutyQuizQuestion,i,"dutyResult");
@@ -4358,16 +4492,7 @@ loadPoliceDirectory();
   }
 
   function managerRoleText(){
-    const pos=String(s.position||"");
-    if(pos.includes("巡官"))return "巡官負責指揮本班勤務、協調派遣、掌握現場狀況，並覆核案件紀錄。";
-    const L=s.positionLevel||0;
-    if(L===0)return"基層警員以直接執行勤務、受理案件與現場處置為主。";
-    if(L===1)return"巡佐／小隊長開始負責帶班、現場協調、新進同仁指導與勤務品質。";
-    if(L===2)return"基層主管須兼顧人力調度、案件覆核、部屬考核與突發事件協調。";
-    if(L===3)return"所長／隊主管要管理整個單位的勤務、風紀、民眾陳情、資源與績效。";
-    if(L===4)return"分局業務主管著重跨所隊協調、政策執行、督導、數據與重大專案。";
-    if(L===5)return"副分局長協助分局長統籌多個業務單位，處理重大治安、交通、風紀與行政決策。";
-    return"分局長以整體轄區治安、警力配置、重大事件指揮、跨機關協調、民意與組織管理為核心。";
+    const p=roleCaseProfile();return p.label+"："+p.scope+"。"+p.authority;
   }
   function renderCommand(){
     if(!$("commandLocked"))return;
@@ -4377,13 +4502,14 @@ loadPoliceDirectory();
     $("positionChip").textContent="職位："+positionName();$("commandScoreChip").textContent="主管評價："+s.commandScore;
     if(!sup)return;
     $("staffStat").textContent=s.staff;$("paperworkStat").textContent=s.paperwork;$("moraleStat").textContent=s.morale;$("publicStat").textContent=s.publicSatisfaction;
-    $("positionDescription").innerHTML="<b>"+positionName()+"</b><br>"+managerRoleText();
+    $("positionDescription").textContent=positionName()+"｜"+managerRoleText();
+    const p=roleCaseProfile(),wide=["bureau","npa","precinct"].includes(p.id),education=p.id==="education";
     const acts=[
-      ["roster","指揮勤務與派遣","配置警力、掌握同仁服勤狀況"],
-      ["review","覆核案件紀錄","檢視處置程序與紀錄完整性"],
-      ["coach","帶教所屬同仁","提升協作與勤務品質"],
-      ["inspection","督導勤務與裝備","追蹤執勤紀律及裝備狀態"],
-      ["meeting","主持勤前提示","說明勤務重點與現場風險"]
+      ["roster",education?"協調課程與實習":wide?"研議跨單位資源方案":"檢視業務與勤務分工",p.scope],
+      ["review",wide?"檢視政策執行成效":education?"檢視課程與評量":"覆核業務與案件紀錄","核對原始資料、進度及程序品質"],
+      ["coach",wide?"規劃所屬人才培訓":education?"協調教學與帶教":"帶教與協作回饋","檢視需求、負荷與學習成效"],
+      ["inspection","追蹤風險與改善事項","依權責檢查紀律、交接及資源狀態"],
+      ["meeting",wide?"召集跨單位協調":education?"主持教學協作":"主持業務與勤務說明",p.authority]
     ];
     $("managerActions").innerHTML=acts.map(a=>'<div class="action-card" data-ma="'+a[0]+'"><strong>'+a[1]+'</strong><p>'+a[2]+'</p></div>').join("");
     document.querySelectorAll("[data-ma]").forEach(e=>e.onclick=()=>managerAction(e.dataset.ma));
@@ -4397,24 +4523,27 @@ loadPoliceDirectory();
     s.paperwork=Math.min(20,s.paperwork+1);advanceHours(2);rec("主管勤務",positionName()+"｜"+a);save();render();
   }
   function newCommand(keepResult=false){
+    syncRoleCaseQueues();
     const token=++commandQuizRequest,owner=s;
     $("commandChoices").setAttribute("aria-busy","false");
     if(commandAdvanceTimer){clearTimeout(commandAdvanceTimer);commandAdvanceTimer=null}
     if(!s.unit||s.retired||!isSupervisor())return toast("完成任用並取得主管職後，才能開始指揮勤務");
+    const profile=roleCaseProfile();commandCaseKey=roleCaseOwnerKey();
     commandActive=null;commandQuizQuestion=null;commandQuizAnswered=false;
     if(keepResult!==true){$("commandResult").textContent="";$("commandResult").className="feedback";}
     if(Math.random()<0.35){
-      requestMixedQuiz("commandCase","commandChoices","commandResult",()=>token===commandQuizRequest&&s===owner&&s.unit&&!s.retired&&isSupervisor(),q=>{
+      requestMixedQuiz("commandCase","commandChoices","commandResult",()=>token===commandQuizRequest&&s===owner&&s.unit&&!s.retired&&isSupervisor()&&commandCaseKey===roleCaseOwnerKey(),q=>{
         commandQuizQuestion=q;showMixedQuiz("commandCase","commandChoices",q,"data-cmdquiz",resolveCommandQuiz);
       });
       return;
     }
-    commandActive=supervisorEvents[Math.floor(Math.random()*supervisorEvents.length)];
-    $("commandCase").innerHTML="<b>"+commandActive[0]+"</b><br>"+commandActive[1];
-    $("commandChoices").innerHTML=commandActive[2].map((c,i)=>'<div class="action-card" data-cmd="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+c[0]+'</strong></div>').join("");
+    commandActive=pickRoleCase(roleDecisionRows(profile),"command-"+profile.id+"-"+profile.level);
+    renderRoleSituation("commandCase",commandActive,profile);
+    $("commandChoices").innerHTML=commandActive[2].map((c,i)=>'<button type="button" class="action-card" data-cmd="'+i+'"><strong>'+String.fromCharCode(65+i)+". "+c[0]+'</strong></button>').join("");
     document.querySelectorAll("[data-cmd]").forEach(e=>e.onclick=()=>resolveCommand(Number(e.dataset.cmd)));
   }
   function resolveCommandQuiz(i){
+    if(commandCaseKey!==roleCaseOwnerKey()){syncRoleCaseQueues();return;}
     if(!commandQuizQuestion||commandQuizAnswered)return;
     commandQuizAnswered=true;
     recordMixedQuizAnswer(commandQuizQuestion,i,"commandResult");
@@ -4422,15 +4551,16 @@ loadPoliceDirectory();
     commandAdvanceTimer=setTimeout(()=>{commandAdvanceTimer=null;newCommand(true)},1500);
   }
   function resolveCommand(i){
+    if(commandCaseKey!==roleCaseOwnerKey()){syncRoleCaseQueues();return;}
     if(!commandActive)return;
-    const c=commandActive[2][i];
+    const c=commandActive[2][i];if(!c)return;
     s.commandScore=cl(s.commandScore+c[1]);s.morale=cl(s.morale+c[2]);s.publicSatisfaction=cl(s.publicSatisfaction+c[3]);
     if(c[4]>0)addGood(c[4],commandActive[0]); else if(c[4]<0)addBad(-c[4],commandActive[0]);
     s.paperwork=Math.min(20,s.paperwork+1);advanceHours(3);
     if(commandActive[0]==="重大案件指揮"&&c[1]>=10) exceptionalMerit("重大案件指揮得當");
-    rec("主管決策",commandActive[0]+"｜"+c[0]);fb("commandResult","決策完成。主管評價 "+(c[1]>=0?"+":"")+c[1]+"，士氣 "+(c[2]>=0?"+":"")+c[2]+"。",c[1]>=5);
+    rec("主管決策",commandActive[0]+"｜"+c[0]);fb("commandResult","決策完成。主管評價 "+(c[1]>=0?"+":"")+c[1]+"，士氣 "+(c[2]>=0?"+":"")+c[2]+"。"+(commandActive.analysis?" 決策分析："+commandActive.analysis:""),c[1]>=5);
     $("commandChoices").innerHTML="";commandActive=null;save();render();
-    commandAdvanceTimer=setTimeout(()=>{commandAdvanceTimer=null;newCommand()},1500);
+    commandAdvanceTimer=setTimeout(()=>{commandAdvanceTimer=null;newCommand(true)},1500);
   }
 
   function latestAppraisalPoints(){
@@ -4578,6 +4708,7 @@ loadPoliceDirectory();
   function renderEnhancements(){
     try{
       migrate();
+      syncRoleCaseQueues();
       const pending=["考生","待分發"].includes(String(s.position||""));
       const parts=[["academy",renderAcademy],["performance",renderPerformance],["command",renderCommand],["role-interface",renderRoleInterface],["career-upgrade",renderCareerUpgrade],["officer-qualification",renderOfficerQualification],["police-monitor-training",renderPoliceMonitorTraining],["duty-modes",renderDutyModes]];
       parts.forEach(([name,fn])=>{try{fn()}catch(err){console.error("[enhancement:"+name+"]",err)}});
@@ -4617,9 +4748,11 @@ loadPoliceDirectory();
   window.__policeResolveDuty=advancedResolve;
   function scenarioContext(){
     const employed=!!s.unit&&!s.retired&&!["考生","待分發"].includes(String(s.position||""));
-    const mode=employed?(isSupervisor()?"command":"officer"):"training";
-    const key=JSON.stringify([mode,s.name||"",s.position||"",s.unit||"",s.unitName||"",s.stationName||"",!!s.retired]);
-    return {mode,key,role:s.position||"考生",employed};
+    const profile=roleCaseProfile();
+    const office=["staff","npa","precinct","bureau","dispatch","inspection","education","prevention","civil","protection"].includes(profile.id);
+    const mode=employed?(isSupervisor()?"command":office?"staff":"officer"):"training";
+    const key=JSON.stringify([mode,roleCaseOwnerKey()]);
+    return {mode,key,role:s.position||"考生",employed,profile,workforceCases:employed?roleWorkforceCases(profile):[]};
   }
   window.policeScenarioGame=Object.freeze({
     context:scenarioContext,
@@ -4652,6 +4785,6 @@ loadPoliceDirectory();
 
 </script>
 <script src="scripts/exam_archive.js?v=20261007-game"></script>
-<script src="scripts/workforce_scenarios.js?v=20261007"></script>
+<script src="scripts/workforce_scenarios.js?v=20261012-role"></script>
 </body>
 </html>
