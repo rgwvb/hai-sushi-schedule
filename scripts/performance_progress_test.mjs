@@ -119,7 +119,7 @@ try{
   assert(result.includes('資績 '+beforeAppraisal.toFixed(1)+' →'),'settlement feedback must survive the final render');
   const settledScore=score();settle();assert.equal(score(),settledScore);assert.equal(api.state().appraisals.length,1,'duplicate settlement must not award another appraisal');
   click('saveBtn');click('loadBtn');assert.equal(score(),settledScore);
-  assert(d.getElementById('appraisalBox').textContent.includes('+1.0／6.0'));
+  assert(d.getElementById('appraisalBox').textContent.includes('考績績效累積：+1.0'));
   assert(api.state().history.some(x=>x.title==='階段考績'&&x.detail.includes('考績績效 +1.0')),'earned results should remain in the saved history');
   assert.equal(api.state().position,'巡佐','settlement must not auto-promote the player');
 
@@ -141,11 +141,26 @@ try{
   assert(d.getElementById('appraisalBox').textContent.includes('考績績效 +1.0'));
 
   appraisalLoad({appraisals:Array.from({length:5},(_,i)=>({type:'階段考績',grade:'甲等',round:i+1}))});
-  click('closeYearBtn');assert(d.getElementById('appraisalBox').textContent.includes('考績績效 +1.0（累積上限 6 分）'));
-  api.state().dutyCount+=4;api.refresh();click('closeYearBtn');
-  assert(d.getElementById('appraisalBox').textContent.includes('考績績效 +0.0（累積上限 6 分）'));
-  assert(d.getElementById('promotionScoreBox').textContent.includes('考績績效 +6.0／6.0'));
-  assert(d.getElementById('officerQualificationBox').textContent.includes('考績績效 +6.0／6.0'));
+  click('closeYearBtn');assert(d.getElementById('appraisalBox').textContent.includes('考績績效 +1.0'));
+  const afterSix=score();api.state().dutyCount+=4;api.refresh();
+  assert(d.getElementById('appraisalBox').textContent.includes('預計 +1.0'),'preview must still promise earned appraisal credit beyond six points');
+  click('closeYearBtn');
+  assert.equal(score(),afterSix+1,'a seventh A-grade appraisal must increase merit even when all rating stats are already capped');
+  assert(d.getElementById('appraisalBox').textContent.includes('考績績效 +1.0'));
+  assert(!d.getElementById('appraisalBox').textContent.includes('累積上限'));
+  assert(d.getElementById('promotionScoreBox').textContent.includes('考績績效累積 +7.0'));
+  assert(d.getElementById('officerQualificationBox').textContent.includes('考績績效累積 +7.0'));
+  for(let i=0;i<12;i++){
+    api.state().dutyCount+=4;api.refresh();const before=score();click('closeYearBtn');
+    assert(score()>=before+1-1e-8,'each later settled A appraisal must continue earning credit');
+    assert(d.getElementById('appraisalBox').textContent.includes('考績績效 +1.0'));
+  }
+  load({appraisals:Array.from({length:12},()=>({type:'階段考績',grade:'甲等'})),promotionScore:60.8});
+  assert.equal(score(),66.8,'legacy appraisals previously stopped at six must all count when the save is loaded');
+  click('saveBtn');click('loadBtn');assert.equal(score(),66.8,'reloading must not double-count restored appraisal credit');
+  appraisalLoad({appraisals:Array.from({length:12},()=>({type:'階段考績',grade:'甲等'})),dutyCount:0,simDate:december,simEpoch:decEpoch,maxSimEpoch:decEpoch});
+  click('closeYearBtn');assert(d.getElementById('appraisalBox').textContent.includes('考績績效 +2.0'));
+  assert(d.getElementById('promotionScoreBox').textContent.includes('考績績效累積 +14.0'),'annual results must also continue earning credit beyond six points');
   appraisalLoad({joinDate:'2015-06-01T08:00:00',seq10Days:1095,commend:52,fit:100,appraisals:Array.from({length:6},()=>({type:'階段考績',grade:'甲等'}))});
   assert(d.getElementById('sergeantClass1Btn').disabled,'stage appraisals must not replace annual qualification requirements');
   api.state().appraisals.unshift({type:'年度考績',grade:'甲等',year:2025},{type:'年度考績',grade:'乙等',year:2024});api.refresh();
@@ -155,5 +170,5 @@ try{
     assert.equal(api.state().appraisals.length,0);assert.equal(score(),blockedScore);
   }
   assert.equal(errors.length,0,errors.join('\n'));
-  console.log('PERFORMANCE_PROGRESS_OK capped-stat 72.1 -> 72.3 regression, continued duty/decision credit, actual capped feedback, appraisal rewards, preview/duplicate/reload/retirement guards, unchanged tenure/cash/qualification gates and practice separation');
+  console.log('PERFORMANCE_PROGRESS_OK capped-stat duty/decision credit, continued stage/annual appraisal credit beyond six, legacy appraisal recovery, preview/duplicate/reload/retirement guards, unchanged tenure/cash/qualification gates and practice separation');
 }finally{w.close();}

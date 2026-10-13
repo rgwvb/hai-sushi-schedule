@@ -3405,7 +3405,7 @@ loadPoliceDirectory();
     const p=patrolOfficerPerformanceGate();
     const a1=class1Eligibility(),a2=class2Eligibility(),a3=class3Eligibility(),pe=promotionExamEligibility();
     return '<div class="qualification-grid">'+
-      '<div><span>績效／資績</span><b class="'+(p.ok?"ok":"no")+'">'+(p.ok?"符合":"未符合")+'</b><small>資績 '+p.score.toFixed(1)+'｜獎 '+p.reward+'／懲 '+p.penalty+'｜紀律 '+(s.discipline||0)+'<br>勤務實績 +'+p.performance.total.toFixed(1)+'（品質 '+p.performance.quality.toFixed(1)+'／服務 '+p.performance.service.toFixed(1)+(isSupervisor()?'／決策 '+p.performance.command.toFixed(1):'')+'）<br>勤務／決策成果 +'+p.outcomePerformance.toFixed(1)+'<br>考績績效 +'+p.appraisalPerformance.toFixed(1)+'／6.0</small></div>'+
+      '<div><span>績效／資績</span><b class="'+(p.ok?"ok":"no")+'">'+(p.ok?"符合":"未符合")+'</b><small>資績 '+p.score.toFixed(1)+'｜獎 '+p.reward+'／懲 '+p.penalty+'｜紀律 '+(s.discipline||0)+'<br>勤務實績 +'+p.performance.total.toFixed(1)+'（品質 '+p.performance.quality.toFixed(1)+'／服務 '+p.performance.service.toFixed(1)+(isSupervisor()?'／決策 '+p.performance.command.toFixed(1):'')+'）<br>勤務／決策成果 +'+p.outcomePerformance.toFixed(1)+'<br>考績績效累積 +'+p.appraisalPerformance.toFixed(1)+'</small></div>'+
       '<div><span>警正官等資格</span><b class="'+(s.policeZhengQualified?"ok":"no")+'">'+(s.policeZhengQualified?"已取得":"未取得")+'</b><small>'+(s.promotionExamPassed?"警正升官等考試及格":s.promotionTrainingPassed?"晉升警正官等訓練及格":s.thirdGradeUpgradePassed?"三等警察特考／訓練完成":"可經升官等考試、晉升訓練或三等考試取得")+'</small></div>'+
       '<div><span>警大教育／訓練資格</span><b class="'+(s.officerEducationQualified?"ok":"no")+'">'+(s.officerEducationQualified?"已取得":"未取得")+'</b><small>'+(s.sergeantClassPassed?("警佐班"+s.sergeantClassPassed+"完成"):["cpu","g3"].includes(s.route)?"原警官任用路線":"可走警佐班第1、2、3類等管道")+'</small></div>'+
       '<div><span>巡官甄審資格</span><b class="'+(patrolOfficerQualified()?"ok":"no")+'">'+(patrolOfficerQualified()?"可參加":"尚未具備")+'</b><small>須同時具備官等資格、警大教育資格、績效與獎懲條件</small></div>'+
@@ -4349,7 +4349,7 @@ loadPoliceDirectory();
   }
   function appraisalPerformance(){
     // Derive this once from recorded results; rendering/loading cannot award it again.
-    return Math.min(6,(s.appraisals||[]).reduce((sum,x)=>sum+(x?appraisalPerformanceAward(x.grade,x.type):0),0));
+    return (s.appraisals||[]).reduce((sum,x)=>sum+(x?appraisalPerformanceAward(x.grade,x.type):0),0);
   }
   function renderPerformance(){
     if(!$("commendStat"))return;
@@ -4365,8 +4365,8 @@ loadPoliceDirectory();
     else status="快速考績進度："+p.done+"/4 件勤務。再完成 <b>"+p.needed+"</b> 件即可辦理階段考績（約 "+(p.needed*30)+" 個遊戲日）。";
 
     const earned=appraisalPerformance(),nextType=p.annualReady?"年度考績":"階段考績";
-    const expected=Math.min(6-earned,appraisalPerformanceAward(grade,nextType));
-    const bonus="考績績效：<b>+"+earned.toFixed(1)+"／6.0</b>，已計入資績。<br>本次"+nextType+"預計 +"+expected.toFixed(1)+(earned>=6?"（已達累積上限）":(!p.annualReady&&p.done<4?"（達勤務門檻並結算後發放）":"（結算後發放）"))+"。";
+    const expected=appraisalPerformanceAward(grade,nextType);
+    const bonus="考績績效累積：<b>+"+earned.toFixed(1)+"</b>，已計入資績。<br>本次"+nextType+"預計 +"+expected.toFixed(1)+(!p.annualReady&&p.done<4?"（達勤務門檻並結算後發放）":"（結算後發放）")+"。";
     $("appraisalBox").innerHTML=s.unit?
       ("依目前資料預估 <b>"+grade+"</b>，綜合分數 "+score+"。<br>"+status+"<br>"+bonus+"<br><span class='muted'>階段甲等 +1、乙等 +0.5；年度甲等 +2、乙等 +1；丙等不加分。每4件勤務可辦一次階段考績；12月仍保留年度考績。此為遊戲績效機制，不等同官方考績或陞遷計分。</span>"):
       status;
@@ -4406,7 +4406,7 @@ loadPoliceDirectory();
     }
 
     const earned=appraisalPerformance()-performanceBefore;
-    const feedback=type+"完成："+grade+"（"+score+"分）。考績績效 +"+earned.toFixed(1)+(appraisalPerformance()>=6?"（累積上限 6 分）":"")+"。"+performanceProgressText(scoreBefore);
+    const feedback=type+"完成："+grade+"（"+score+"分）。考績績效 +"+earned.toFixed(1)+"。"+performanceProgressText(scoreBefore);
     rec(type,(p.yr-16)+"年 "+grade+"｜"+score+"分｜考績績效 +"+earned.toFixed(1)+performanceProgressText(scoreBefore));
     save();render();
     fb("appraisalBox",feedback,grade!=="丙等");
@@ -4634,7 +4634,7 @@ loadPoliceDirectory();
     if($("careerOfficialRank"))$("careerOfficialRank").textContent=pending?"尚未任官":(s.officialRank||"—");
     if($("careerPosition"))$("careerPosition").textContent=positionName();
     if($("careerSequence"))$("careerSequence").textContent=pending?"尚未任官":sequenceLabel(seq);
-    if($("promotionScoreBox"))$("promotionScoreBox").textContent=pending?"完成分發與派職後，才開始計算陞遷資績。":"資績模擬分："+s.promotionScore.toFixed(1)+"｜勤務實績 +"+performanceContribution().total.toFixed(1)+"｜勤務／決策成果 +"+outcomePerformancePoints().toFixed(1)+"｜考績績效 +"+appraisalPerformance().toFixed(1)+"／6.0｜最近考績："+((s.appraisals&&s.appraisals[0]?.grade)||"尚無")+"｜獎懲："+(s.commend||0)+"嘉獎／"+(s.merit||0)+"記功／"+(s.admonition||0)+"申誡／"+(s.demerit||0)+"記過";
+    if($("promotionScoreBox"))$("promotionScoreBox").textContent=pending?"完成分發與派職後，才開始計算陞遷資績。":"資績模擬分："+s.promotionScore.toFixed(1)+"｜勤務實績 +"+performanceContribution().total.toFixed(1)+"｜勤務／決策成果 +"+outcomePerformancePoints().toFixed(1)+"｜考績績效累積 +"+appraisalPerformance().toFixed(1)+"｜最近考績："+((s.appraisals&&s.appraisals[0]?.grade)||"尚無")+"｜獎懲："+(s.commend||0)+"嘉獎／"+(s.merit||0)+"記功／"+(s.admonition||0)+"申誡／"+(s.demerit||0)+"記過";
     const nextSeq=pending?null:(seq>0?seq-1:null);
     if($("promotionRuleText"))$("promotionRuleText").textContent=pending?"完成考試、分發與派職後，才會開始計算職務陞遷。":(nextSeq!==null?(seq===10?"目前第十序列；升任第九序列巡官等警官職務前，須先完成官等、警大教育／訓練、績效與獎懲資格。":"目前 "+sequenceLabel(seq)+"；可依缺額與資格參加 "+sequenceLabel(nextSeq)+" 職務甄審。"):"目前已到最高職務層級。");
     if($("careerPath")){
