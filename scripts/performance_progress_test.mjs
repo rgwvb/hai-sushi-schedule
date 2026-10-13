@@ -28,10 +28,12 @@ try{
   click('nextCommandBtn');const best=d.querySelector('#commandChoices [data-cmd="0"]');click(best);
   assert(score()>beforeCommand,'good decisions should increase merit now, without waiting for the next commendation');
   assert.equal(api.state().service,52,'good decisions should record service results');
+  assert.equal(api.state().outcomePerformance,.2,'a resolved good decision should earn independent outcome credit');
   assert.equal(api.state().xp,xp,'a command decision must not also award duty XP');
   assert(d.getElementById('commandResult').textContent.includes('資績 '+beforeCommand.toFixed(1)+' →'));
   const afterCommand=score(),service=api.state().service;click(best);
   assert.equal(score(),afterCommand);assert.equal(api.state().service,service,'duplicate click must not add another service result');
+  assert.equal(api.state().outcomePerformance,.2,'duplicate click must not earn another outcome reward');
   assert.equal(api.state().position,'巡佐','performance gain must not automatically promote the player');
   click('promotionBtn');assert.equal(api.state().position,'巡佐');
   assert(d.getElementById('careerMsg').textContent.includes('警正官等資格'),'existing appointment qualification gates must remain');
@@ -44,10 +46,35 @@ try{
   click('nextCommandBtn');click(d.querySelector('#commandChoices [data-cmd="2"]'));
   assert(score()<beforeBad,'a poor decision must not produce a performance bonus');
   assert.equal(api.state().service,79);
+  assert.equal(api.state().outcomePerformance,0,'a poor decision must not earn outcome credit');
+
+  // Reproduce the reported 72.1 -> 72.1 failure with all rating stats already capped.
+  const capped={quality:100,service:100,commandScore:100,morale:100,commend:45,goodNotes:0,appraisals:[{type:'年度考績',grade:'甲等',year:2013},{type:'年度考績',grade:'甲等',year:2012},{type:'年度考績',grade:'甲等',year:2011}]};
+  load(capped);assert.equal(score(),72.1);click('nextCommandBtn');assert.equal(api.state().outcomePerformance,0,'merely opening a decision must not earn credit');
+  const cappedChoice=d.querySelector('#commandChoices [data-cmd="0"]');click(cappedChoice);
+  assert.equal(score(),72.3,'a correct decision should still increase merit when quality, service and command rating are capped');
+  assert(d.getElementById('commandResult').textContent.includes('資績 72.1 → 72.3（+0.2）'));
+  assert(d.getElementById('commandResult').textContent.includes('決策績效 +0.2'));
+  assert(d.getElementById('commandResult').textContent.includes('主管評價 +0（目前 100／100，已達上限）'),'rating feedback should report the actual capped change');
+  assert(d.getElementById('commandResult').textContent.includes('士氣 +0'),'morale feedback should not claim an increase above the cap');
+  click(cappedChoice);assert.equal(score(),72.3);assert.equal(api.state().outcomePerformance,.2);
+  click('saveBtn');click('loadBtn');assert.equal(score(),72.3);assert.equal(api.state().outcomePerformance,.2,'saved outcome credit must persist without a repeated award');
+  assert(d.getElementById('promotionScoreBox').textContent.includes('勤務／決策成果 +0.2'));
+  assert(d.getElementById('officerQualificationBox').textContent.includes('勤務／決策成果 +0.2'));
+  assert(api.state().history.some(x=>x.title==='主管決策'&&x.detail.includes('決策績效 +0.2')));
+  load(capped);click('nextCommandBtn');click(d.querySelector('#commandChoices [data-cmd="1"]'));
+  assert.equal(api.state().outcomePerformance,.1,'an adequate decision should earn smaller outcome credit');
+  load(capped);const cappedDutyBefore=score();click('nextDutyBtn');const cappedDutyChoice=d.querySelector('#dutyChoices [data-advd="0"]');click(cappedDutyChoice);
+  assert(score()>cappedDutyBefore,'good field duty must still earn merit with capped stats');
+  assert(api.state().outcomePerformance>=.1);assert(d.getElementById('dutyResult').textContent.includes('勤務績效 +'));
+  const dutyOutcome=api.state().outcomePerformance;click(cappedDutyChoice);assert.equal(api.state().outcomePerformance,dutyOutcome);
+  load(capped);click('nextCommandBtn');const retiredChoice=d.querySelector('#commandChoices [data-cmd="0"]');api.state().retired=true;click(retiredChoice);
+  assert.equal(api.state().outcomePerformance,0,'a pending decision must not earn credit after retirement');
 
   load({quality:100,service:100,commandScore:100});const maximum=score();
   assert(maximum<=base+12,'performance contribution should have a bounded maximum');
-  for(let i=0;i<12;i++){click('nextCommandBtn');click(d.querySelector('#commandChoices [data-cmd="0"]'));}
+  for(let i=0;i<12;i++){const prior=score();click('nextCommandBtn');click(d.querySelector('#commandChoices [data-cmd="0"]'));assert(score()-prior>=.2-1e-8,'each resolved good decision should earn credit even after many capped decisions');}
+  assert.equal(api.state().outcomePerformance,2.4);
   assert.equal(api.state().quality,100);assert.equal(api.state().service,100);assert.equal(api.state().commandScore,100);
   // Further actual rewards may increase base merit; the performance contribution itself is bounded.
   assert(d.getElementById('promotionScoreBox').textContent.includes('勤務實績 +12.0'));
@@ -128,5 +155,5 @@ try{
     assert.equal(api.state().appraisals.length,0);assert.equal(score(),blockedScore);
   }
   assert.equal(errors.length,0,errors.join('\n'));
-  console.log('PERFORMANCE_PROGRESS_OK duty/decision merit, appraisal A/B rewards and C penalties, first-appraisal baseline, preview/duplicate/reload guards, legacy benefit, bounded contributions, unchanged tenure/cash/qualification gates and practice separation');
+  console.log('PERFORMANCE_PROGRESS_OK capped-stat 72.1 -> 72.3 regression, continued duty/decision credit, actual capped feedback, appraisal rewards, preview/duplicate/reload/retirement guards, unchanged tenure/cash/qualification gates and practice separation');
 }finally{w.close();}
