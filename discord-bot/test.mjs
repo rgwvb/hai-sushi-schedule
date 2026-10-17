@@ -7,7 +7,7 @@ import { Game, GameError, stages, cases } from './game.mjs';
 import { handle, missionCard, profile, resultCard, historyCard, promotionCard, creationModal } from './ui.mjs';
 import { register, commands } from './register.mjs';
 import { config } from './config.mjs';
-import { cloudContext, startCloud } from './cloud.mjs';
+import { cloudContext, startCloud, safeStartupFailure } from './cloud.mjs';
 import { EventEmitter } from 'node:events';
 import { Events } from 'discord.js';
 const g='111111111111111111',u='222222222222222222',other='333333333333333333';
@@ -182,4 +182,12 @@ test('cloud failed registration destroys connection and closes save without repo
     restFactory:()=>({get:async()=>({id:g}),post:async()=>{throw new Error('registration failed');}}),
     gameFactory:()=>(db=new Game(':memory:')),logger:{log:x=>logs.push(x),error:()=>{}}}),/registration failed/);
   assert(client.destroyed);assert.equal(logs.length,0);assert.throws(()=>db.get(g,u),/closed|not open/i);
+});
+test('cloud diagnostics identify the failing stage without logging request payloads or secret error messages',()=>{
+  const secret='fake-token-not-for-logs';
+  assert.equal(safeStartupFailure({cloudPhase:'login',code:'TokenInvalid',message:secret}),'Discord 登入失敗（代碼 TokenInvalid）');
+  assert.equal(safeStartupFailure({cloudPhase:'save',code:'ERR_SQLITE_ERROR',message:secret}),'持久存檔初始化失敗（代碼 ERR_SQLITE_ERROR）');
+  assert.equal(safeStartupFailure({cloudPhase:'commands',code:50001,message:secret}),'註冊指令失敗（代碼 50001）');
+  assert(!safeStartupFailure({message:secret,code:'not allowed / value'}).includes(secret));
+  assert.match(safeStartupFailure({message:secret,code:'not allowed / value'}),/UNKNOWN/);
 });

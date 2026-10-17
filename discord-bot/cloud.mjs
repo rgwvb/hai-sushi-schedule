@@ -5,6 +5,14 @@ import { Game } from './game.mjs';
 import { handle } from './ui.mjs';
 import { register } from './register.mjs';
 
+export function safeStartupFailure(error){
+  const phases={login:'Discord 登入',context:'應用與伺服器辨識',save:'持久存檔初始化',commands:'註冊指令'};
+  const label=phases[error.cloudPhase]||'啟動';
+  const value=String(error.code||error.name||'UNKNOWN');
+  const code=/^[A-Za-z0-9_]{1,60}$/.test(value)?value:'UNKNOWN';
+  return `${label}失敗（代碼 ${code}）`;
+}
+
 export function cloudContext(ready,env){
   const application=ready.application.id;
   if(env.DISCORD_APPLICATION_ID&&env.DISCORD_APPLICATION_ID.trim()!==application)throw new Error('Application ID 與 Bot Token 不符。');
@@ -19,14 +27,16 @@ export function cloudContext(ready,env){
 export async function startCloud({env=process.env,client=new Client({intents:[GatewayIntentBits.Guilds],allowedMentions:{parse:[]}}),restFactory=token=>new REST({version:'10'}).setToken(token),gameFactory=path=>new Game(path),logger=console}={}){
   const token=env.DISCORD_TOKEN?.trim();
   if(!token)throw new Error('請在 Railway 的 Variables 新增 DISCORD_TOKEN，填入 Bot Token 後部署。');
-  client.on(Events.Error,e=>logger.error('Discord connection error:',e.code||e.name));
-  let game,scope,stopped=false;
+  client.on(Events.Error,e=>logger.error(safeStartupFailure(e)));
+  let game,scope,stopped=false,phase='login';
   const stop=()=>{if(stopped)return;stopped=true;client.destroy();game?.close();};
   const initialized=new Promise((resolveReady,reject)=>{
     client.once(Events.ClientReady,async ready=>{
       try{
-        scope=cloudContext(ready,env);
+        phase='context';scope=cloudContext(ready,env);
+        phase='save';
         game=gameFactory(env.DISCORD_DB_PATH||'./data/careers.sqlite');
+        phase='commands';
         await register(restFactory(token),scope);
         client.on(Events.InteractionCreate,i=>{if(i.guildId===scope.guild)void handle(i,game);});
         logger.log('警察生涯機器人已上線，7 個指令已註冊。請在指定伺服器文字頻道輸入 /開始。');
@@ -39,7 +49,7 @@ export async function startCloud({env=process.env,client=new Client({intents:[Ga
   try{
     const [,ready]=await connected;
     return ready;
-  }catch(e){stop();throw e;}
+  }catch(e){e.cloudPhase=phase;stop();throw e;}
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
@@ -58,7 +68,7 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).hr
     }catch(e){
       // Do not expose SDK/REST request bodies, headers or the token in logs.
       const publicMessages=['Application ID','機器人尚未加入','請先將機器人','機器人已加入多個','請在 Railway'];
-      console.error(publicMessages.some(p=>e.message?.startsWith(p))?e.message:'Discord 啟動失敗：請確認 Bot Token、邀請權限及網路，修改 Variables 後重新部署。');
+      console.error(publicMessages.some(p=>e.message?.startsWith(p))?e.message:safeStartupFailure(e)+'。請確認設定與權限後重新部署。');
       process.exitCode=1;
     }
   }
