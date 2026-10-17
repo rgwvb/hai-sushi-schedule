@@ -28,7 +28,7 @@ const metros=['臺北市','新北市','桃園市','臺中市','臺南市','高�
 const counties=['基隆市','新竹市','嘉義市','新竹縣','苗栗縣','彰化縣','南投縣','雲林縣','嘉義縣','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣'];
 export function careerArea(text){const normalized=String(text||'').replaceAll('台','臺');const county=[...metros,...counties].find(c=>normalized.includes(c));return {county:county||null,type:county?(metros.includes(county)?'metro':'county'):'unspecified'};}
 export function careerRole(p,index=p.stage){
-  const area=careerArea(p.homeUnit||p.unit),variant=area.type==='county'?countyVariants[index]:null;
+  const area=careerArea(p.careerHome||p.homeUnit||p.unit),variant=area.type==='county'?countyVariants[index]:null;
   return {...stages[index],...variant,...(index===p.stage?p.post?.role:null),area,scopeNote:area.type==='unspecified'&&index>=5&&index<=7?'未辨識縣市，主管職務暫按直轄市範例模擬。':''};
 }
 export function currentRank(p){const role=careerRole(p);return role.allowedRanks.includes(p.personalRank)?p.personalRank:role.rank;}
@@ -52,7 +52,7 @@ export function promoteRank(p){
   p.personalRank=role.allowedRanks.includes(preferred)?preferred:role.rank;
 }
 export function appointmentUnit(p){
-  const role=careerRole(p),area=role.area,home=p.homeUnit||p.unit;
+  const role=careerRole(p),area=role.area,home=p.careerHome||p.homeUnit||p.unit;
   if(p.stage<4)return home;
   if(p.stage===8)return '內政部警政署';
   if(p.stage===4)return area.type==='metro'?`${area.county}政府警察局｜業務單位（模擬任命）`:'內政部警政署｜業務單位（模擬任命）';
@@ -65,7 +65,7 @@ export function appointmentUnit(p){
 // Concurrent station duties are alternatives to ordinary and specialist posts.
 export function vacancies(p,index=p.stage){
   const base=careerRole({...p,post:null},index);
-  const local=p.homeUnit||p.unit;
+  const local=p.careerHome||p.homeUnit||p.unit;
   const agency=local.match(/^(.*?警察局)/)?.[1]||'原轄警察機關';
   const groups=[
     [['警員','patrol','staff','派出所'],['警員','traffic','staff','交通隊'],['警員','criminal','staff','刑事單位']],

@@ -132,7 +132,7 @@ export class Game {
       delete p.post;p.stage=offer.target;p.appointed=p.month;p.stageMerit=p.merit;p.trainingProgress=0;
       promoteRank(p);
     }
-    p.post=post;p.unit=post.unit;p.lastRotation=p.month;delete p.offer;
+    p.post=post;p.unit=post.unit;if(p.stage<4)p.careerHome=post.unit;p.lastRotation=p.month;delete p.offer;
     p.history.push({date:stamp(p.month),text:(offer.kind==='promotion'?'升遷選填':'同序列輪調')+'｜'+currentRank(p)+careerRole(p).title+'｜'+p.unit});
     return p;
   });}

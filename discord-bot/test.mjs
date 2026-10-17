@@ -287,3 +287,13 @@ test('existing concurrent appointments remain until player chooses a change, wit
     assert.equal(careerRole(changed).title,'巡官');assert.equal(changed.month,80);assert.equal(changed.personalRank,'警正四階');
   }finally{game.close();}
 });
+
+test('cross-county choices carry the new agency context into later appointments',()=>{
+  const game=new Game(':memory:');try{
+    create(game);years(game,1);
+    const {offer}=game.offers(g,u,'rotation');
+    const p=game.appoint(g,u,offer.id,offer.rows.findIndex(r=>r.unit.includes('屏東縣')));
+    assert.equal(careerRole(p,5).sequence,5);assert.equal(careerRole(p,5).badge,'二線四星');
+    assert(p.homeUnit.includes('新北市'));assert(p.careerHome.includes('屏東縣'));
+  }finally{game.close();}
+});
