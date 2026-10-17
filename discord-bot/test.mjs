@@ -9,7 +9,9 @@ import { register, commands } from './register.mjs';
 import { config } from './config.mjs';
 import { cloudContext, startCloud, safeStartupFailure } from './cloud.mjs';
 import { EventEmitter } from 'node:events';
-import { Events } from 'discord.js';
+import { Events,MessagePayload } from 'discord.js';
+import { preparePayload,withInsignia } from './insignia.mjs';
+import { EmbedBuilder } from 'discord.js';
 import { careerRole,currentRank,positionSummary,nextStage,careerDisplayOrder } from './career.mjs';
 const g='111111111111111111',u='222222222222222222',other='333333333333333333';
 const create=game=>game.create(g,u,'測試警員','新北市政府警察局板橋分局某派出所');
@@ -313,9 +315,25 @@ test('role, mission, result, promotion and vacancy cards show matching PNG insig
   const game=new Game(':memory:');try{
     create(game);let p=game.get(g,u);let m=game.mission(g,u).mission;
     for(const card of [profile(p,u),missionCard(p,m,u),resultCard(finish(game),u)]){
-      valid(card);assert.match(card.embeds[0].toJSON().thumbnail.url,/250px-TW-Police-Rank_10.svg.png$/);
+      valid(card);assert.match(card.embeds[0].toJSON().thumbnail.url,/^attachment:\/\/rank-10.png$/);
     }
-    years(game,2);p=game.get(g,u);const q=promotionCard(game,p,u);assert.match(q.embeds[0].toJSON().thumbnail.url,/09.svg.png$/);
-    const x=game.offers(g,u,'promotion');valid(vacancyCard(x.p,x.offer,u));assert.match(vacancyCard(x.p,x.offer,u).embeds[0].toJSON().thumbnail.url,/09.svg.png$/);
+    years(game,2);p=game.get(g,u);const q=promotionCard(game,p,u);assert.match(q.embeds[0].toJSON().thumbnail.url,/rank-09.png$/);
+    const x=game.offers(g,u,'promotion');valid(vacancyCard(x.p,x.offer,u));assert.match(vacancyCard(x.p,x.offer,u).embeds[0].toJSON().thumbnail.url,/rank-09.png$/);
+  }finally{game.close();}
+});
+
+test('every insignia is a real bundled PNG; multipart sends and edits carry one file, a heading, and no stale attachments',async()=>{
+  for(const badge of new Set(stages.map(r=>r.badge))){
+    const payload=preparePayload({embeds:[withInsignia(new EmbedBuilder().setTitle('測試角色').setDescription('職務資訊'),{badge})],components:[]});
+    assert.equal(payload.content,'## 測試角色');assert.equal(payload.files.length,1);assert.deepEqual(payload.attachments,[]);
+    const file=payload.files[0];assert.equal(file.attachment.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+    assert.equal(file.attachment.readUInt32BE(16),640);assert.equal(file.attachment.readUInt32BE(20),190);
+    const data=payload.embeds[0].toJSON();assert.equal(data.image.url,'attachment://'+file.name);assert.equal(data.thumbnail.url,data.image.url);
+    const message=MessagePayload.create({},payload);await message.resolveFiles();assert.equal(message.files.length,1);assert.equal(message.files[0].name,file.name);
+  }
+  const game=new Game(':memory:');try{
+    create(game);const i=mock({command:'角色'});await handle(i,game);
+    assert(i.calls[0][1].content.startsWith('## '));assert.equal(i.calls[0][1].files.length,1);
+    const j=mock({button:'nav:'+u+':mission'});await handle(j,game);assert.equal(j.calls[0][0],'update');assert.equal(j.calls[0][1].files.length,1);assert.deepEqual(j.calls[0][1].attachments,[]);
   }finally{game.close();}
 });

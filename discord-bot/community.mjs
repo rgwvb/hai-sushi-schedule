@@ -1,6 +1,6 @@
 import { ChannelType, PermissionFlagsBits as P, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { GameError, stages, stamp,careerRole,currentRank } from './game.mjs';
-import { withInsignia } from './insignia.mjs';
+import { withInsignia,preparePayload } from './insignia.mjs';
 import { careerSources,positionSummary,careerDisplayOrder,nextStage } from './career.mjs';
 
 export const channelNames={profiles:'警察角色',play:'警察遊戲',ranking:'警察排名',guide:'警察說明'};
@@ -31,7 +31,7 @@ export function guideCards(channels){
         }
         return `**${displayIndex+1}. ${r.title}**\n${detail}\n${i===9?'依授權協助分局長處理跨所隊勤務、業務協調與執行追蹤。':duties[i]}`;
       }).join('\n\n')+
-      `\n\n兼任配置及特定所隊仍須個別核對編制；上列縣市不含另有準用直轄市規定的情形。角色的個人官階由遊戲任命設定，不代表同職位的人都敘同一階。\n\n[階級圖來源：Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:Police_rank_insignia_of_the_Republic_of_China)｜[官方陞遷序列表](${careerSources.positions})｜[人事條例](${careerSources.personnel})\n[警政署職務配階圖（第13頁）](${careerSources.insignia})｜[署長職務等階](${careerSources.commissioner})`],
+      `\n\n兼任配置及特定所隊仍須個別核對編制；上列縣市不含另有準用直轄市規定的情形。角色的個人官階由遊戲任命設定，不代表同職位的人都敘同一階。\n\n[階級圖繪製參考：警政署職務配階圖](${careerSources.insignia})｜[官方陞遷序列表](${careerSources.positions})｜[人事條例](${careerSources.personnel})\n[警政署職務配階圖（第13頁）](${careerSources.insignia})｜[署長職務等階](${careerSources.commissioner})`],
     ['promotion','03｜升遷條件與職涯順序',
       '**先符合升遷條件，再由玩家選填職缺；兼任不是必經路線。**\n\n/升遷 → 查看可選升遷職缺 → 選擇一般或兼任職缺 → 確認派任。巡佐可走一般巡佐、警務佐、偵查佐或兼任職；巡官可走業務承辦、偵查、交通或派出所主管職。勤務題目隨選定職務切換。\n\n**二線四星**\n直轄市路線在警務正與分局長之間新增副分局長；縣（市）分局長也依機關編制顯示二線四星。\n\n**同序列輪調**\n輸入 /輪調 選填不同單位或職務。初任滿 12 個遊戲月開放，後續派任滿 18 個月再開放；基層職缺含外縣市選項。輪調保留升遷年資、績效、考績與研習。\n\n**升遷門檻（遊戲規則）**\n'+careerDisplayOrder.filter(i=>i!==8).map(i=>{const r=stages[i];return `${r.title}等職務層級：滿 ${r.years} 年、現職績效 ${r.merit.toFixed(1)}，可選下一層級職缺${stages[nextStage({stage:i,unit:'新北市警察局'})]?.training?'；另須 '+stages[nextStage({stage:i,unit:'新北市警察局'})]?.training:''}。`}).join('\n')+'\n\n最近兩年考績須 B 以上，先結算未完成案件。升遷後重計現職年資與績效，生涯總績效保留。DC 的月份與門檻仍採簡化規則，存檔與網頁分開。'],
     ['performance','04｜績效、時間與年度考績',
@@ -49,7 +49,7 @@ export function rankedPlayers(players){
 }
 export function publicProfile(p,user){
   const role=careerRole(p);return {embeds:[withInsignia(embed(safe(p.name)+'｜'+role.title,
-    `玩家：<@${user}>\n**職位：${role.title}**\n個人官階（遊戲）：${currentRank(p)}\n職務配階：${positionSummary(role)}\n單位：${safe(p.unit)}${role.scopeNote?'\n'+role.scopeNote:''}\n\n${stamp(p.month)}｜年資 ${(p.month/12).toFixed(1)} 年\n績效 **${p.merit.toFixed(1)}**｜完成勤務 **${p.completed}** 件\n最近考績：${p.appraisals.slice(-2).map(a=>a.year+' '+a.grade).join('、')||'尚未結算'}${p.month>=516?'\n狀態：退休':''}`
+    `玩家：<@${user}>\n**職位：${role.title}**\n\n**個人官階（遊戲）：${currentRank(p)}**\n\n**職務配階：${role.badge}**\n${positionSummary(role)}\n\n**單位**\n${safe(p.unit)}${role.scopeNote?'\n'+role.scopeNote:''}\n\n${stamp(p.month)}｜年資 ${(p.month/12).toFixed(1)} 年\n績效 **${p.merit.toFixed(1)}**｜完成勤務 **${p.completed}** 件\n最近考績：${p.appraisals.slice(-2).map(a=>a.year+' '+a.grade).join('、')||'尚未結算'}${p.month>=516?'\n狀態：退休':''}`
   ).setFooter({text:'角色進度自動更新 · 前往「警察遊戲」頻道遊玩'}),role)],components:[]};
 }
 export function rankingCard(players){
@@ -75,11 +75,14 @@ export class Community {
           topic:key==='guide'?'警察生涯遊戲說明：新手入門、職位職責、升遷門檻、績效考績及模擬研習。':key==='play'?'公開遊玩台灣警察生涯。輸入 /開始 或 /任務；只有本人可操作自己的案件按鈕。':key==='profiles'?'每位玩家的角色、階級、職位、單位與績效；由機器人自動更新。':'依職位、績效、勤務數排列的本伺服器排行榜；由機器人自動更新。',
           permissionOverwrites:[
             {id:guild.id,allow:[P.ViewChannel,...(key==='play'?[P.SendMessages,P.UseApplicationCommands]:[])],deny:key==='play'?[]:[P.SendMessages,P.UseApplicationCommands]},
-            {id:this.client.user.id,allow:[P.ViewChannel,P.SendMessages,P.EmbedLinks,P.ReadMessageHistory]}],
+            {id:this.client.user.id,allow:[P.ViewChannel,P.SendMessages,P.EmbedLinks,P.ReadMessageHistory,P.AttachFiles]}],
           reason:'建立警察生涯的角色、遊戲、排名及說明專用頻道'});
       }
       if(channel.guildId!==id||channel.type!==ChannelType.GuildText)throw new GameError('請指定同一伺服器的普通文字頻道。');
-      if(!channel.permissionsFor(me)?.has([P.ViewChannel,P.SendMessages,P.EmbedLinks,P.ReadMessageHistory]))throw new GameError('機器人在指定頻道需有「檢視頻道、傳送訊息、嵌入連結、讀取訊息歷史」權限。');
+      if(!channel.permissionsFor(me)?.has(P.AttachFiles)){
+        await channel.permissionOverwrites.edit(this.client.user.id,{AttachFiles:true},{reason:'讓階級圖隨訊息附加，避免外部圖片失效'});
+      }
+      if(!channel.permissionsFor(me)?.has([P.ViewChannel,P.SendMessages,P.EmbedLinks,P.ReadMessageHistory,P.AttachFiles]))throw new GameError('機器人在指定頻道需有「檢視頻道、傳送訊息、嵌入連結、讀取訊息歷史、附加檔案」權限。');
       state[key]=channel.id;
       this.game.setSettings(id,state); // Retain partial setup; retry never duplicates created channels.
     }
@@ -97,12 +100,12 @@ export class Community {
     if(this.closed)return;
     const channel=await this.client.channels.fetch(channelId);
     if(!channel||channel.guildId!==guild||channel.type!==ChannelType.GuildText)throw new GameError('遊戲頻道已移除，請重新執行 /遊戲頻道。');
-    const options={...payload,allowedMentions:{parse:[]}},id=this.game.message(guild,channelId,slot);
+    const options={...preparePayload(payload),allowedMentions:{parse:[]}},id=this.game.message(guild,channelId,slot);
     if(id){
-      try{const old=await channel.messages.fetch(id);await old.edit(options);return;}
+      try{const old=await channel.messages.fetch(id);const updated=await old.edit(options);if(options.files.length&&updated?.attachments?.size)this.logger.log('COMMUNITY_INSIGNIA_UPLOADED files='+updated.attachments.size);return;}
       catch(e){if(e.code!==10008)throw e;} // Only recreate a genuinely deleted message.
     }
-    const message=await channel.send(options);this.game.setMessage(guild,channelId,slot,message.id);
+    const message=await channel.send(options);if(options.files.length&&message.attachments?.size)this.logger.log('COMMUNITY_INSIGNIA_UPLOADED files='+message.attachments.size);this.game.setMessage(guild,channelId,slot,message.id);
   }
   async syncAll(guild){return this.serialize(guild,async()=>{
     const s=this.game.settings(guild);if(!s.profiles||!s.ranking)return;
