@@ -2,7 +2,7 @@ import { REST, Routes, SlashCommandBuilder, ChannelType, PermissionFlagsBits } f
 import { config } from './config.mjs';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
-export const commands=[['開始','建立或繼續你的警察生涯'],['任務','接取符合目前職務的案件'],['角色','查看階級、績效、年資與考績'],['履歷','回顧最近生涯紀錄'],['訓練','完成下一職務需要的模擬研習'],['升遷','查看升遷條件與申請'],['說明','查看玩法與指令']].map(([name,description])=>new SlashCommandBuilder().setName(name).setDescription(description).toJSON());
+export const commands=[['開始','建立或繼續你的警察生涯'],['任務','接取符合目前職務的案件'],['角色','查看階級、績效、年資與考績'],['履歷','回顧最近生涯紀錄'],['訓練','完成下一職務需要的模擬研習'],['升遷','查看升遷條件與選填職缺'],['輪調','選填同序列的一般或兼任職缺'],['說明','查看玩法與指令']].map(([name,description])=>new SlashCommandBuilder().setName(name).setDescription(description).toJSON());
 commands.push(new SlashCommandBuilder().setName('排名').setDescription('查看本伺服器的警察生涯排行榜').toJSON());
 commands.push(new SlashCommandBuilder().setName('遊戲頻道').setDescription('管理員設定角色、遊戲、排名與說明頻道；未指定時自動建立')
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)

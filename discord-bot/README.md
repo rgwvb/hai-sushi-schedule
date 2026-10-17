@@ -96,3 +96,8 @@ npm start
 `npm test` 使用真實 SQLite 與 Discord 元件序列化，測試多人隔離、權限、重複作答、資料庫重開、研習結算、升遷門檻與互動流程；不會登入 Discord 或傳送訊息。用 `node export-cases.mjs` 從網站重新匯出題組。正式上線仍需在真實 Discord 應用驗收。
 
 官方參考：[Discord 機器人教學](https://docs.discord.com/developers/quick-start/getting-started)、[Discord 互動回應](https://docs.discord.com/developers/interactions/receiving-and-responding)、[discord.js](https://discord.js.org/docs/packages/discord.js/14.24.0)。
+
+
+### 職缺選填與輪調
+
+升遷條件達成後，以 `/升遷` 開啟職缺表，翻頁後選填一般、專業或兼任職務，按職缺確認派任。兼任不是必經職涯路線。`/輪調` 開啟同序列職缺；初任滿12個遊戲月、後續派任滿18個月開放。基層含外縣市模擬職缺；勤務依選定職務切換。輪調保留升遷年資、績效、考績及研習；升遷才重計現職門檻。既有兼任存檔保留，玩家可自行輪調。DC月份、升遷門檻與高階層級仍採簡化規則，與網頁各自存檔。

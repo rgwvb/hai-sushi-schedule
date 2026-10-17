@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Game, GameError, stages, cases } from './game.mjs';
-import { handle, missionCard, profile, resultCard, historyCard, promotionCard, creationModal } from './ui.mjs';
+import { handle, missionCard, profile, resultCard, historyCard, promotionCard, creationModal, vacancyCard } from './ui.mjs';
 import { register, commands } from './register.mjs';
 import { config } from './config.mjs';
 import { cloudContext, startCloud, safeStartupFailure } from './cloud.mjs';
@@ -83,7 +83,7 @@ test('annual appraisals settle once and two qualifying years gate first promotio
     assert(game.requirements(p).ready);
     p=game.promote(g,u,0);assert.equal(p.stage,1);assert.equal(p.stageMerit,4.8);
     assert.throws(()=>game.promote(g,u,0),/過期/);assert.throws(()=>game.promote(g,u,1),/尚未/);
-    const m=game.mission(g,u).mission;assert(cases.station_lead.some(c=>c.title===m.title));
+    const m=game.mission(g,u).mission;assert(cases.patrol.some(c=>c.title===m.title));
     assert(game.requirements(game.get(g,u)).lines.some(l=>l.includes('先完成')));
   }finally{game.close();}
 });
@@ -142,7 +142,7 @@ test('Discord command/modal/button lifecycle, public replies and private replay 
 test('registration upserts only game commands and validates matching application; config rejects blanks',async()=>{
   const c={application:g,guild:u},calls=[];
   await register({get:async()=>({id:g}),post:async(path,{body})=>{calls.push({path,body});}},c);
-  assert.equal(calls.length,9);assert.equal(new Set(commands.map(c=>c.name)).size,9);
+  assert.equal(calls.length,10);assert.equal(new Set(commands.map(c=>c.name)).size,10);
   assert(calls.every(c=>c.path.includes('/guilds/'+u+'/commands')));
   await assert.rejects(()=>register({get:async()=>({id:other})},c),/同一個/);
   assert.throws(()=>config({}),/請先/);
@@ -167,7 +167,7 @@ test('cloud connects and registers before serving interactions; no .env needed a
   const app=await startCloud({env:{DISCORD_TOKEN:'fake-local-only',DISCORD_DB_PATH:':memory:'},client,
     restFactory:()=>({get:async()=>({id:g}),post:async(_,body)=>registered.push(body)}),
     gameFactory:path=>(db=new Game(path)),logger:{log:x=>logs.push(x),error:()=>{}}});
-  assert.equal(registered.length,9);assert.equal(app.scope.guild,u);assert.equal(client.listenerCount(Events.InteractionCreate),1);
+  assert.equal(registered.length,10);assert.equal(app.scope.guild,u);assert.equal(client.listenerCount(Events.InteractionCreate),1);
   assert(logs.some(x=>x.includes('已上線')));assert(logs.every(x=>!x.includes('fake-local-only')));
   app.stop();app.stop();assert(client.destroyed);assert.throws(()=>db.get(g,u),/closed|not open/i);
   await assert.rejects(()=>startCloud({env:{},client:new FakeClient()}),/DISCORD_TOKEN/);
@@ -235,4 +235,55 @@ test('personal rank never falls on promotion and stays in the target official ra
     }
     const chief=countyGame.get(g,u);assert.equal(chief.personalRank,'警監三階');assert.equal(careerRole(chief).badge,'三線二星');assert.equal(chief.unit,'花蓮縣警察局');
   }finally{countyGame.close();}
+});
+
+test('players choose ordinary or concurrent posts; rotation preserves promotion progress and changes duties',()=>{
+  const game=new Game(':memory:');try{
+    create(game);years(game,2);
+    let {p,offer}=game.offers(g,u,'promotion');
+    assert(offer.rows.some(r=>r.role.title==='巡佐'));
+    assert(offer.rows.some(r=>r.role.title==='巡佐兼副所長'));
+    assert(offer.rows.some(r=>r.unit.includes('屏東縣')));
+    for(let page=0;page<Math.ceil(offer.rows.length/4);page++)valid(vacancyCard(p,offer,u,page));
+    const oldToken=offer.id;
+    p=game.appoint(g,u,offer.id,offer.rows.findIndex(r=>r.role.title==='巡佐'));
+    assert.equal(careerRole(p).title,'巡佐');assert.equal(careerRole(p).deck,'patrol');
+    assert.throws(()=>game.appoint(g,u,oldToken,0),/過期/);
+    assert.throws(()=>game.offers(g,u,'rotation'),/18/);
+    for(let i=0;i<18;i++)finish(game);
+    const before=game.get(g,u);
+    ({offer}=game.offers(g,u,'rotation'));
+    assert.throws(()=>game.appoint(g,u,offer.id,999),/無效/);
+    p=game.appoint(g,u,offer.id,offer.rows.findIndex(r=>r.role.title==='巡佐兼副所長'));
+    assert.equal(careerRole(p).deck,'station_lead');
+    for(const key of ['stage','appointed','stageMerit','merit','appraisals','trained','month'])assert.deepEqual(p[key],before[key]);
+    const m=game.mission(g,u).mission;assert(cases.station_lead.some(c=>c.title===m.title));
+    assert.throws(()=>game.offers(g,u,'rotation'),/先完成/);
+  }finally{game.close();}
+});
+test('vacancy choices persist; newer lists invalidate old buttons and spectators cannot appoint',async()=>{
+  const dir=mkdtempSync(join(tmpdir(),'police-posts-')),path=join(dir,'save.sqlite');let game=new Game(path);
+  try{
+    create(game);years(game,2);const first=game.offers(g,u,'promotion').offer;
+    game.close();game=new Game(path);assert.deepEqual(game.get(g,u).offer,first);
+    let i=mock({button:`choose:${u}:${first.id}:0`,actor:other});await handle(i,game);
+    assert.equal(i.calls[0][1].flags,64);assert.equal(game.get(g,u).stage,0);
+    const second=game.offers(g,u,'promotion').offer;
+    assert.throws(()=>game.appoint(g,u,first.id,0),/過期/);
+    i=mock({button:`choose:${u}:${second.id}:1`});await handle(i,game);
+    assert.equal(i.calls[0][0],'update');assert.equal(careerRole(game.get(g,u)).title,'警務佐');
+    assert.equal(careerRole(game.get(g,u)).deck,'staff');
+    const m=game.mission(g,u).mission;assert(cases.staff.some(c=>c.title===m.title));
+    game.close();game=new Game(path);assert.equal(careerRole(game.get(g,u)).title,'警務佐');
+  }finally{game.close();rmSync(dir,{recursive:true});}
+});
+test('existing concurrent appointments remain until player chooses a change, without resetting progress',()=>{
+  const game=new Game(':memory:');try{
+    const p=create(game);p.stage=2;p.careerModelVersion=2;p.month=80;p.personalRank='警正四階';
+    game.db.prepare('UPDATE players SET state=? WHERE guild=? AND user=?').run(JSON.stringify(p),g,u);
+    const old=game.get(g,u);assert.equal(careerRole(old).title,'巡官兼所長');assert.equal(old.month,80);
+    const {offer}=game.offers(g,u,'rotation');
+    const changed=game.appoint(g,u,offer.id,offer.rows.findIndex(r=>r.role.title==='巡官'));
+    assert.equal(careerRole(changed).title,'巡官');assert.equal(changed.month,80);assert.equal(changed.personalRank,'警正四階');
+  }finally{game.close();}
 });

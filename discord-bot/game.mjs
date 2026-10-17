@@ -2,7 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { randomInt, randomUUID } from 'node:crypto';
-import { stages,careerRole,currentRank,normalizeCareer,promoteRank,appointmentUnit } from './career.mjs';
+import { stages,careerRole,currentRank,normalizeCareer,promoteRank,appointmentUnit,vacancies } from './career.mjs';
 export { stages,careerRole,currentRank } from './career.mjs';
 export const cases=JSON.parse(readFileSync(new URL('cases.json',import.meta.url),'utf8')).decks;
 // Explicitly simplified game progression, not statutory appointment eligibility.
@@ -45,7 +45,7 @@ export class Game {
     name=String(name||'').trim();unit=String(unit||'').trim();
     if(!name||name.length>20||!unit||unit.length>80)throw new GameError('姓名需為 1～20 字，單位需為 1～80 字。');
     const p={name,unit,stage:0,month:0,appointed:0,merit:0,stageMerit:0,completed:0,yearScores:[],appraisals:[],trained:[],trainingProgress:0,seen:{},pending:null,history:[{date:stamp(0),text:'警佐三階警員｜'+unit}]};
-    normalizeCareer(p);
+    p.careerModelVersion=3;normalizeCareer(p);
     const r=this.db.prepare('INSERT OR IGNORE INTO players(guild,user,state) VALUES (?,?,?)').run(guild,user,JSON.stringify(p));
     if(!r.changes)throw new GameError('你已經有角色；輸入 /角色 繼續原本的生涯。');
     return p;
@@ -58,7 +58,7 @@ export class Game {
       if(!['duty','training'].includes(kind))throw new GameError('無效任務類型。');
       const next=stages[p.stage+1];
       if(kind==='training'&&(!next?.training||p.trained.includes(next.training)))throw new GameError('目前沒有待完成的升官等模擬研習；輸入 /升遷 查看條件。');
-      const deck=kind==='training'?'staff':stages[p.stage].deck;
+      const deck=kind==='training'?'staff':careerRole(p).deck;
       const rows=cases[deck],key=kind+':'+deck;
       let left=p.seen[key]||[];
       if(!left.length){left=rows.map(x=>x.id).filter(id=>rows.length===1||id!==p.lastCase);}
@@ -106,12 +106,42 @@ export class Game {
     if(p.pending)checks.push({ok:false,text:'請先完成目前案件或研習題目'});
     return {ready:checks.every(c=>c.ok),lines:checks.map(c=>(c.ok?'✅ ':'⬜ ')+c.text),next};
   }
+
+  offers(guild,user,kind){return this.transaction(guild,user,p=>{
+    requireGame(p);
+    if(!['promotion','rotation'].includes(kind))throw new GameError('無效職缺類型。');
+    if(p.month>=516)throw new GameError('角色已退休。');
+    if(p.pending)throw new GameError('請先完成目前案件或研習，再選填職缺。');
+    if(kind==='promotion'&&!this.requirements(p).ready)throw new GameError('升遷條件尚未完成，請輸入 /升遷。');
+    const wait=(p.lastRotation??p.appointed)===0?12:18;
+    if(kind==='rotation'&&p.month-(p.lastRotation??p.appointed)<wait)throw new GameError(`尚未開放輪調；本次任職需滿 ${wait} 個遊戲月。`);
+    const target=p.stage+(kind==='promotion'?1:0);
+    const rows=vacancies(p,target).filter(x=>kind!=='rotation'||x.unit!==p.unit||x.role.title!==careerRole(p).title);
+    if(!rows.length)throw new GameError('目前沒有其他同序列模擬職缺。');
+    p.offer={id:randomUUID(),kind,stage:p.stage,month:p.month,target,rows};
+    return {p,offer:p.offer};
+  });}
+  appoint(guild,user,token,index){return this.transaction(guild,user,p=>{
+    requireGame(p);const offer=p.offer;
+    if(!offer||offer.id!==token||offer.stage!==p.stage||offer.month!==p.month)throw new GameError('這張職缺表已過期，請重新開啟升遷或輪調。');
+    if(p.pending)throw new GameError('請先完成目前案件。');
+    const post=Number.isInteger(index)?offer.rows[index]:null;
+    if(!post)throw new GameError('無效職缺。');
+    if(offer.kind==='promotion'){
+      if(!this.requirements(p).ready)throw new GameError('升遷條件尚未完成。');
+      delete p.post;p.stage=offer.target;p.appointed=p.month;p.stageMerit=p.merit;p.trainingProgress=0;
+      promoteRank(p);
+    }
+    p.post=post;p.unit=post.unit;p.lastRotation=p.month;delete p.offer;
+    p.history.push({date:stamp(p.month),text:(offer.kind==='promotion'?'升遷選填':'同序列輪調')+'｜'+currentRank(p)+careerRole(p).title+'｜'+p.unit});
+    return p;
+  });}
   promote(guild,user,expectedStage){return this.transaction(guild,user,p=>{
     requireGame(p);
     if(p.stage!==expectedStage)throw new GameError('這張升遷卡已過期，請重新輸入 /升遷。');
     if(p.month>=43*12)throw new GameError('角色已退休。');
     if(!this.requirements(p).ready)throw new GameError('升遷條件尚未完成，請輸入 /升遷 查看。');
-    p.stage++;p.appointed=p.month;p.stageMerit=p.merit;p.trainingProgress=0;
+    delete p.post;delete p.offer; p.stage++;p.appointed=p.month;p.stageMerit=p.merit;p.trainingProgress=0;
     promoteRank(p);p.unit=appointmentUnit(p);
     const r=careerRole(p);p.history.push({date:stamp(p.month),text:currentRank(p)+r.title+'｜'+r.badge+'｜'+p.unit});return p;
   });}
