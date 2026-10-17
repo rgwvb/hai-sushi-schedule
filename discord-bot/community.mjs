@@ -102,10 +102,16 @@ export class Community {
     if(!channel||channel.guildId!==guild||channel.type!==ChannelType.GuildText)throw new GameError('遊戲頻道已移除，請重新執行 /遊戲頻道。');
     const options={...preparePayload(payload),allowedMentions:{parse:[]}},id=this.game.message(guild,channelId,slot);
     if(id){
-      try{const old=await channel.messages.fetch(id);const updated=await old.edit(options);if(options.files.length&&updated?.attachments?.size)this.logger.log('COMMUNITY_INSIGNIA_UPLOADED files='+updated.attachments.size);return;}
+      try{const old=await channel.messages.fetch(id);const updated=await old.edit(options);this.verifyMedia(options,updated);return;}
       catch(e){if(e.code!==10008)throw e;} // Only recreate a genuinely deleted message.
     }
-    const message=await channel.send(options);if(options.files.length&&message.attachments?.size)this.logger.log('COMMUNITY_INSIGNIA_UPLOADED files='+message.attachments.size);this.game.setMessage(guild,channelId,slot,message.id);
+    const message=await channel.send(options);this.verifyMedia(options,message);this.game.setMessage(guild,channelId,slot,message.id);
+  }
+  verifyMedia(options,message){
+    if(!options.files.length)return;
+    const images=(message?.embeds||[]).flatMap(e=>[e.image?.url,e.thumbnail?.url]).filter(Boolean);
+    const hosted=images.some(url=>/^https:\/\/(?:cdn\.discordapp\.com|media\.discordapp\.net)\//.test(url));
+    this.logger.log(`COMMUNITY_INSIGNIA_DELIVERY files=${options.files.length} attachments=${message?.attachments?.size??0} discordImage=${hosted}`);
   }
   async syncAll(guild){return this.serialize(guild,async()=>{
     const s=this.game.settings(guild);if(!s.profiles||!s.ranking)return;
