@@ -45,7 +45,7 @@ export async function startCloud({env=process.env,client=new Client({intents:[Ga
         resolveReady({stop,scope,community});
         // Channel permissions must never prevent the existing game from starting.
         void community.ensure(scope.guild).then(settings=>{
-          logger.log(`COMMUNITY_CHANNELS_READY profiles=${settings.profiles} play=${settings.play} ranking=${settings.ranking}`);
+          logger.log(`COMMUNITY_CHANNELS_READY profiles=${settings.profiles} play=${settings.play} ranking=${settings.ranking} guide=${settings.guide}`);
           return community.syncAll(scope.guild);
         }).then(()=>logger.log('COMMUNITY_BOARDS_SYNCED')).catch(e=>{
           logger.error(e instanceof GameError?e.message:'COMMUNITY_SETUP_PENDING');

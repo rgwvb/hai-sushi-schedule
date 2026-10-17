@@ -4,8 +4,8 @@ import { mkdtempSync,rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ChannelType,Collection,PermissionFlagsBits as P,PermissionsBitField } from 'discord.js';
-import { Game,GameError } from './game.mjs';
-import { Community,rankingCard,rankedPlayers,publicProfile,channelNames } from './community.mjs';
+import { Game,GameError,stages } from './game.mjs';
+import { Community,rankingCard,rankedPlayers,publicProfile,channelNames,guideCards } from './community.mjs';
 import { handle } from './ui.mjs';
 import { commands } from './register.mjs';
 const guild='111111111111111111',user='222222222222222222',other='333333333333333333';
@@ -33,16 +33,16 @@ function valid(payload){
   assert(size<=6000);assert.deepEqual(payload.components,[]);
 }
 const player=game=>game.create(guild,user,'**角色**','新北市某分局某派出所');
-test('automatic setup creates exactly three public text channels and reuses persisted channels and messages',async()=>{
+test('automatic setup creates four public text channels and reuses persisted channels and messages',async()=>{
   const game=new Game(':memory:'),h=harness(game);try{
     player(game);const s=await h.community.ensure(guild);await h.community.syncAll(guild);
-    assert.equal(h.created.length,3);assert.equal(new Set(Object.values(s)).size,3);
+    assert.equal(h.created.length,4);assert.equal(new Set(Object.values(s)).size,4);
     for(const c of h.created){const everyone=c.permissionOverwrites[0];assert(everyone.allow.includes(P.ViewChannel));
       if(c.name!==channelNames.play){assert(everyone.deny.includes(P.SendMessages));assert(everyone.deny.includes(P.UseApplicationCommands));}}
-    assert.equal(h.sent.length,3); // lobby, one profile, leaderboard
-    await h.community.ensure(guild);await h.community.syncAll(guild);assert.equal(h.sent.length,3);assert.equal(h.created.length,3);
+    assert.equal(h.sent.length,8); // lobby, five guide cards, one profile, leaderboard
+    await h.community.ensure(guild);await h.community.syncAll(guild);assert.equal(h.sent.length,8);assert.equal(h.created.length,4);
     for(const c of h.channels.values())for(const m of c.rows.values()){valid(m.payload);assert.deepEqual(m.payload.allowedMentions,{parse:[]});assert(m.edits>0);}
-    const next=new Community(h.client,game);await next.ensure(guild);await next.syncAll(guild);assert.equal(h.created.length,3);assert.equal(h.sent.length,3);next.stop();
+    const next=new Community(h.client,game);await next.ensure(guild);await next.syncAll(guild);assert.equal(h.created.length,4);assert.equal(h.sent.length,8);next.stop();
   }finally{h.community.stop();game.close();}
 });
 test('missing manage-channel permission asks for the narrow permission and leaves careers intact; partial retry does not duplicate',async()=>{
@@ -50,7 +50,7 @@ test('missing manage-channel permission asks for the narrow permission and leave
     const p=player(game);await assert.rejects(()=>h.community.ensure(guild),/管理頻道/);assert.equal(h.created.length,0);assert.deepEqual(game.get(guild,user),p);
     h.me.permissions=new PermissionsBitField(P.ManageChannels);h.failNextCreate();
     await assert.rejects(()=>h.community.ensure(guild));assert.equal(h.created.length,1);assert(game.settings(guild).profiles);
-    await h.community.ensure(guild);assert.equal(h.created.length,3);
+    await h.community.ensure(guild);assert.equal(h.created.length,4);
   }finally{h.community.stop();game.close();}
 });
 test('server-scoped leaderboard orders by career, merit and duties with ties, limits output and escapes user text',()=>{
@@ -69,14 +69,14 @@ test('mirrors update one profile per player and one board; concurrent scheduling
     h.community.schedule(guild,user);h.community.schedule(guild,other);h.community.schedule(guild,user);
     while(h.community.workers.size)await Promise.all([...h.community.workers.values()]);
     assert.deepEqual(ids,[game.message(guild,s.profiles,'profile:'+user),game.message(guild,s.profiles,'profile:'+other),game.message(guild,s.ranking,'ranking')]);
-    assert.equal(h.sent.length,4);assert(h.channels.get(s.profiles).rows.get(ids[0]).payload.embeds[0].data.description.includes('0.2'));
+    assert.equal(h.sent.length,9);assert(h.channels.get(s.profiles).rows.get(ids[0]).payload.embeds[0].data.description.includes('0.2'));
     const ranking=h.channels.get(s.ranking).rows.get(ids[2]).payload.embeds[0].data.description;assert(ranking.indexOf(user)<ranking.indexOf(other));
   }finally{h.community.stop();game.close();}
 });
 test('deleted board is recreated once; permission failure never creates duplicate messages or rolls back player merit',async()=>{
   const game=new Game(':memory:'),h=harness(game);try{
     player(game);const s=await h.community.ensure(guild);await h.community.syncAll(guild);const c=h.channels.get(s.ranking),old=game.message(guild,s.ranking,'ranking');
-    c.rows.delete(old);await h.community.syncAll(guild);const current=game.message(guild,s.ranking,'ranking');assert.notEqual(current,old);assert.equal(h.sent.length,4);
+    c.rows.delete(old);await h.community.syncAll(guild);const current=game.message(guild,s.ranking,'ranking');assert.notEqual(current,old);assert.equal(h.sent.length,9);
     c.fetchFailure=50013;const count=h.sent.length;await assert.rejects(()=>h.community.syncAll(guild));assert.equal(h.sent.length,count);assert.equal(game.message(guild,s.ranking,'ranking'),current);
     assert.equal(game.get(guild,user).merit,0);
   }finally{h.community.stop();game.close();}
@@ -106,6 +106,35 @@ test('public play is restricted to game channel, spectator buttons fail privatel
     i=interaction({command:'遊戲頻道',admin:true});await handle(i,game,{community:h.community});assert.equal(i.calls[0][0],'defer');assert.equal(i.calls[0][1].flags,64);assert(i.calls[1][1].content.includes(s.play));
     assert.equal(commands.find(c=>c.name==='遊戲頻道').default_member_permissions,String(P.ManageGuild));
     while(h.community.workers.size)await Promise.all([...h.community.workers.values()]);
+    await (h.community.queues.get(guild)||Promise.resolve());
+  }finally{h.community.stop();game.close();}
+});
+test('existing three-channel server gains only the guide channel; saves and existing message references are preserved',async()=>{
+  const game=new Game(':memory:'),h=harness(game);try{
+    const original=player(game),old={profiles:h.channel(channelNames.profiles).id,play:h.channel(channelNames.play).id,ranking:h.channel(channelNames.ranking).id};
+    game.setSettings(guild,old);await h.community.upsert(guild,old.play,'lobby',rankingCard([]));await h.community.syncAll(guild);
+    const refs=[game.message(guild,old.play,'lobby'),game.message(guild,old.profiles,'profile:'+user),game.message(guild,old.ranking,'ranking')];
+    const state=await h.community.ensure(guild);await h.community.syncAll(guild);
+    assert.equal(h.created.length,1);assert.equal(h.created[0].name,channelNames.guide);
+    for(const [key,id] of Object.entries(old))assert.equal(state[key],id);
+    assert.deepEqual(game.get(guild,user),original);
+    assert.deepEqual(refs,[game.message(guild,old.play,'lobby'),game.message(guild,old.profiles,'profile:'+user),game.message(guild,old.ranking,'ranking')]);
+    const cards=guideCards(state);assert.equal(cards.length,5);for(const c of cards)valid(c.payload);
+    const roles=cards.find(c=>c.slot==='guide:positions').payload.embeds[0].data.description;
+    for(const stage of stages){assert(roles.includes(stage.title));assert(roles.includes(stage.rank));}
+    const promotion=cards.find(c=>c.slot==='guide:promotion').payload.embeds[0].data.description;
+    for(const stage of stages.slice(0,-1)){assert(promotion.includes(stage.years+' 年'));assert(promotion.includes(stage.merit.toFixed(1)));}
+    assert.equal(h.channels.get(state.guide).rows.size,5);
+    await h.community.ensure(guild);assert.equal(h.created.length,1);assert.equal(h.channels.get(state.guide).rows.size,5);
+  }finally{h.community.stop();game.close();}
+});
+test('admin may select the guide alone, but cannot reuse the game channel for it or change settings through a duplicate',async()=>{
+  const game=new Game(':memory:'),h=harness(game);try{
+    const old=await h.community.ensure(guild),newGuide=h.channel('自訂說明');
+    let i=interaction({command:'遊戲頻道',admin:true});i.options.getChannel=name=>name==='說明'?newGuide:null;
+    await handle(i,game,{community:h.community});assert.equal(game.settings(guild).guide,newGuide.id);assert.equal(game.settings(guild).play,old.play);assert.equal(newGuide.rows.size,5);
+    i=interaction({command:'遊戲頻道',admin:true});i.options.getChannel=name=>name==='說明'?h.channels.get(old.play):null;
+    await handle(i,game,{community:h.community});assert.equal(i.calls[0][1].flags,64);assert.match(i.calls[0][1].content,/不同/);assert.equal(game.settings(guild).guide,newGuide.id);
     await (h.community.queues.get(guild)||Promise.resolve());
   }finally{h.community.stop();game.close();}
 });
