@@ -35,6 +35,7 @@ jobs:
           node scripts/career_records_test.mjs
           node scripts/role_cases_test.mjs
           node scripts/performance_progress_test.mjs
+          node scripts/discord_activity_test.mjs
           python scripts/validate_exam_archive.py
       - name: Build nationwide police directory
         shell: bash

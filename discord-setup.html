@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>在 Discord 玩｜台灣警察生涯模擬器</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#081322;color:#eaf2ff;font:16px/1.8 system-ui,sans-serif}main{max-width:780px;margin:auto;padding:36px 20px 70px}header{padding:24px 0 30px}.label{color:#a0acff;font-size:13px;letter-spacing:2px}h1{font-size:clamp(30px,6vw,44px);line-height:1.3;margin:12px 0}h2{font-size:21px;margin:0 0 10px}p{color:#b1c3dc;margin:10px 0}section{background:#101f33;border:1px solid #29415f;border-radius:18px;padding:24px;margin-bottom:18px}.step{color:#a0acff;font-size:13px;font-weight:700}a{color:#a8caff;text-underline-offset:4px}.button{display:inline-block;background:#5865f2;color:white;border-radius:10px;padding:10px 18px;margin-top:8px;text-decoration:none;font-weight:700}table{border-collapse:collapse;width:100%;margin:18px 0}th,td{border-bottom:1px solid #29415f;padding:12px 8px;text-align:left;overflow-wrap:anywhere}code{font-size:14px;color:#cbd9ff}small{color:#8fa6c3}ol{padding-left:24px}li{margin:10px 0}.note{border-left:3px solid #5865f2;padding-left:14px}
+</style>
+<main>
+<header><span class="label">DISCORD ACTIVITY</span><h1>在 DC 裡，展開警察生涯。</h1><p>網站端已加入活動接入。完成 Discord 後台設定後，即可在活動視窗中遊玩。</p><p class="note">目前是各自操作角色的單人生涯；尚未提供多人共同辦案。DC 與網頁版的本機存檔分開儲存，不會自動同步。</p></header>
+<section><span class="step">01 · 建立應用</span><h2>建立「台灣警察生涯模擬器」</h2><p>在 Discord Developer Portal 選擇 New Application，輸入遊戲名稱並建立。這個應用由你的 Discord 帳號管理。</p><a class="button" href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer">開啟 Discord 開發者後台</a></section>
+<section><span class="step">02 · 網址對應</span><h2>把活動指向這款遊戲</h2><p>在 Activities → URL Mappings 新增以下設定。Target 是資料夾網址，不含 https://，也不加 index.html。</p><table><thead><tr><th>Prefix</th><th>Target</th></tr></thead><tbody><tr><td><code>/</code></td><td><code>rgwvb.github.io/hai-sushi-schedule/</code></td></tr></tbody></table><p>儲存後，在 Activities → Settings 開啟 Enable Activities，勾選 Web、iOS、Android 等需要的平台。保留系統建立的預設 Launch 進入點。</p></section>
+<section><span class="step">03 · 從 DC 啟動</span><h2>先用自己的帳號測試</h2><ol><li>在 Discord 設定開啟 Developer Mode。</li><li>進入測試伺服器的頻道，打開 App Launcher／活動選單。</li><li>選擇你的遊戲，確認畫面出現「DC 活動｜已連線」。</li><li>建立角色、選擇入警路線，再測試勤務與存檔。</li></ol><p>尚未發布的活動，通常只有應用擁有者及開發團隊成員能在開發活動選單中看到。要提供給其他朋友，還需完成 Discord 的安裝與發佈設定；不是填完網址就會自動上架。</p></section>
+<section><h2>已接入的部分</h2><p>遊戲會偵測 Discord 活動環境，連接官方 SDK；法規與試題來源連結交由 Discord 開啟。全台單位資料、題庫與遊戲資源使用同站路徑載入。此版本先以本機角色遊玩，不會自動登入 Discord 帳號或建立共享存檔。</p><p><a href="index.html">開啟網頁版遊戲</a> · <a href="https://docs.discord.com/developers/activities/building-an-activity" target="_blank" rel="noopener noreferrer">Discord 官方接入教學</a></p><small>網站端測試不能取代真實 Discord 活動驗收，仍需用你建立的應用完成最後測試。</small></section>
+</main></html>

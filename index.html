@@ -1424,6 +1424,11 @@ body.topic-quiz-open{overflow:hidden}
   </div>
 </dialog>
 
+<dialog id="discordResetDialog" aria-labelledby="discordResetTitle" style="max-width:420px;width:calc(100% - 32px);border:1px solid #31527d;border-radius:16px;background:#101c2f;color:#f2f6fc;padding:24px">
+  <h2 id="discordResetTitle">重新開始生涯？</h2>
+  <p>這會清除目前裝置的生涯存檔。</p>
+  <div class="button-row"><button type="button" class="secondary-btn" id="discordResetCancel">保留存檔</button><button type="button" class="danger-btn" id="discordResetConfirm">清除並重新開始</button></div>
+</dialog>
 <script id="standaloneBackendConfig">
 // Fill these with your Supabase project values.
 // Project Settings -> API
@@ -2476,7 +2481,7 @@ function renderNationalDirectory(){
 
 async function loadPoliceDirectory(){
   try{
-    const res=await fetch("https://rgwvb.github.io/hai-sushi-schedule/police-directory.json",{cache:"default"});
+    const res=await fetch("police-directory.json",{cache:"default"});
     if(!res.ok)throw new Error("HTTP "+res.status);
     const data=await res.json();
     if(!data||!data.counties||!Object.keys(data.counties).length)throw new Error("資料尚未建立");
@@ -2898,7 +2903,13 @@ function render(){
   parts.forEach(([name,fn])=>safeRenderPart(name,fn));
 }
 $("continueBtn").onclick=()=>go(next());["saveBtn","manualSaveBtn"].forEach(id=>$(id).onclick=save);["loadBtn","manualLoadBtn"].forEach(id=>$(id).onclick=load);
-$("resetBtn").onclick=()=>{if(confirm("確定清除目前生涯存檔並重新開始？")){localStorage.removeItem("twPoliceCareerSaveV1");localStorage.removeItem(CLOCK_KEY);s=NEW();migrateClock();render();go("dashboard");toast("已重新開始")}};
+function resetCareerSave(){localStorage.removeItem("twPoliceCareerSaveV1");localStorage.removeItem(CLOCK_KEY);s=NEW();migrateClock();render();go("dashboard");toast("已重新開始")}
+$("resetBtn").onclick=()=>{
+  if(window.policeDiscord?.active){const dialog=$("discordResetDialog");if(!dialog.open)dialog.showModal();return;}
+  if(confirm("確定清除目前生涯存檔並重新開始？"))resetCareerSave();
+};
+$("discordResetCancel").onclick=()=>$("discordResetDialog").close();
+$("discordResetConfirm").onclick=()=>{$("discordResetDialog").close();resetCareerSave()};
 window.addEventListener("beforeunload",()=>{migrateClock();localStorage.setItem(CLOCK_KEY,String(s.maxSimEpoch||s.simEpoch||0));localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s))});
 let raw=localStorage.getItem("twPoliceCareerSaveV1");if(raw){try{s=Object.assign(NEW(),JSON.parse(raw))}catch(e){console.error(e)}}
 normalizeState();
@@ -4832,5 +4843,6 @@ loadPoliceDirectory();
 </script>
 <script src="scripts/exam_archive.js?v=20261007-game"></script>
 <script src="scripts/workforce_scenarios.js?v=20261012-role"></script>
+<script type="module" src="scripts/discord_activity.mjs?v=20261017"></script>
 </body>
 </html>
