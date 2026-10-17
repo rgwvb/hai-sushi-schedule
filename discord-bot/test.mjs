@@ -10,6 +10,7 @@ import { config } from './config.mjs';
 import { cloudContext, startCloud, safeStartupFailure } from './cloud.mjs';
 import { EventEmitter } from 'node:events';
 import { Events } from 'discord.js';
+import { careerRole,currentRank,positionSummary } from './career.mjs';
 const g='111111111111111111',u='222222222222222222',other='333333333333333333';
 const create=game=>game.create(g,u,'測試警員','新北市政府警察局板橋分局某派出所');
 function finish(game,quality=100,kind='duty'){
@@ -190,4 +191,48 @@ test('cloud diagnostics identify the failing stage without logging request paylo
   assert.equal(safeStartupFailure({cloudPhase:'commands',code:50001,message:secret}),'註冊指令失敗（代碼 50001）');
   assert(!safeStartupFailure({message:secret,code:'not allowed / value'}).includes(secret));
   assert.match(safeStartupFailure({message:secret,code:'not allowed / value'}),/UNKNOWN/);
+});
+test('official position ranges and duty insignia do not collapse into a fixed personal rank',()=>{
+  const municipal=stage=>careerRole({stage,unit:'新北市政府警察局板橋分局某派出所'});
+  const county=stage=>careerRole({stage,unit:'花蓮縣警察局吉安分局某派出所'});
+  assert.equal(municipal(2).rankRange,'警佐一階至警正三階');assert.equal(municipal(2).badge,'二線一星');
+  assert.equal(municipal(3).rankRange,'警佐一階至警正三階');assert.equal(municipal(3).badge,'二線二星');
+  assert.equal(municipal(4).rankRange,'警正四階至警正二階');assert.equal(municipal(4).badge,'二線三星');
+  assert.equal(municipal(7).rankRange,'警監一階');assert.equal(municipal(7).rank,'警監一階');
+  assert.equal(county(5).rankRange,'警正二階至警正一階');assert.equal(county(5).badge,'二線四星');
+  assert.equal(county(6).rankRange,'警正一階至警監四階');assert.equal(county(6).badge,'三線一星');
+  assert.equal(county(7).rankRange,'警監四階至警監三階');assert.equal(county(7).badge,'三線二星');
+  for(let stage=0;stage<stages.length;stage++)for(const role of [municipal(stage),county(stage)])assert(role.allowedRanks.includes(role.rank));
+  const a={stage:2,unit:'新北市某派出所',personalRank:'警佐一階'},b={...a,personalRank:'警正四階'};
+  assert.notEqual(currentRank(a),currentRank(b));assert.equal(careerRole(a).badge,careerRole(b).badge);
+  assert(positionSummary(careerRole(a)).includes('第 9 序列'));
+});
+test('legacy career upgrade corrects rank context while preserving progress, pending case and channel message IDs',()=>{
+  const dir=mkdtempSync(join(tmpdir(),'police-ranks-')),path=join(dir,'save.sqlite');let game=new Game(path);
+  try{
+    const p=create(game);p.stage=7;p.month=240;p.appointed=220;p.merit=41.2;p.completed=240;p.trained=['已完成研習'];p.pending={id:'existing-case',kind:'duty',choices:[],title:'保留案件'};
+    delete p.personalRank;delete p.homeUnit;delete p.careerModelVersion;
+    game.db.prepare('UPDATE players SET state=? WHERE guild=? AND user=?').run(JSON.stringify(p),g,u);
+    game.setSettings(g,{play:'existing-channel'});game.setMessage(g,'existing-channel','lobby','existing-message');game.close();game=new Game(path);
+    const upgraded=game.get(g,u);assert.equal(upgraded.personalRank,'警監一階');assert.equal(upgraded.homeUnit,p.unit);assert.equal(upgraded.unit,'新北市政府警察局');
+    for(const key of ['stage','month','appointed','merit','completed','trained','pending','history','yearScores','appraisals'])assert.deepEqual(upgraded[key],p[key]);
+    assert.equal(game.settings(g).play,'existing-channel');assert.equal(game.message(g,'existing-channel','lobby'),'existing-message');
+    game.close();game=new Game(path);assert.deepEqual(game.get(g,u),upgraded);
+  }finally{game.close();rmSync(dir,{recursive:true});}
+});
+test('personal rank never falls on promotion and stays in the target official range; county units retain their own track',()=>{
+  const game=new Game(':memory:');try{
+    create(game);game.transaction(g,u,p=>{p.personalRank='警正四階';});years(game,2);
+    const p=game.promote(g,u,0);assert.equal(p.personalRank,'警正四階');assert.equal(careerRole(p).badge,'一線四星');
+  }finally{game.close();}
+  const countyGame=new Game(':memory:');try{
+    countyGame.create(g,u,'縣市角色','花蓮縣警察局吉安分局某派出所');
+    for(let stage=0;stage<7;stage++){
+      years(countyGame,stages[stage].years);if(stages[stage+1].training)for(let i=0;i<3;i++)finish(countyGame,100,'training');
+      const p=countyGame.promote(g,u,stage);assert(careerRole(p).allowedRanks.includes(p.personalRank));
+      assert.equal(p.homeUnit,'花蓮縣警察局吉安分局某派出所');
+      if(p.stage===4)assert(p.unit.includes('警政署'));if(p.stage===5)assert.equal(p.unit,'花蓮縣警察局吉安分局');
+    }
+    const chief=countyGame.get(g,u);assert.equal(chief.personalRank,'警監三階');assert.equal(careerRole(chief).badge,'三線二星');assert.equal(chief.unit,'花蓮縣警察局');
+  }finally{countyGame.close();}
 });

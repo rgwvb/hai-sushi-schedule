@@ -1,5 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, escapeMarkdown } from 'discord.js';
-import { stages, stamp, GameError } from './game.mjs';
+import { stages, stamp, GameError,careerRole,currentRank } from './game.mjs';
+import { positionSummary } from './career.mjs';
 const safe=value=>escapeMarkdown(String(value));
 const blue=0x2463b2;
 const card=(title,text)=>new EmbedBuilder().setColor(blue).setTitle(title).setDescription(text).setFooter({text:'DC 獨立存檔 · 生涯與升遷採簡化遊戲規則'});
@@ -12,20 +13,21 @@ export function creationModal(){return new ModalBuilder().setCustomId('create-ca
   row(new TextInputBuilder().setCustomId('name').setLabel('角色姓名').setStyle(TextInputStyle.Short).setMinLength(1).setMaxLength(20).setRequired(true)),
   row(new TextInputBuilder().setCustomId('unit').setLabel('任職單位（可填全台各縣市單位）').setPlaceholder('例：新北市政府警察局板橋分局某派出所').setStyle(TextInputStyle.Short).setMinLength(1).setMaxLength(80).setRequired(true))
 );}
-export function profile(p,user){const r=stages[p.stage];return {embeds:[card(safe(p.name)+'｜'+r.title,
-  '**'+r.rank+' '+r.title+'**\n'+safe(p.unit)+'\n\n'+stamp(p.month)+'｜'+(22+Math.floor(p.month/12))+' 歲\n服務年資 '+(p.month/12).toFixed(1)+' 年｜完成勤務 '+p.completed+' 件\n**勤務績效 '+p.merit.toFixed(1)+'**\n最近考績：'+(p.appraisals.slice(-2).map(a=>a.year+' '+a.grade+'（'+a.score+'）').join('、')||'尚未滿一年')+(p.month>=516?'\n\n已屆本版模擬退休年齡。':'') )],components:[nav(user)]};}
-export function missionCard(p,m,user){const r=stages[p.stage];return {embeds:[card((m.kind==='training'?'模擬研習｜':'勤務｜')+m.title,
-  '**'+safe(p.name)+'｜'+r.rank+' '+r.title+'** · '+safe(p.unit)+'\n'+(m.kind==='training'?m.training+'｜連續答對 '+p.trainingProgress+'／3 題\n':'')+'\n'+m.story+'\n\n'+m.choices.map((c,i)=>'**'+['A','B','C'][i]+'** '+c.text).join('\n\n')+'\n\n'+(r.deck==='patrol'?'你負責本人及搭檔勤務；跨單位調度請通報主管。':r.title.includes('副')?'依授權協助正主管，超出範圍須呈報核定。':r.deck==='staff'?'你負責承辦、查驗與呈報，資源需經權責核定。':'依職務權責協調分工，跨單位需求仍須核定。'))],
+export function profile(p,user){const r=careerRole(p);return {embeds:[card(safe(p.name)+'｜'+r.title,
+  '**職位：'+r.title+'**\n個人官階（遊戲）：'+currentRank(p)+'\n職務配階：'+positionSummary(r)+'\n任職單位：'+safe(p.unit)+(r.scopeNote?'\n'+r.scopeNote:'')+'\n\n'+stamp(p.month)+'｜'+(22+Math.floor(p.month/12))+' 歲\n服務年資 '+(p.month/12).toFixed(1)+' 年｜完成勤務 '+p.completed+' 件\n**勤務績效 '+p.merit.toFixed(1)+'**\n最近考績：'+(p.appraisals.slice(-2).map(a=>a.year+' '+a.grade+'（'+a.score+'）').join('、')||'尚未滿一年')+(p.month>=516?'\n\n已屆本版模擬退休年齡。':'') )],components:[nav(user)]};}
+export function missionCard(p,m,user){const r=careerRole(p);return {embeds:[card((m.kind==='training'?'模擬研習｜':'勤務｜')+m.title,
+  '**'+safe(p.name)+'｜'+r.title+'**\n個人官階（遊戲）：'+currentRank(p)+'｜職務配階：'+r.badge+'\n'+safe(p.unit)+'\n'+(m.kind==='training'?m.training+'｜連續答對 '+p.trainingProgress+'／3 題\n':'')+'\n'+m.story+'\n\n'+m.choices.map((c,i)=>'**'+['A','B','C'][i]+'** '+c.text).join('\n\n')+'\n\n'+(r.deck==='patrol'?'你負責本人及搭檔勤務；跨單位調度請通報主管。':r.title.includes('副')?'依授權協助正主管，超出範圍須呈報核定。':r.deck==='staff'?'你負責承辦、查驗與呈報，資源需經權責核定。':'依職務權責協調分工，跨單位需求仍須核定。'))],
   components:[row(...m.choices.map((_,i)=>button(`answer:${user}:${m.id}:${i}`,['A','B','C'][i],ButtonStyle.Primary)))]};}
 export function resultCard(result,user){const {p,mission:m,choice,before,after,award,annual}=result;
-  let text='**你的處置：**'+choice.text+'\n\n**案件分析**\n'+m.analysis+'\n\n'+(choice.quality===100?'✅ 處置妥適。':choice.quality===60?'🟡 有處理，但查證或銜接仍可改善。':'🔴 這項處置有程序或安全風險，建議重新檢視。');
+  const r=careerRole(p);
+  let text='**'+r.title+'｜'+r.badge+'**\n\n**你的處置：**'+choice.text+'\n\n**案件分析**\n'+m.analysis+'\n\n'+(choice.quality===100?'✅ 處置妥適。':choice.quality===60?'🟡 有處理，但查證或銜接仍可改善。':'🔴 這項處置有程序或安全風險，建議重新檢視。');
   if(m.kind==='training')text+='\n\n'+(p.trained.includes(m.training)?'✅ '+m.training+' 已完成。':'研習連續答對 '+p.trainingProgress+'／3 題；答錯會重新累計。');
   else text+='\n\n**勤務績效 '+before.toFixed(1)+' → '+after.toFixed(1)+'（+'+award.toFixed(1)+'）**\n時間推進至 '+stamp(p.month)+(annual?'\n'+annual.year+' 年度考績：**'+annual.grade+'**（'+annual.score+' 分）':'');
   const controls=m.kind==='training'&&!p.trained.includes(m.training)?row(button('nav:'+user+':training','繼續研習',ButtonStyle.Primary),button('nav:'+user+':promotion','查看升遷')):nav(user);
   return {embeds:[card('處理結果｜'+safe(p.name)+'｜'+m.title,text)],components:[controls]};
 }
 export function promotionCard(game,p,user){const q=game.requirements(p);return {embeds:[card('升遷申請',
-  (q.next?'下一職務：**'+q.next.rank+' '+q.next.title+'**\n\n':'')+q.lines.join('\n')+'\n\n此為 DC 版簡化遊戲條件，實際任用須依正式法規與職缺。')],components:q.next?[row(
+  (q.next?'下一職務：**'+q.next.title+'｜'+q.next.badge+'**\n'+positionSummary(q.next)+'\n\n':'')+q.lines.join('\n')+'\n\n個人官階與職務等階分開；研習、年資及績效門檻仍為 DC 版模擬規則，並非完整法定任用條件。')],components:q.next?[row(
     ...(q.ready?[button('promote:'+user+':'+p.stage,'確認申請升遷',ButtonStyle.Success)]:[]),
     ...(q.next.training&&!p.trained.includes(q.next.training)?[button('nav:'+user+':training','開始模擬研習',ButtonStyle.Primary)]:[]),button('nav:'+user+':mission','繼續勤務'))]:[]};}
 export function historyCard(p,user){return {embeds:[card('生涯履歷｜'+safe(p.name),

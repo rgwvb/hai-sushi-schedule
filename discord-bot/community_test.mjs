@@ -138,3 +138,19 @@ test('admin may select the guide alone, but cannot reuse the game channel for it
     await (h.community.queues.get(guild)||Promise.resolve());
   }finally{h.community.stop();game.close();}
 });
+test('leaderboard compares official duty sequence across county and municipal chiefs rather than game stage index',()=>{
+  const player=(stage,unit)=>({stage,unit,merit:10,completed:50,name:'角色',month:50,appraisals:[]});
+  const ranked=rankedPlayers([
+    {user:'county-chief',p:player(7,'花蓮縣警察局')},
+    {user:'metro-deputy',p:player(6,'新北市政府警察局')},
+    {user:'metro-chief',p:player(7,'新北市政府警察局')}
+  ]);
+  assert.equal(ranked[0].user,'metro-chief');assert.equal(ranked[1].rank,2);assert.equal(ranked[2].rank,2);
+  const cards=guideCards({play:'1',profiles:'2',ranking:'3',guide:'4'});for(const c of cards)valid(c.payload);
+  const roles=cards.find(c=>c.slot==='guide:positions').payload.embeds[0].data.description;
+  assert(roles.includes('個人官階'));assert(roles.includes('直轄市：'));assert(roles.includes('縣（市）：'));assert(roles.includes('law.moj.gov.tw'));
+  const game=new Game(':memory:');try{
+    const p=game.create(guild,user,'角色','新北市某派出所');const card=publicProfile({...p,stage:2},user).embeds[0].data.description;
+    assert(card.includes('職務等階：警佐一階至警正三階'));assert(card.includes('職務配階：二線一星'));assert(card.includes('個人官階（遊戲）'));
+  }finally{game.close();}
+});
