@@ -1,5 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, escapeMarkdown } from 'discord.js';
 import { stages, stamp, GameError,careerRole,currentRank } from './game.mjs';
+import { withInsignia } from './insignia.mjs';
 import { positionSummary } from './career.mjs';
 const safe=value=>escapeMarkdown(String(value));
 const blue=0x2463b2;
@@ -13,10 +14,10 @@ export function creationModal(){return new ModalBuilder().setCustomId('create-ca
   row(new TextInputBuilder().setCustomId('name').setLabel('角色姓名').setStyle(TextInputStyle.Short).setMinLength(1).setMaxLength(20).setRequired(true)),
   row(new TextInputBuilder().setCustomId('unit').setLabel('任職單位（可填全台各縣市單位）').setPlaceholder('例：新北市政府警察局板橋分局某派出所').setStyle(TextInputStyle.Short).setMinLength(1).setMaxLength(80).setRequired(true))
 );}
-export function profile(p,user){const r=careerRole(p);return {embeds:[card(safe(p.name)+'｜'+r.title,
-  '**職位：'+r.title+'**\n個人官階（遊戲）：'+currentRank(p)+'\n職務配階：'+positionSummary(r)+'\n任職單位：'+safe(p.unit)+(r.scopeNote?'\n'+r.scopeNote:'')+'\n\n'+stamp(p.month)+'｜'+(22+Math.floor(p.month/12))+' 歲\n服務年資 '+(p.month/12).toFixed(1)+' 年｜完成勤務 '+p.completed+' 件\n**勤務績效 '+p.merit.toFixed(1)+'**\n最近考績：'+(p.appraisals.slice(-2).map(a=>a.year+' '+a.grade+'（'+a.score+'）').join('、')||'尚未滿一年')+(p.month>=516?'\n\n已屆本版模擬退休年齡。':'') )],components:[nav(user)]};}
-export function missionCard(p,m,user){const r=careerRole(p);return {embeds:[card((m.kind==='training'?'模擬研習｜':'勤務｜')+m.title,
-  '**'+safe(p.name)+'｜'+r.title+'**\n個人官階（遊戲）：'+currentRank(p)+'｜職務配階：'+r.badge+'\n'+safe(p.unit)+'\n'+(m.kind==='training'?m.training+'｜連續答對 '+p.trainingProgress+'／3 題\n':'')+'\n'+m.story+'\n\n'+m.choices.map((c,i)=>'**'+['A','B','C'][i]+'** '+c.text).join('\n\n')+'\n\n'+(r.deck==='patrol'?'你負責本人及搭檔勤務；跨單位調度請通報主管。':(r.authority==='deputy'||r.title.includes('副'))?'依授權協助正主管，超出範圍須呈報核定。':(r.authority==='staff'||r.deck==='staff')?'你負責承辦、查驗與呈報，資源需經權責核定。':r.authority==='team'?'依授權帶領本班或小隊；超出範圍須呈報主管。':'依職務權責協調分工，跨單位需求仍須核定。'))],
+export function profile(p,user){const r=careerRole(p);return {embeds:[withInsignia(card(safe(p.name)+'｜'+r.title,
+  '**職位：'+r.title+'**\n個人官階（遊戲）：'+currentRank(p)+'\n職務配階：'+positionSummary(r)+'\n任職單位：'+safe(p.unit)+(r.scopeNote?'\n'+r.scopeNote:'')+'\n\n'+stamp(p.month)+'｜'+(22+Math.floor(p.month/12))+' 歲\n服務年資 '+(p.month/12).toFixed(1)+' 年｜完成勤務 '+p.completed+' 件\n**勤務績效 '+p.merit.toFixed(1)+'**\n最近考績：'+(p.appraisals.slice(-2).map(a=>a.year+' '+a.grade+'（'+a.score+'）').join('、')||'尚未滿一年')+(p.month>=516?'\n\n已屆本版模擬退休年齡。':'') ),r)],components:[nav(user)]};}
+export function missionCard(p,m,user){const r=careerRole(p);return {embeds:[withInsignia(card((m.kind==='training'?'模擬研習｜':'勤務｜')+m.title,
+  '**'+safe(p.name)+'｜'+r.title+'**\n個人官階（遊戲）：'+currentRank(p)+'｜職務配階：'+r.badge+'\n'+safe(p.unit)+'\n'+(m.kind==='training'?m.training+'｜連續答對 '+p.trainingProgress+'／3 題\n':'')+'\n'+m.story+'\n\n'+m.choices.map((c,i)=>'**'+['A','B','C'][i]+'** '+c.text).join('\n\n')+'\n\n'+(r.deck==='patrol'?'你負責本人及搭檔勤務；跨單位調度請通報主管。':(r.authority==='deputy'||r.title.includes('副'))?'依授權協助正主管，超出範圍須呈報核定。':(r.authority==='staff'||r.deck==='staff')?'你負責承辦、查驗與呈報，資源需經權責核定。':r.authority==='team'?'依授權帶領本班或小隊；超出範圍須呈報主管。':'依職務權責協調分工，跨單位需求仍須核定。')),r)],
   components:[row(...m.choices.map((_,i)=>button(`answer:${user}:${m.id}:${i}`,['A','B','C'][i],ButtonStyle.Primary)))]};}
 export function resultCard(result,user){const {p,mission:m,choice,before,after,award,annual}=result;
   const r=careerRole(p);
@@ -24,18 +25,18 @@ export function resultCard(result,user){const {p,mission:m,choice,before,after,a
   if(m.kind==='training')text+='\n\n'+(p.trained.includes(m.training)?'✅ '+m.training+' 已完成。':'研習連續答對 '+p.trainingProgress+'／3 題；答錯會重新累計。');
   else text+='\n\n**勤務績效 '+before.toFixed(1)+' → '+after.toFixed(1)+'（+'+award.toFixed(1)+'）**\n時間推進至 '+stamp(p.month)+(annual?'\n'+annual.year+' 年度考績：**'+annual.grade+'**（'+annual.score+' 分）':'');
   const controls=m.kind==='training'&&!p.trained.includes(m.training)?row(button('nav:'+user+':training','繼續研習',ButtonStyle.Primary),button('nav:'+user+':promotion','查看升遷')):nav(user);
-  return {embeds:[card('處理結果｜'+safe(p.name)+'｜'+m.title,text)],components:[controls]};
+  return {embeds:[withInsignia(card('處理結果｜'+safe(p.name)+'｜'+m.title,text),r)],components:[controls]};
 }
-export function promotionCard(game,p,user){const q=game.requirements(p);return {embeds:[card('升遷申請',
-  (q.next?'下一職務層級：**'+q.next.title+'等職缺｜'+q.next.badge+'**\n'+positionSummary(q.next)+'\n\n':'')+q.lines.join('\n')+'\n\n個人官階與職務等階分開；研習、年資及績效門檻仍為 DC 版模擬規則，並非完整法定任用條件。')],components:q.next?[row(
+export function promotionCard(game,p,user){const q=game.requirements(p);return {embeds:[withInsignia(card('升遷申請',
+  (q.next?'下一職務層級：**'+q.next.title+'等職缺｜'+q.next.badge+'**\n'+positionSummary(q.next)+'\n\n':'')+q.lines.join('\n')+'\n\n個人官階與職務等階分開；研習、年資及績效門檻仍為 DC 版模擬規則，並非完整法定任用條件。'),q.next||careerRole(p))],components:q.next?[row(
     ...(q.ready?[button('promote:'+user+':'+p.stage,'查看可選升遷職缺',ButtonStyle.Success)]:[]),
     ...(q.next.training&&!p.trained.includes(q.next.training)?[button('nav:'+user+':training','開始模擬研習',ButtonStyle.Primary)]:[]),button('nav:'+user+':mission','繼續勤務'))]:[]};}
 export function vacancyCard(p,offer,user,page=0){
   const pages=Math.ceil(offer.rows.length/4);
   if(!Number.isInteger(page)||page<0||page>=pages)throw new GameError('無效職缺頁碼。');
   const start=page*4,rows=offer.rows.slice(start,start+4);
-  return {embeds:[card(offer.kind==='promotion'?'升遷｜選填職缺':'輪調｜選填同序列職缺',
-    '一般職務與兼任職務都可選，按下職缺即確認派任。\n'+(offer.kind==='rotation'?'輪調保留升遷年資、績效、考績及研習進度。':'符合條件後，由你選擇下一個職缺。')+'\n\n'+rows.map((r,i)=>`**${start+i+1}. ${r.role.title}**\n${safe(r.unit)}`).join('\n\n')+`\n\n第 ${page+1}／${pages} 頁；以上為模擬職缺。`)],components:[
+  return {embeds:[withInsignia(card(offer.kind==='promotion'?'升遷｜選填職缺':'輪調｜選填同序列職缺',
+    '一般職務與兼任職務都可選，按下職缺即確認派任。\n'+(offer.kind==='rotation'?'輪調保留升遷年資、績效、考績及研習進度。':'符合條件後，由你選擇下一個職缺。')+'\n\n'+rows.map((r,i)=>`**${start+i+1}. ${r.role.title}**\n${safe(r.unit)}`).join('\n\n')+`\n\n第 ${page+1}／${pages} 頁；以上為模擬職缺。`),careerRole({...p,post:null},offer.target))],components:[
     ...rows.map((r,i)=>row(button(`choose:${user}:${offer.id}:${start+i}`,`${start+i+1}. ${r.role.title}`,ButtonStyle.Success))),
     row(...(page>0?[button(`jobs:${user}:${offer.id}:${page-1}`,'上一頁')]:[]),...(page+1<pages?[button(`jobs:${user}:${offer.id}:${page+1}`,'下一頁')]:[]),button('nav:'+user+':profile','回角色'))]};
 }

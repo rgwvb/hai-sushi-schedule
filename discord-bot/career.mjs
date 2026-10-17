@@ -17,7 +17,8 @@ export const stages=[
   {title:'分局長',rank:'警正一階',rankRange:'警正一階至警監四階',allowedRanks:between('警正一階','警監四階'),badge:'三線一星',sequence:4,scope:'直轄市警察局所屬分局',deck:'precinct',years:5,merit:10},
   {title:'副局長',rank:'警監三階',rankRange:'警監三階至警監二階',allowedRanks:between('警監三階','警監二階'),badge:'三線二星',sequence:3,scope:'直轄市警察局',deck:'bureau',years:6,merit:12,training:'警正升警監模擬研習'},
   {title:'局長',rank:'警監一階',rankRange:'警監一階',allowedRanks:['警監一階'],badge:'三線三星',sequence:1,scope:'直轄市警察局',deck:'bureau',years:6,merit:12},
-  {title:'署長',rank:'警監特階',rankRange:'警監一階至警監特階',allowedRanks:between('警監一階','警監特階'),badge:'三線四星',sequence:null,scope:'內政部警政署',deck:'npa'}
+  {title:'署長',rank:'警監特階',rankRange:'警監一階至警監特階',allowedRanks:between('警監一階','警監特階'),badge:'三線四星',sequence:null,scope:'內政部警政署',deck:'npa'},
+  {title:'副分局長',rank:'警正一階',rankRange:'警正三階至警正一階',allowedRanks:between('警正三階','警正一階'),badge:'二線四星',sequence:5,scope:'直轄市警察局所屬分局',deck:'precinct',years:3,merit:6}
 ];
 const countyVariants={
   5:{rank:'警正一階',rankRange:'警正二階至警正一階',allowedRanks:between('警正二階','警正一階'),badge:'二線四星',sequence:5,scope:'縣（市）警察局所屬分局'},
@@ -45,7 +46,7 @@ export function normalizeCareer(p){
   return p;
 }
 export function promoteRank(p){
-  const role=careerRole(p),old=currentRank({...p,stage:p.stage-1});
+  const role=careerRole(p),old=p.personalRank||role.rank;
   // Game appointment rank is an explicit simulation choice within the official range.
   // It is not a statement that everyone holding this title has the same personal rank.
   const preferred=rankOrder.indexOf(old)>rankOrder.indexOf(role.rank)?old:role.rank;
@@ -57,7 +58,7 @@ export function appointmentUnit(p){
   if(p.stage===8)return '內政部警政署';
   if(p.stage===4)return area.type==='metro'?`${area.county}政府警察局｜業務單位（模擬任命）`:'內政部警政署｜業務單位（模擬任命）';
   const agency=home.match(/^(.*?警察局)/)?.[1]||(area.type==='metro'?`${area.county}政府警察局`:area.county?`${area.county}警察機關（模擬任命）`:'直轄市警察局（遊戲預設）');
-  if(p.stage===5){const precinct=home.match(/^(.*?分局)/)?.[1];return precinct||`${role.scope}（模擬任命；原轄區 ${area.county||'未填'}）`;}
+  if(p.stage===5||p.stage===9){const precinct=home.match(/^(.*?分局)/)?.[1];return precinct||`${role.scope}（模擬任命；原轄區 ${area.county||'未填'}）`;}
   return agency;
 }
 
@@ -74,7 +75,7 @@ export function vacancies(p,index=p.stage){
     [['警務員','staff','staff','行政組'],['警務員','traffic','staff','交通組'],['組員','prevention','staff','防治單位'],['偵查員','criminal','staff','偵查隊'],['警務員兼所長','station_lead','head','派出所']],
     [['警務正','staff','staff','業務單位'],['警務正','inspection','staff','督察單位'],['警務正','dispatch','staff','勤務指揮中心']],
   ];
-  let specs=groups[index]||[[base.title,base.deck,index===6?'deputy':'head','']];
+  let specs=groups[index]||[[base.title,base.deck,[6,9].includes(index)?'deputy':'head','']];
   const rows=specs.map(([title,deck,authority,suffix],i)=>({id:'local-'+i,unit:index<4?agency+'｜'+suffix:appointmentUnit({...p,post:null,stage:index}),role:{title,deck,authority}}));
   if(index<4)for(const county of ['新北市','臺中市','高雄市','屏東縣','花蓮縣']){
     if(local.includes(county))continue;
@@ -83,3 +84,12 @@ export function vacancies(p,index=p.stage){
   }
   return rows;
 }
+
+// Stable IDs keep existing saves intact while inserting the missing municipal level.
+export function nextStage(p){
+  if(p.stage===8)return null;
+  if(p.stage===9)return 5;
+  if(p.stage===4&&careerArea(p.careerHome||p.homeUnit||p.unit).type!=='county')return 9;
+  return p.stage+1;
+}
+export const careerDisplayOrder=[0,1,2,3,4,9,5,6,7,8];

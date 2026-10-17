@@ -123,7 +123,7 @@ test('existing three-channel server gains only the guide channel; saves and exis
     const roles=cards.find(c=>c.slot==='guide:positions').payload.embeds[0].data.description;
     for(const stage of stages){assert(roles.includes(stage.title));assert(roles.includes(stage.rank));}
     const promotion=cards.find(c=>c.slot==='guide:promotion').payload.embeds[0].data.description;
-    for(const stage of stages.slice(0,-1)){assert(promotion.includes(stage.years+' 年'));assert(promotion.includes(stage.merit.toFixed(1)));}
+    for(const stage of stages.filter(r=>r.years)){assert(promotion.includes(stage.years+' 年'));assert(promotion.includes(stage.merit.toFixed(1)));}
     assert.equal(h.channels.get(state.guide).rows.size,5);
     await h.community.ensure(guild);assert.equal(h.created.length,1);assert.equal(h.channels.get(state.guide).rows.size,5);
   }finally{h.community.stop();game.close();}

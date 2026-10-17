@@ -10,7 +10,7 @@ import { config } from './config.mjs';
 import { cloudContext, startCloud, safeStartupFailure } from './cloud.mjs';
 import { EventEmitter } from 'node:events';
 import { Events } from 'discord.js';
-import { careerRole,currentRank,positionSummary } from './career.mjs';
+import { careerRole,currentRank,positionSummary,nextStage,careerDisplayOrder } from './career.mjs';
 const g='111111111111111111',u='222222222222222222',other='333333333333333333';
 const create=game=>game.create(g,u,'測試警員','新北市政府警察局板橋分局某派出所');
 function finish(game,quality=100,kind='duty'){
@@ -111,13 +111,13 @@ test('training progresses, resets on incorrect answer, settles immediately and c
 test('entire career plays through role changes with valid Discord embeds, no instant promotion and retirement',()=>{
   const game=new Game(':memory:');try{
     create(game);
-    for(let stage=0;stage<stages.length;stage++){
+    for(const stage of careerDisplayOrder){
       let p=game.get(g,u);assert.equal(p.stage,stage);valid(profile(p,u));valid(promotionCard(game,p,u));
       const m=game.mission(g,u).mission;assert(cases[stages[stage].deck].some(c=>c.title===m.title));
       valid(missionCard(p,m,u));valid(resultCard(finish(game),u));
-      if(stage===stages.length-1)break;
+      if(nextStage(p)===null)break;
       const months=stages[stage].years*12-1;for(let i=0;i<months;i++)finish(game);
-      p=game.get(g,u);if(stages[stage+1].training)for(let i=0;i<3;i++)finish(game,100,'training');
+      p=game.get(g,u);if(stages[nextStage(p)].training)for(let i=0;i<3;i++)finish(game,100,'training');
       assert(game.requirements(game.get(g,u)).ready);game.promote(g,u,stage);
     }
     valid(historyCard(game.get(g,u),u));
@@ -295,5 +295,27 @@ test('cross-county choices carry the new agency context into later appointments'
     const p=game.appoint(g,u,offer.id,offer.rows.findIndex(r=>r.unit.includes('屏東縣')));
     assert.equal(careerRole(p,5).sequence,5);assert.equal(careerRole(p,5).badge,'二線四星');
     assert(p.homeUnit.includes('新北市'));assert(p.careerHome.includes('屏東縣'));
+  }finally{game.close();}
+});
+
+test('municipal career includes two-line four-star deputy precinct chief; county chief and legacy progress stay intact',()=>{
+  const game=new Game(':memory:');try{
+    create(game);game.transaction(g,u,p=>{p.stage=4;p.month=240;p.appointed=180;p.merit=40;p.stageMerit=20;p.appraisals=[{grade:'A'},{grade:'A'}];});
+    const {p,offer}=game.offers(g,u,'promotion');assert.equal(offer.target,9);
+    assert.equal(game.requirements(p).next.badge,'二線四星');
+    const appointed=game.appoint(g,u,offer.id,0);assert.equal(careerRole(appointed).title,'副分局長');assert.equal(careerRole(appointed).badge,'二線四星');
+    assert.equal(nextStage(appointed),5);assert.equal(nextStage({stage:4,unit:'花蓮縣警察局'}),5);
+    assert.equal(nextStage({stage:8,unit:'新北市警察局'}),null);
+    assert.equal(careerRole({stage:5,unit:'花蓮縣警察局'}).badge,'二線四星');
+  }finally{game.close();}
+});
+test('role, mission, result, promotion and vacancy cards show matching PNG insignia thumbnails',()=>{
+  const game=new Game(':memory:');try{
+    create(game);let p=game.get(g,u);let m=game.mission(g,u).mission;
+    for(const card of [profile(p,u),missionCard(p,m,u),resultCard(finish(game),u)]){
+      valid(card);assert.match(card.embeds[0].toJSON().thumbnail.url,/250px-TW-Police-Rank_10.svg.png$/);
+    }
+    years(game,2);p=game.get(g,u);const q=promotionCard(game,p,u);assert.match(q.embeds[0].toJSON().thumbnail.url,/09.svg.png$/);
+    const x=game.offers(g,u,'promotion');valid(vacancyCard(x.p,x.offer,u));assert.match(vacancyCard(x.p,x.offer,u).embeds[0].toJSON().thumbnail.url,/09.svg.png$/);
   }finally{game.close();}
 });
