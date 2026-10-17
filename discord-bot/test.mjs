@@ -7,6 +7,9 @@ import { Game, GameError, stages, cases } from './game.mjs';
 import { handle, missionCard, profile, resultCard, historyCard, promotionCard, creationModal } from './ui.mjs';
 import { register, commands } from './register.mjs';
 import { config } from './config.mjs';
+import { cloudContext, startCloud } from './cloud.mjs';
+import { EventEmitter } from 'node:events';
+import { Events } from 'discord.js';
 const g='111111111111111111',u='222222222222222222',other='333333333333333333';
 const create=game=>game.create(g,u,'測試警員','新北市政府警察局板橋分局某派出所');
 function finish(game,quality=100,kind='duty'){
@@ -143,4 +146,40 @@ test('registration upserts only seven named commands and validates matching appl
   await assert.rejects(()=>register({get:async()=>({id:other})},c),/同一個/);
   assert.throws(()=>config({}),/請先/);
   assert.equal(config({DISCORD_TOKEN:'local-only-test',DISCORD_APPLICATION_ID:g,DISCORD_GUILD_ID:u}).guild,u);
+});
+test('cloud startup infers application and sole guild; ambiguous or absent guild requires owner configuration',()=>{
+  const ready=ids=>({application:{id:g},guilds:{cache:new Map(ids.map(id=>[id,{}]))}});
+  assert.deepEqual(cloudContext(ready([u]),{}),{application:g,guild:u});
+  assert.throws(()=>cloudContext(ready([]),{}),/邀請/);
+  assert.throws(()=>cloudContext(ready([u,other]),{}),/多個/);
+  assert.deepEqual(cloudContext(ready([u,other]),{DISCORD_GUILD_ID:other}),{application:g,guild:other});
+  assert.throws(()=>cloudContext(ready([u]),{DISCORD_GUILD_ID:other}),/尚未加入/);
+  assert.throws(()=>cloudContext(ready([u]),{DISCORD_APPLICATION_ID:other}),/不符/);
+});
+test('cloud connects and registers before serving interactions; no .env needed and shutdown closes database',async()=>{
+  class FakeClient extends EventEmitter{
+    application={id:g};guilds={cache:new Map([[u,{}]])};destroyed=false;
+    async login(token){assert.equal(token,'fake-local-only');queueMicrotask(()=>this.emit(Events.ClientReady,this));}
+    destroy(){this.destroyed=true;}
+  }
+  const client=new FakeClient(),registered=[],logs=[];let db;
+  const app=await startCloud({env:{DISCORD_TOKEN:'fake-local-only',DISCORD_DB_PATH:':memory:'},client,
+    restFactory:()=>({get:async()=>({id:g}),post:async(_,body)=>registered.push(body)}),
+    gameFactory:path=>(db=new Game(path)),logger:{log:x=>logs.push(x),error:()=>{}}});
+  assert.equal(registered.length,7);assert.equal(app.scope.guild,u);assert.equal(client.listenerCount(Events.InteractionCreate),1);
+  assert(logs.some(x=>x.includes('已上線')));assert(logs.every(x=>!x.includes('fake-local-only')));
+  app.stop();app.stop();assert(client.destroyed);assert.throws(()=>db.get(g,u),/closed|not open/i);
+  await assert.rejects(()=>startCloud({env:{},client:new FakeClient()}),/DISCORD_TOKEN/);
+});
+test('cloud failed registration destroys connection and closes save without reporting online',async()=>{
+  class FakeClient extends EventEmitter{
+    application={id:g};guilds={cache:new Map([[u,{}]])};destroyed=false;
+    async login(){queueMicrotask(()=>this.emit(Events.ClientReady,this));}
+    destroy(){this.destroyed=true;}
+  }
+  const client=new FakeClient(),logs=[];let db;
+  await assert.rejects(()=>startCloud({env:{DISCORD_TOKEN:'fake-local-only'},client,
+    restFactory:()=>({get:async()=>({id:g}),post:async()=>{throw new Error('registration failed');}}),
+    gameFactory:()=>(db=new Game(':memory:')),logger:{log:x=>logs.push(x),error:()=>{}}}),/registration failed/);
+  assert(client.destroyed);assert.equal(logs.length,0);assert.throws(()=>db.get(g,u),/closed|not open/i);
 });

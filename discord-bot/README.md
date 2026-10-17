@@ -49,6 +49,14 @@
 
 ## 存檔與部署
 
+### Railway 雲端啟動
+
+Railway 服務設定 Root Directory 為 `/discord-bot`、Start Command 為 `npm run cloud`、Node 版本為 24。掛載持久 Volume 至 `/data`，設定 `DISCORD_DB_PATH=/data/careers.sqlite`，保持單一副本並停用休眠。
+
+在服務的 **Variables** 新增 `DISCORD_TOKEN`，值填入同一個應用的 Bot Token，儲存並部署。這個啟動方式不需要 `.env` 檔；應用 ID 自動辨識，機器人只加入一個伺服器時，伺服器 ID 也自動辨識並註冊指令。若機器人已加入多個伺服器，再補填 `DISCORD_GUILD_ID` 指定目標。未加入伺服器時，先使用 `bot` 與 `applications.commands` 範圍邀請，再重新部署。
+
+沒有 Token 時容器只會顯示「等待設定」，**不代表 Discord 機器人已上線**。看到「機器人已上線，7 個指令已註冊」後才可到指定伺服器使用 `/開始`。只用 Bot Token，不能填 Client Secret 或 Public Key；Token 只填入 Railway，不傳聊天室。雲端與 Windows 啟動方式請擇一運行，避免同一 Bot 同時連線。
+
 每個伺服器、每位 Discord 使用者各自保存 SQLite 生涯，預設檔案是 `data/careers.sqlite`。只有本人可操作其案件按鈕。重複作答與過期按鈕不會重複加分；重啟可繼續未完成案件。回覆預設只有操作的玩家看得到，避免洗版。DC 存檔與網頁版不互通。
 
 在其他主機使用 Node.js 24.17.0 以上，進入 `discord-bot` 後：
