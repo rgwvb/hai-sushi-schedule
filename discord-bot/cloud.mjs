@@ -1,9 +1,10 @@
 import { Client, Events, GatewayIntentBits, REST } from 'discord.js';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
-import { Game } from './game.mjs';
+import { Game, GameError } from './game.mjs';
 import { handle } from './ui.mjs';
-import { register } from './register.mjs';
+import { register, commands } from './register.mjs';
+import { Community } from './community.mjs';
 
 export function safeStartupFailure(error){
   const phases={login:'Discord 登入',context:'應用與伺服器辨識',save:'持久存檔初始化',commands:'註冊指令'};
@@ -24,12 +25,12 @@ export function cloudContext(ready,env){
   return {application,guild:requested||ids[0]};
 }
 
-export async function startCloud({env=process.env,client=new Client({intents:[GatewayIntentBits.Guilds],allowedMentions:{parse:[]}}),restFactory=token=>new REST({version:'10'}).setToken(token),gameFactory=path=>new Game(path),logger=console}={}){
+export async function startCloud({env=process.env,client=new Client({intents:[GatewayIntentBits.Guilds],allowedMentions:{parse:[]}}),restFactory=token=>new REST({version:'10'}).setToken(token),gameFactory=path=>new Game(path),communityFactory=(c,g)=>new Community(c,g,{logger}),logger=console}={}){
   const token=env.DISCORD_TOKEN?.trim();
   if(!token)throw new Error('請在 Railway 的 Variables 新增 DISCORD_TOKEN，填入 Bot Token 後部署。');
   client.on(Events.Error,e=>logger.error(safeStartupFailure(e)));
-  let game,scope,stopped=false,phase='login';
-  const stop=()=>{if(stopped)return;stopped=true;client.destroy();game?.close();};
+  let game,scope,community,stopped=false,phase='login';
+  const stop=()=>{if(stopped)return;stopped=true;community?.stop();client.destroy();game?.close();};
   const initialized=new Promise((resolveReady,reject)=>{
     client.once(Events.ClientReady,async ready=>{
       try{
@@ -38,9 +39,18 @@ export async function startCloud({env=process.env,client=new Client({intents:[Ga
         game=gameFactory(env.DISCORD_DB_PATH||'./data/careers.sqlite');
         phase='commands';
         await register(restFactory(token),scope);
-        client.on(Events.InteractionCreate,i=>{if(i.guildId===scope.guild)void handle(i,game);});
-        logger.log('警察生涯機器人已上線，7 個指令已註冊。請在指定伺服器文字頻道輸入 /開始。');
-        resolveReady({stop,scope});
+        community=communityFactory(client,game);
+        client.on(Events.InteractionCreate,i=>{if(i.guildId===scope.guild)void handle(i,game,{community});});
+        logger.log(`警察生涯機器人已上線，${commands.length} 個指令已註冊。`);
+        resolveReady({stop,scope,community});
+        // Channel permissions must never prevent the existing game from starting.
+        void community.ensure(scope.guild).then(settings=>{
+          logger.log(`COMMUNITY_CHANNELS_READY profiles=${settings.profiles} play=${settings.play} ranking=${settings.ranking}`);
+          return community.syncAll(scope.guild);
+        }).then(()=>logger.log('COMMUNITY_BOARDS_SYNCED')).catch(e=>{
+          logger.error(e instanceof GameError?e.message:'COMMUNITY_SETUP_PENDING');
+          community.log(e);
+        });
       }catch(e){reject(e);}
     });
   });

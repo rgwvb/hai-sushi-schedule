@@ -125,23 +125,23 @@ test('entire career plays through role changes with valid Discord embeds, no ins
     valid(profile(game.get(g,u),u));assert(game.get(g,u).merit>6);
   }finally{game.close();}
 });
-test('Discord command/modal/button lifecycle, private replies and replay protection',async()=>{
+test('Discord command/modal/button lifecycle, public replies and private replay errors',async()=>{
   const game=new Game(':memory:');try{
     let i=mock({command:'開始'});await handle(i,game);assert.equal(i.calls[0][0],'modal');creationModal().toJSON();
-    i=mock({modal:'create-career'});await handle(i,game);assert.equal(i.calls[0][1].flags,64);assert.equal(game.get(g,u).stage,0);
+    i=mock({modal:'create-career'});await handle(i,game);assert.equal(i.calls[0][1].flags,0);assert.equal(game.get(g,u).stage,0);
     i=mock();await handle(i,game);const payload=i.calls[0][1];valid(payload);
     const id=payload.components[0].toJSON().components[0].custom_id;
-    i=mock({button:id,actor:other});await handle(i,game);assert.equal(i.calls[0][0],'reply');assert(game.get(g,u).pending);
+    i=mock({button:id,actor:other});await handle(i,game);assert.equal(i.calls[0][0],'reply');assert.equal(i.calls[0][1].flags,64);assert(game.get(g,u).pending);
     i=mock({button:id});await handle(i,game);assert.equal(i.calls[0][0],'update');assert.equal(game.get(g,u).completed,1);
     i=mock({button:id});await handle(i,game);assert.equal(i.calls[0][0],'reply');assert.equal(game.get(g,u).completed,1);
     i=mock({guild:null});await handle(i,game);assert.match(i.calls[0][1].content,/伺服器/);
     i=mock({command:'角色',actor:other});await handle(i,game);assert.match(i.calls[0][1].content,/開始/);
   }finally{game.close();}
 });
-test('registration upserts only seven named commands and validates matching application; config rejects blanks',async()=>{
+test('registration upserts only game commands and validates matching application; config rejects blanks',async()=>{
   const c={application:g,guild:u},calls=[];
   await register({get:async()=>({id:g}),post:async(path,{body})=>{calls.push({path,body});}},c);
-  assert.equal(calls.length,7);assert.equal(new Set(commands.map(c=>c.name)).size,7);
+  assert.equal(calls.length,9);assert.equal(new Set(commands.map(c=>c.name)).size,9);
   assert(calls.every(c=>c.path.includes('/guilds/'+u+'/commands')));
   await assert.rejects(()=>register({get:async()=>({id:other})},c),/同一個/);
   assert.throws(()=>config({}),/請先/);
@@ -166,7 +166,7 @@ test('cloud connects and registers before serving interactions; no .env needed a
   const app=await startCloud({env:{DISCORD_TOKEN:'fake-local-only',DISCORD_DB_PATH:':memory:'},client,
     restFactory:()=>({get:async()=>({id:g}),post:async(_,body)=>registered.push(body)}),
     gameFactory:path=>(db=new Game(path)),logger:{log:x=>logs.push(x),error:()=>{}}});
-  assert.equal(registered.length,7);assert.equal(app.scope.guild,u);assert.equal(client.listenerCount(Events.InteractionCreate),1);
+  assert.equal(registered.length,9);assert.equal(app.scope.guild,u);assert.equal(client.listenerCount(Events.InteractionCreate),1);
   assert(logs.some(x=>x.includes('已上線')));assert(logs.every(x=>!x.includes('fake-local-only')));
   app.stop();app.stop();assert(client.destroyed);assert.throws(()=>db.get(g,u),/closed|not open/i);
   await assert.rejects(()=>startCloud({env:{},client:new FakeClient()}),/DISCORD_TOKEN/);

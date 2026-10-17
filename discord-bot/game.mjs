@@ -23,9 +23,15 @@ export class Game {
     if(path!==':memory:')mkdirSync(dirname(path),{recursive:true});
     this.db=new DatabaseSync(path);
     this.db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS players (guild TEXT NOT NULL, user TEXT NOT NULL, state TEXT NOT NULL, PRIMARY KEY(guild,user));');
+    this.db.exec('CREATE TABLE IF NOT EXISTS community_settings (guild TEXT PRIMARY KEY, state TEXT NOT NULL); CREATE TABLE IF NOT EXISTS community_messages (guild TEXT NOT NULL, channel TEXT NOT NULL, slot TEXT NOT NULL, message TEXT NOT NULL, PRIMARY KEY(guild,channel,slot));');
   }
   close(){this.db.close();}
   get(guild,user){const row=this.db.prepare('SELECT state FROM players WHERE guild=? AND user=?').get(guild,user);return row?JSON.parse(row.state):null;}
+  players(guild){return this.db.prepare('SELECT user,state FROM players WHERE guild=? ORDER BY user').all(guild).map(r=>({user:r.user,p:JSON.parse(r.state)}));}
+  settings(guild){const r=this.db.prepare('SELECT state FROM community_settings WHERE guild=?').get(guild);return r?JSON.parse(r.state):{};}
+  setSettings(guild,state){this.db.prepare('INSERT INTO community_settings(guild,state) VALUES (?,?) ON CONFLICT(guild) DO UPDATE SET state=excluded.state').run(guild,JSON.stringify(state));}
+  message(guild,channel,slot){return this.db.prepare('SELECT message FROM community_messages WHERE guild=? AND channel=? AND slot=?').get(guild,channel,slot)?.message;}
+  setMessage(guild,channel,slot,message){this.db.prepare('INSERT INTO community_messages(guild,channel,slot,message) VALUES (?,?,?,?) ON CONFLICT(guild,channel,slot) DO UPDATE SET message=excluded.message').run(guild,channel,slot,message);}
   transaction(guild,user,fn){
     this.db.exec('BEGIN IMMEDIATE');
     try{
