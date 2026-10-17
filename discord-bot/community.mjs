@@ -23,14 +23,7 @@ export function guideCards(channels){
       `先到 <#${channels.play}> 輸入 **/開始**，填角色姓名與任職單位。角色從 **2010 年、22 歲、已正式任職的警員** 開始；再次輸入 /開始 會繼續原存檔。\n\n**/任務** 接案 → 按 A／B／C → 看分析與績效 → 按「接下一件勤務」。\n\n**四個頻道**\n<#${channels.profiles}>：每人一張自動更新的角色卡。\n<#${channels.play}>：公開遊玩與案件處置。\n<#${channels.ranking}>：本伺服器排行榜。\n<#${channels.guide}>：玩法、職位與規則說明。\n\n**其他指令**\n/角色：階級與績效｜/履歷：最近生涯紀錄\n/訓練：模擬研習｜/升遷：條件與選缺\n/輪調：同序列選缺\n/排名：榜單｜/說明：快速指令表\n\n遊玩內容公開，但只有本人能操作自己的案件。此版本沒有考生模式，建立時即為正式任職警員。`],
     ['positions','02｜職位、職務等階與胸章配階',
       '**官、職分立：三個欄位分開看**\n個人官階是角色的任官階級；職務等階是職缺列等範圍；幾線幾星是職務配階。兼任所長或副所長不會直接變成另一個官階。\n\n'+
-      careerDisplayOrder.map((i,displayIndex)=>{const r=stages[i];
-        let detail=positionSummary(r);
-        if([5,6,7].includes(i)){
-          const county=careerRole({stage:i,unit:'花蓮縣政府警察局'});
-          detail='直轄市：'+r.badge+'；職務等階 '+r.rankRange+'；第 '+r.sequence+' 序列。\n縣（市）：'+county.badge+'；職務等階 '+county.rankRange+'；第 '+county.sequence+' 序列。';
-        }
-        return `**${displayIndex+1}. ${r.title}**\n${detail}\n${i===9?'依授權協助分局長處理跨所隊勤務、業務協調與執行追蹤。':duties[i]}`;
-      }).join('\n\n')+
+      '每個職位改為獨立卡片，右側各有對應階級圖；請往下查看「職位圖鑑」。\n直轄市：主管職缺按直轄市編制標示。\n縣（市）：配階不同的主管職務另有獨立卡片。'+
       `\n\n兼任配置及特定所隊仍須個別核對編制；上列縣市不含另有準用直轄市規定的情形。角色的個人官階由遊戲任命設定，不代表同職位的人都敘同一階。\n\n[階級圖繪製參考：警政署職務配階圖](${careerSources.insignia})｜[官方陞遷序列表](${careerSources.positions})｜[人事條例](${careerSources.personnel})\n[警政署職務配階圖（第13頁）](${careerSources.insignia})｜[署長職務等階](${careerSources.commissioner})`],
     ['promotion','03｜升遷條件與職涯順序',
       '**先符合升遷條件，再由玩家選填職缺；兼任不是必經路線。**\n\n/升遷 → 查看可選升遷職缺 → 選擇一般或兼任職缺 → 確認派任。巡佐可走一般巡佐、警務佐、偵查佐或兼任職；巡官可走業務承辦、偵查、交通或派出所主管職。勤務題目隨選定職務切換。\n\n**二線四星**\n直轄市路線在警務正與分局長之間新增副分局長；縣（市）分局長也依機關編制顯示二線四星。\n\n**同序列輪調**\n輸入 /輪調 選填不同單位或職務。初任滿 12 個遊戲月開放，後續派任滿 18 個月再開放；基層職缺含外縣市選項。輪調保留升遷年資、績效、考績與研習。\n\n**升遷門檻（遊戲規則）**\n'+careerDisplayOrder.filter(i=>i!==8).map(i=>{const r=stages[i];return `${r.title}等職務層級：滿 ${r.years} 年、現職績效 ${r.merit.toFixed(1)}，可選下一層級職缺${stages[nextStage({stage:i,unit:'新北市警察局'})]?.training?'；另須 '+stages[nextStage({stage:i,unit:'新北市警察局'})]?.training:''}。`}).join('\n')+'\n\n最近兩年考績須 B 以上，先結算未完成案件。升遷後重計現職年資與績效，生涯總績效保留。DC 的月份與門檻仍採簡化規則，存檔與網頁分開。'],
@@ -39,7 +32,18 @@ export function guideCards(channels){
     ['faq','05｜研習、排名與常見問題',
       '**研習申請後怎麼完成？**\n下一職務有研習需求時輸入 /訓練，連續答對 **3 題** 即完成並立即記錄；答錯重新累計。回到 /升遷 確認條件。研習使用遊戲業務情境，並非官方訓練試題。\n\n**排名怎麼比？**\n先比職務序列，再比總績效，最後比完成勤務數；完全相同並列。固定榜單顯示前 20 名，角色頻道則顯示所有已建立角色的玩家。\n\n**為什麼不能按別人的案件？**\n每位玩家各自存檔，只有本人能作答與申請升遷，其他人可以觀看。\n\n**重新啟動會重玩嗎？**\n不會。角色、未完成案件、頻道與資料卡都存於雲端持久資料庫。DC 與網頁版存檔分開。\n\n**退休後呢？**\n本版模擬退休年齡為 65 歲；退休後可查看角色與履歷。\n\n**頻道不見或資料卡被刪？**\n管理員可輸入 /遊戲頻道 修復；機器人需要管理頻道及頻道內讀寫、嵌入連結與讀取訊息歷史權限。']
   ];
-  return cards.map(([slot,title,text])=>({slot:'guide:'+slot,payload:{embeds:[withInsignia(embed(title,text).setFooter({text:'DC 版遊戲說明 · 隨版本更新原訊息'}),slot==='positions'?stages[9]:{badge:null})],components:[]}}));
+  const articles=cards.map(([slot,title,text])=>({slot:'guide:'+slot,payload:{embeds:[embed(title,text).setFooter({text:'DC 版遊戲說明 · 隨版本更新原訊息'})],components:[]}}));
+  const positions=[];
+  for(const index of careerDisplayOrder){
+    const variants=[{id:'metro',role:careerRole({stage:index,unit:'新北市政府警察局'}),label:[5,6,7,9].includes(index)?'直轄市':''}];
+    if([5,6,7].includes(index))variants.push({id:'county',role:careerRole({stage:index,unit:'花蓮縣警察局'}),label:'縣（市）'});
+    for(const {id,role,label} of variants){
+      const title=role.title+(label?'｜'+label:'')+'｜'+role.badge;
+      const detail='**職務配階：'+role.badge+'**\n\n'+positionSummary(role)+'\n\n**工作與可選職缺**\n'+(index===9?'依授權協助分局長處理跨所隊勤務、業務協調與執行追蹤。':duties[index])+'\n\n個人官階依角色任官資料顯示，兼任職務為選項。';
+      positions.push({slot:`guide:position:${index}:${id}`,payload:{embeds:[withInsignia(embed('職位圖鑑｜'+title,detail),role).setImage(null).setFooter({text:'每個職位各有對應配階圖 · 機關編制不同，職務列等可能不同'})],components:[]}});
+    }
+  }
+  return [...articles.slice(0,2),...positions,...articles.slice(2)];
 }
 export function rankedPlayers(players){
   const level=p=>careerRole(p).sequence??0;

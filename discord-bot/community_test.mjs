@@ -39,10 +39,10 @@ test('automatic setup creates four public text channels and reuses persisted cha
     assert.equal(h.created.length,4);assert.equal(new Set(Object.values(s)).size,4);
     for(const c of h.created){const everyone=c.permissionOverwrites[0];assert(everyone.allow.includes(P.ViewChannel));
       if(c.name!==channelNames.play){assert(everyone.deny.includes(P.SendMessages));assert(everyone.deny.includes(P.UseApplicationCommands));}}
-    assert.equal(h.sent.length,8); // lobby, five guide cards, one profile, leaderboard
-    await h.community.ensure(guild);await h.community.syncAll(guild);assert.equal(h.sent.length,8);assert.equal(h.created.length,4);
+    assert.equal(h.sent.length,21); // lobby, 18 guide cards, one profile, leaderboard
+    await h.community.ensure(guild);await h.community.syncAll(guild);assert.equal(h.sent.length,21);assert.equal(h.created.length,4);
     for(const c of h.channels.values())for(const m of c.rows.values()){valid(m.payload);assert.deepEqual(m.payload.allowedMentions,{parse:[]});assert(m.edits>0);}
-    const next=new Community(h.client,game);await next.ensure(guild);await next.syncAll(guild);assert.equal(h.created.length,4);assert.equal(h.sent.length,8);next.stop();
+    const next=new Community(h.client,game);await next.ensure(guild);await next.syncAll(guild);assert.equal(h.created.length,4);assert.equal(h.sent.length,21);next.stop();
   }finally{h.community.stop();game.close();}
 });
 test('missing manage-channel permission asks for the narrow permission and leaves careers intact; partial retry does not duplicate',async()=>{
@@ -69,14 +69,14 @@ test('mirrors update one profile per player and one board; concurrent scheduling
     h.community.schedule(guild,user);h.community.schedule(guild,other);h.community.schedule(guild,user);
     while(h.community.workers.size)await Promise.all([...h.community.workers.values()]);
     assert.deepEqual(ids,[game.message(guild,s.profiles,'profile:'+user),game.message(guild,s.profiles,'profile:'+other),game.message(guild,s.ranking,'ranking')]);
-    assert.equal(h.sent.length,9);assert(h.channels.get(s.profiles).rows.get(ids[0]).payload.embeds[0].data.description.includes('0.2'));
+    assert.equal(h.sent.length,22);assert(h.channels.get(s.profiles).rows.get(ids[0]).payload.embeds[0].data.description.includes('0.2'));
     const ranking=h.channels.get(s.ranking).rows.get(ids[2]).payload.embeds[0].data.description;assert(ranking.indexOf(user)<ranking.indexOf(other));
   }finally{h.community.stop();game.close();}
 });
 test('deleted board is recreated once; permission failure never creates duplicate messages or rolls back player merit',async()=>{
   const game=new Game(':memory:'),h=harness(game);try{
     player(game);const s=await h.community.ensure(guild);await h.community.syncAll(guild);const c=h.channels.get(s.ranking),old=game.message(guild,s.ranking,'ranking');
-    c.rows.delete(old);await h.community.syncAll(guild);const current=game.message(guild,s.ranking,'ranking');assert.notEqual(current,old);assert.equal(h.sent.length,9);
+    c.rows.delete(old);await h.community.syncAll(guild);const current=game.message(guild,s.ranking,'ranking');assert.notEqual(current,old);assert.equal(h.sent.length,22);
     c.fetchFailure=50013;const count=h.sent.length;await assert.rejects(()=>h.community.syncAll(guild));assert.equal(h.sent.length,count);assert.equal(game.message(guild,s.ranking,'ranking'),current);
     assert.equal(game.get(guild,user).merit,0);
   }finally{h.community.stop();game.close();}
@@ -119,20 +119,20 @@ test('existing three-channel server gains only the guide channel; saves and exis
     for(const [key,id] of Object.entries(old))assert.equal(state[key],id);
     assert.deepEqual(game.get(guild,user),original);
     assert.deepEqual(refs,[game.message(guild,old.play,'lobby'),game.message(guild,old.profiles,'profile:'+user),game.message(guild,old.ranking,'ranking')]);
-    const cards=guideCards(state);assert.equal(cards.length,5);for(const c of cards)valid(c.payload);
-    const roles=cards.find(c=>c.slot==='guide:positions').payload.embeds[0].data.description;
+    const cards=guideCards(state);assert.equal(cards.length,18);for(const c of cards)valid(c.payload);
+    const roles=cards.map(c=>c.payload.embeds[0].data.description+' '+c.payload.embeds[0].data.title).join('\n');
     for(const stage of stages){assert(roles.includes(stage.title));assert(roles.includes(stage.rank));}
     const promotion=cards.find(c=>c.slot==='guide:promotion').payload.embeds[0].data.description;
     for(const stage of stages.filter(r=>r.years)){assert(promotion.includes(stage.years+' 年'));assert(promotion.includes(stage.merit.toFixed(1)));}
-    assert.equal(h.channels.get(state.guide).rows.size,5);
-    await h.community.ensure(guild);assert.equal(h.created.length,1);assert.equal(h.channels.get(state.guide).rows.size,5);
+    assert.equal(h.channels.get(state.guide).rows.size,18);
+    await h.community.ensure(guild);assert.equal(h.created.length,1);assert.equal(h.channels.get(state.guide).rows.size,18);
   }finally{h.community.stop();game.close();}
 });
 test('admin may select the guide alone, but cannot reuse the game channel for it or change settings through a duplicate',async()=>{
   const game=new Game(':memory:'),h=harness(game);try{
     const old=await h.community.ensure(guild),newGuide=h.channel('自訂說明');
     let i=interaction({command:'遊戲頻道',admin:true});i.options.getChannel=name=>name==='說明'?newGuide:null;
-    await handle(i,game,{community:h.community});assert.equal(game.settings(guild).guide,newGuide.id);assert.equal(game.settings(guild).play,old.play);assert.equal(newGuide.rows.size,5);
+    await handle(i,game,{community:h.community});assert.equal(game.settings(guild).guide,newGuide.id);assert.equal(game.settings(guild).play,old.play);assert.equal(newGuide.rows.size,18);
     i=interaction({command:'遊戲頻道',admin:true});i.options.getChannel=name=>name==='說明'?h.channels.get(old.play):null;
     await handle(i,game,{community:h.community});assert.equal(i.calls[0][1].flags,64);assert.match(i.calls[0][1].content,/不同/);assert.equal(game.settings(guild).guide,newGuide.id);
     await (h.community.queues.get(guild)||Promise.resolve());
@@ -147,10 +147,30 @@ test('leaderboard compares official duty sequence across county and municipal ch
   ]);
   assert.equal(ranked[0].user,'metro-chief');assert.equal(ranked[1].rank,2);assert.equal(ranked[2].rank,2);
   const cards=guideCards({play:'1',profiles:'2',ranking:'3',guide:'4'});for(const c of cards)valid(c.payload);
-  const roles=cards.find(c=>c.slot==='guide:positions').payload.embeds[0].data.description;
+  const roles=cards.map(c=>c.payload.embeds[0].data.description+' '+c.payload.embeds[0].data.title).join('\n');
   assert(roles.includes('個人官階'));assert(roles.includes('直轄市：'));assert(roles.includes('縣（市）：'));assert(roles.includes('law.moj.gov.tw'));
   const game=new Game(':memory:');try{
     const p=game.create(guild,user,'角色','新北市某派出所');const card=publicProfile({...p,stage:2},user).embeds[0].data.description;
     assert(card.includes('職務等階：警佐一階至警正三階'));assert(card.includes('職務配階：二線一星'));assert(card.includes('個人官階（遊戲）'));
   }finally{game.close();}
+});
+
+test('every position guide has its own matching side image and persistent message; county variants stay separate',async()=>{
+  const game=new Game(':memory:'),h=harness(game);try{
+    const state=await h.community.ensure(guild),cards=guideCards(state);
+    const roles=cards.filter(c=>c.slot.startsWith('guide:position:'));
+    assert.equal(roles.length,13);
+    const expected={'一線三星':'10','一線四星':'09','二線一星':'08','二線二星':'07','二線三星':'06','二線四星':'05','三線一星':'04','三線二星':'03','三線三星':'02','三線四星':'01'};
+    for(const card of roles){
+      const e=card.payload.embeds[0].toJSON(),badge=Object.keys(expected).find(k=>e.title.includes(k));
+      assert(badge);assert.equal(e.thumbnail.url,`attachment://rank-${expected[badge]}.png`);assert.equal(e.image,undefined);
+      const id=game.message(guild,state.guide,card.slot),posted=h.channels.get(state.guide).rows.get(id).payload;
+      assert.equal(posted.files.length,1);assert.equal(posted.files[0].name,`rank-${expected[badge]}.png`);assert(posted.content.startsWith('## 職位圖鑑'));
+    }
+    assert(cards.find(c=>c.slot==='guide:position:5:county').payload.embeds[0].data.title.includes('二線四星'));
+    assert(cards.find(c=>c.slot==='guide:position:5:metro').payload.embeds[0].data.title.includes('三線一星'));
+    const count=h.sent.length,ids=roles.map(c=>game.message(guild,state.guide,c.slot));
+    await h.community.ensure(guild);assert.equal(h.sent.length,count);assert.deepEqual(roles.map(c=>game.message(guild,state.guide,c.slot)),ids);
+    assert.equal(cards.find(c=>c.slot==='guide:positions').payload.embeds[0].data.thumbnail,undefined);
+  }finally{h.community.stop();game.close();}
 });
