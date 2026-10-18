@@ -10,6 +10,8 @@ import { config } from './config.mjs';
 import { cloudContext, startCloud, safeStartupFailure } from './cloud.mjs';
 import { EventEmitter } from 'node:events';
 import { Events,MessagePayload } from 'discord.js';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { preparePayload,withInsignia } from './insignia.mjs';
 import { EmbedBuilder } from 'discord.js';
 import { careerRole,currentRank,positionSummary,nextStage,careerDisplayOrder } from './career.mjs';
@@ -327,7 +329,7 @@ test('every insignia is a real bundled PNG; multipart sends and edits carry one 
     const payload=preparePayload({embeds:[withInsignia(new EmbedBuilder().setTitle('測試角色').setDescription('職務資訊'),{badge})],components:[]});
     assert.equal(payload.content,'## 測試角色');assert.equal(payload.files.length,1);assert.deepEqual(payload.attachments,[]);
     const file=payload.files[0];assert.equal(file.attachment.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
-    assert.equal(file.attachment.readUInt32BE(16),640);assert.equal(file.attachment.readUInt32BE(20),190);
+    assert.equal(file.attachment.readUInt32BE(16),960);assert.equal(file.attachment.readUInt32BE(20),276);
     const data=payload.embeds[0].toJSON();assert.equal(data.image.url,'attachment://'+file.name);assert.equal(data.thumbnail.url,data.image.url);
     const message=MessagePayload.create({},payload);await message.resolveFiles();assert.equal(message.files.length,1);assert.equal(message.files[0].name,file.name);
   }
@@ -336,4 +338,15 @@ test('every insignia is a real bundled PNG; multipart sends and edits carry one 
     assert(i.calls[0][1].content.startsWith('## '));assert.equal(i.calls[0][1].files.length,1);
     const j=mock({button:'nav:'+u+':mission'});await handle(j,game);assert.equal(j.calls[0][0],'update');assert.equal(j.calls[0][1].files.length,1);assert.deepEqual(j.calls[0][1].attachments,[]);
   }finally{game.close();}
+});
+
+test('bundled images match the downloaded original Wikimedia PNG bytes exactly',()=>{
+  const sources=JSON.parse(readFileSync(new URL('insignia-sources.json',import.meta.url)));
+  const assets=JSON.parse(readFileSync(new URL('insignia-assets.json',import.meta.url)));
+  assert.equal(sources.files.length,10);assert.equal(sources.author,'Akira123');
+  for(const item of sources.files){
+    const data=Buffer.from(assets[item.file],'base64');
+    assert.equal(data.length,item.bytes);assert.equal(createHash('sha256').update(data).digest('hex'),item.sha256);
+    assert(item.source.startsWith('https://commons.wikimedia.org/wiki/File:TW-Police-Rank_'));
+  }
 });

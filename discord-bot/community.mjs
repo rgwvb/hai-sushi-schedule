@@ -24,7 +24,7 @@ export function guideCards(channels){
     ['positions','02｜職位、職務等階與胸章配階',
       '**官、職分立：三個欄位分開看**\n個人官階是角色的任官階級；職務等階是職缺列等範圍；幾線幾星是職務配階。兼任所長或副所長不會直接變成另一個官階。\n\n'+
       '每個職位改為獨立卡片，右側各有對應階級圖；請往下查看「職位圖鑑」。\n直轄市：主管職缺按直轄市編制標示。\n縣（市）：配階不同的主管職務另有獨立卡片。'+
-      `\n\n兼任配置及特定所隊仍須個別核對編制；上列縣市不含另有準用直轄市規定的情形。角色的個人官階由遊戲任命設定，不代表同職位的人都敘同一階。\n\n[階級圖繪製參考：警政署職務配階圖](${careerSources.insignia})｜[官方陞遷序列表](${careerSources.positions})｜[人事條例](${careerSources.personnel})\n[警政署職務配階圖（第13頁）](${careerSources.insignia})｜[署長職務等階](${careerSources.commissioner})`],
+      `\n\n兼任配置及特定所隊仍須個別核對編制；上列縣市不含另有準用直轄市規定的情形。角色的個人官階由遊戲任命設定，不代表同職位的人都敘同一階。\n\n[階級原圖：Akira123／Wikimedia Commons](https://commons.wikimedia.org/wiki/File:TW-Police-Rank_06.svg) · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)｜[官方陞遷序列表](${careerSources.positions})｜[人事條例](${careerSources.personnel})\n[警政署職務配階圖（第13頁）](${careerSources.insignia})｜[署長職務等階](${careerSources.commissioner})`],
     ['promotion','03｜升遷條件與職涯順序',
       '**先符合升遷條件，再由玩家選填職缺；兼任不是必經路線。**\n\n/升遷 → 查看可選升遷職缺 → 選擇一般或兼任職缺 → 確認派任。巡佐可走一般巡佐、警務佐、偵查佐或兼任職；巡官可走業務承辦、偵查、交通或派出所主管職。勤務題目隨選定職務切換。\n\n**二線四星**\n直轄市路線在警務正與分局長之間新增副分局長；縣（市）分局長也依機關編制顯示二線四星。\n\n**同序列輪調**\n輸入 /輪調 選填不同單位或職務。初任滿 12 個遊戲月開放，後續派任滿 18 個月再開放；基層職缺含外縣市選項。輪調保留升遷年資、績效、考績與研習。\n\n**升遷門檻（遊戲規則）**\n'+careerDisplayOrder.filter(i=>i!==8).map(i=>{const r=stages[i];return `${r.title}等職務層級：滿 ${r.years} 年、現職績效 ${r.merit.toFixed(1)}，可選下一層級職缺${stages[nextStage({stage:i,unit:'新北市警察局'})]?.training?'；另須 '+stages[nextStage({stage:i,unit:'新北市警察局'})]?.training:''}。`}).join('\n')+'\n\n最近兩年考績須 B 以上，先結算未完成案件。升遷後重計現職年資與績效，生涯總績效保留。DC 的月份與門檻仍採簡化規則，存檔與網頁分開。'],
     ['performance','04｜績效、時間與年度考績',

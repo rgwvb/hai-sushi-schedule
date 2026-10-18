@@ -1,0 +1,78 @@
+{
+  "author": "Akira123",
+  "license": "CC BY-SA 4.0",
+  "licenseURL": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "changes": "Unmodified Wikimedia-rendered PNG previews; no redrawing or retouching.",
+  "files": [
+    {
+      "file": "rank-01.png",
+      "source": "https://commons.wikimedia.org/wiki/File:TW-Police-Rank_01.svg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6f/TW-Police-Rank_01.svg/960px-TW-Police-Rank_01.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+      "sha256": "a1d2be15c1f0fabf9c9100b7d09618bcfab8df09b3b57487e44debb66242c4d5",
+      "bytes": 51042
+    },
+    {
+      "file": "rank-02.png",
+      "source": "https://commons.wikimedia.org/wiki/File:TW-Police-Rank_02.svg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/TW-Police-Rank_02.svg/960px-TW-Police-Rank_02.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+      "sha256": "4eed595e14f12194d7420b7b3878d212ca43cd759a6ca2b21918d8538b5172c7",
+      "bytes": 41606
+    },
+    {
+      "file": "rank-03.png",
+      "source": "https://commons.wikimedia.org/wiki/File:TW-Police-Rank_03.svg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/TW-Police-Rank_03.svg/960px-TW-Police-Rank_03.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+      "sha256": "1569df8d393a9018f60e31e0e18da49741ea1b7149acc23b82caa6fcfa08dc6c",
+      "bytes": 30985
+    },
+    {
+      "file": "rank-04.png",
+      "source": "https://commons.wikimedia.org/wiki/File:TW-Police-Rank_04.svg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/TW-Police-Rank_04.svg/960px-TW-Police-Rank_04.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+      "sha256": "d57ad81bfa5b41b2cbb0358d22120a1ad711a2e1fbf40a1daf5b83b72a0a1a4a",
+      "bytes": 17814
+    },
+    {
+      "file": "rank-05.png",
+      "source": "https://commons.wikimedia.org/wiki/File:TW-Police-Rank_05.svg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/TW-Police-Rank_05.svg/960px-TW-Police-Rank_05.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+      "sha256": "6b9b0bcfe95a3f20c2079ffc775a97ee1903124d51055b0f20028401a2269282",
+      "bytes": 53368
+    },
+    {
+      "file": "rank-06.png",
+      "source": "https://commons.wikimedia.org/wiki/File:TW-Police-Rank_06.svg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/TW-Police-Rank_06.svg/960px-TW-Police-Rank_06.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+      "sha256": "232b00adfff09e8f03bb8fc7b31c71dbb9dd165f5f462d19c967a753973aac19",
+      "bytes": 42919
+    },
+    {
+      "file": "rank-07.png",
+      "source": "https://commons.wikimedia.org/wiki/File:TW-Police-Rank_07.svg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/TW-Police-Rank_07.svg/960px-TW-Police-Rank_07.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+      "sha256": "9c532dbae344054a0b5d12c87781b313441917870c389c5bca30a850b38a98d1",
+      "bytes": 31958
+    },
+    {
+      "file": "rank-08.png",
+      "source": "https://commons.wikimedia.org/wiki/File:TW-Police-Rank_08.svg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/TW-Police-Rank_08.svg/960px-TW-Police-Rank_08.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+      "sha256": "cae63113403490fef26270c896c371293490b822399da0f8d0eb6fe4ce43147a",
+      "bytes": 17858
+    },
+    {
+      "file": "rank-09.png",
+      "source": "https://commons.wikimedia.org/wiki/File:TW-Police-Rank_09.svg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/TW-Police-Rank_09.svg/960px-TW-Police-Rank_09.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+      "sha256": "38028d72ea30a34b4c7e87c66e272e23d35ac4f685bf633100ef5ed2c23cf4ba",
+      "bytes": 51489
+    },
+    {
+      "file": "rank-10.png",
+      "source": "https://commons.wikimedia.org/wiki/File:TW-Police-Rank_10.svg",
+      "download": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/TW-Police-Rank_10.svg/960px-TW-Police-Rank_10.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+      "sha256": "e518619744d3beb18a44528e8d258d796be2eb15ebf37d382e1368c4c799fa32",
+      "bytes": 41744
+    }
+  ]
+}
