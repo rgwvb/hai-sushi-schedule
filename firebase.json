@@ -1,1 +1,28 @@
-{"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"}}
+{
+  "firestore": {
+    "database": "(default)",
+    "location": "asia-east1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "auth": {
+    "authorizedDomains": [
+      "localhost",
+      "rgwvb.github.io",
+      "police-career.firebaseapp.com",
+      "police-career.web.app"
+    ],
+    "providers": {
+      "emailPassword": true
+    }
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8085
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  }
+}

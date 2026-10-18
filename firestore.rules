@@ -1,23 +1,33 @@
 rules_version = '2';
+// web_saves/{uid}: required userId (immutable UID string, <=128), state
+// (private game JSON string, 1..849999 chars), revision (int, 1..2147483647),
+// version (int, 1), updatedAt (server timestamp). No extra fields.
+// discord_saves, discord_settings, discord_messages, game_data: Admin SDK only.
+// Game JSON never grants permissions or contributes to Discord rankings.
 service cloud.firestore {
   match /databases/{database}/documents {
-    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
-    function validSave(uid) {
-      return request.resource.data.keys().hasOnly(['userId','state','revision','version','updatedAt'])
-        && request.resource.data.userId == uid
-        && request.resource.data.state is string && request.resource.data.state.size() < 850000
-        && request.resource.data.version == 1
-        && request.resource.data.revision is int
-        && request.resource.data.updatedAt == request.time;
+    function isAuthenticated() { return request.auth != null; }
+    function isOwner(uid) { return isAuthenticated() && request.auth.uid == uid; }
+    function uidUnchanged(uid) { return request.resource.data.userId == uid; }
+    function uidNotModified() { return request.resource.data.userId == resource.data.userId; }
+    function isValidSave(uid) {
+      let d = request.resource.data;
+      let fields = ['userId', 'state', 'revision', 'version', 'updatedAt'];
+      return d.keys().hasAll(fields) && d.keys().hasOnly(fields)
+        && d.userId is string && d.userId.size() > 0 && d.userId.size() <= 128
+        && uidUnchanged(uid)
+        && d.state is string && d.state.size() > 0 && d.state.size() < 850000
+        && d.version is int && d.version == 1
+        && d.revision is int && d.revision > 0 && d.revision <= 2147483647
+        && d.updatedAt is timestamp && d.updatedAt == request.time;
     }
     match /web_saves/{uid} {
-      allow get: if owner(uid);
-      allow create: if owner(uid) && validSave(uid) && request.resource.data.revision == 1;
-      allow update: if owner(uid) && validSave(uid) && request.resource.data.revision == resource.data.revision + 1;
-      allow delete: if owner(uid);
+      allow get: if isOwner(uid);
+      allow create: if isOwner(uid) && isValidSave(uid) && request.resource.data.revision == 1;
+      allow update: if isOwner(uid) && isValidSave(uid) && uidNotModified()
+        && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if isOwner(uid);
     }
-    match /game_data/{id} { allow read: if true; allow write: if false; }
-    // All Discord save, channel, and message writes use the trusted Admin SDK.
     match /{document=**} { allow read, write: if false; }
   }
 }

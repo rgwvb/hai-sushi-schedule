@@ -1,3 +1,5 @@
+import {backup} from 'node:sqlite';
+import {existsSync} from 'node:fs';
 import {Game,GameError,cases} from './game.mjs';
 import {normalizeCareer,stages} from './career.mjs';
 const key=(...parts)=>parts.map(x=>encodeURIComponent(String(x))).join('~');
@@ -54,7 +56,12 @@ export async function createGame(path,env=process.env,{logger=console}={}){
   const target=new FirestoreGame(getFirestore(app));
   // Migration is additive and idempotent: Firebase wins on conflicts; SQLite is retained.
   const old=new Game(path);
-  try{const counts=await migrateSqlite(old,target);logger.log('FIREBASE_MIGRATION '+JSON.stringify(counts));}finally{old.close();}
+  try{
+    if(path!==':memory:'&&!existsSync(path+'.pre-firebase.sqlite')){
+      await backup(old.db,path+'.pre-firebase.sqlite');
+      logger.log('FIREBASE_SQLITE_BACKUP_READY');
+    }
+    const counts=await migrateSqlite(old,target);logger.log('FIREBASE_MIGRATION '+JSON.stringify(counts));}finally{old.close();}
   const docs=[['duty_cases',{state:JSON.stringify(cases),version:1}],['positions',{state:JSON.stringify(stages),version:1}]];
   for(const [id,data] of docs)await target.db.runTransaction(async tx=>{const ref=target.db.collection('game_data').doc(id),s=await tx.get(ref);if(!s.exists)tx.set(ref,data);});
   const remote=await target.db.collection('game_data').doc('duty_cases').get();
