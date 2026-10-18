@@ -6,6 +6,7 @@ import { createGame } from './firestore-game.mjs';
 import { handle } from './ui.mjs';
 import { register, commands } from './register.mjs';
 import { Community } from './community.mjs';
+import { createSheetsMirror } from './sheets.mjs';
 
 export function safeStartupFailure(error){
   const phases={login:'Discord 登入',context:'應用與伺服器辨識',save:'持久存檔初始化',commands:'註冊指令'};
@@ -26,12 +27,12 @@ export function cloudContext(ready,env){
   return {application,guild:requested||ids[0]};
 }
 
-export async function startCloud({env=process.env,client=new Client({intents:[GatewayIntentBits.Guilds],allowedMentions:{parse:[]}}),restFactory=token=>new REST({version:'10'}).setToken(token),gameFactory=path=>createGame(path,env,{logger}),communityFactory=(c,g)=>new Community(c,g,{logger}),logger=console}={}){
+export async function startCloud({env=process.env,client=new Client({intents:[GatewayIntentBits.Guilds],allowedMentions:{parse:[]}}),restFactory=token=>new REST({version:'10'}).setToken(token),gameFactory=path=>createGame(path,env,{logger}),communityFactory=(c,g)=>new Community(c,g,{logger}),sheetsFactory=(g,id)=>createSheetsMirror(g,id,env,{logger}),logger=console}={}){
   const token=env.DISCORD_TOKEN?.trim();
   if(!token)throw new Error('請在 Railway 的 Variables 新增 DISCORD_TOKEN，填入 Bot Token 後部署。');
   client.on(Events.Error,e=>logger.error(safeStartupFailure(e)));
-  let game,scope,community,stopped=false,phase='login';
-  const stop=()=>{if(stopped)return;stopped=true;community?.stop();client.destroy();game?.close();};
+  let game,scope,community,mirror,stopped=false,phase='login';
+  const stop=()=>{if(stopped)return;stopped=true;mirror?.stop();community?.stop();client.destroy();game?.close();};
   const initialized=new Promise((resolveReady,reject)=>{
     client.once(Events.ClientReady,async ready=>{
       try{
@@ -41,7 +42,8 @@ export async function startCloud({env=process.env,client=new Client({intents:[Ga
         phase='commands';
         await register(restFactory(token),scope);
         community=communityFactory(client,game);
-        client.on(Events.InteractionCreate,i=>{if(i.guildId===scope.guild)void handle(i,game,{community});});
+        try{mirror=await sheetsFactory(game,scope.guild);mirror?.start();}catch{logger.error('GOOGLE_SHEETS_SETUP_PENDING');}
+        client.on(Events.InteractionCreate,i=>{if(i.guildId===scope.guild)void handle(i,game,{community,mirror});});
         logger.log(`警察生涯機器人已上線，${commands.length} 個指令已註冊。`);
         resolveReady({stop,scope,community});
         // Channel permissions must never prevent the existing game from starting.

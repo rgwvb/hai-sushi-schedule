@@ -42,13 +42,13 @@ export function vacancyCard(p,offer,user,page=0){
 }
 export function historyCard(p,user){return {embeds:[card('生涯履歷｜'+safe(p.name),
   p.history.slice(-16).reverse().map(h=>'**'+h.date+'**\n'+safe(h.text)).join('\n\n'))],components:[nav(user)]};}
-export async function handle(interaction,game,{community}={}){
+export async function handle(interaction,game,{community,mirror}={}){
   if(!interaction.isChatInputCommand()&&!interaction.isButton()&&!interaction.isModalSubmit())return;
   const guild=interaction.guildId,user=interaction.user.id;
   const options={allowedMentions:{parse:[]}};
   const send=async payload=>{
     const result=interaction.deferred?await interaction.editReply({...options,...preparePayload(payload)}):interaction.isButton()?await interaction.update({...options,...preparePayload(payload)}):await interaction.reply({...options,...preparePayload(payload),flags:0});
-    community?.schedule(guild,user);return result;
+    community?.schedule(guild,user);mirror?.schedule();return result;
   };
   try{
     if(!guild)throw new GameError('請到已加入機器人的伺服器文字頻道使用。');
