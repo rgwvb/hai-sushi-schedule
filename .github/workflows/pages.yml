@@ -29,6 +29,7 @@ jobs:
         run: |
           npm install --no-save jsdom@26
           node scripts/smoke_test.mjs
+          node --test scripts/firebase_web_test.mjs
           node scripts/exam_archive_test.mjs
           node scripts/game_historical_test.mjs
           node scripts/workforce_scenarios_test.mjs

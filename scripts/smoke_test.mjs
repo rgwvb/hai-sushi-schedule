@@ -5,11 +5,11 @@ const htmlRaw=fs.readFileSync("index.html","utf8");
 function assert(cond,msg){if(!cond)throw new Error(msg)}
 function click(window,el){assert(el,"click target missing");el.dispatchEvent(new window.MouseEvent("click",{bubbles:true,cancelable:true,view:window}))}
 
-const standaloneIds=["standaloneBackendConfig","standaloneBackend","standaloneApp","standaloneSystems"];
+const standaloneIds=["standaloneApp","standaloneSystems"];
 if(standaloneIds.every(id=>htmlRaw.includes(`id="${id}"`))){
   const scripts=[...htmlRaw.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
     .filter(m=>/\bid="standalone(?:BackendConfig|Backend|App|Systems)"/.test(m[1]));
-  assert(scripts.length===4,"standalone app scripts are incomplete");
+  assert(scripts.length===2,"standalone app scripts are incomplete");
   const source=scripts.map(m=>m[2]).join("\n;\n");
   const html=htmlRaw.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"");
   const vc=new VirtualConsole(),errors=[];
@@ -207,4 +207,5 @@ if(standaloneIds.every(id=>htmlRaw.includes(`id="${id}"`))){
     if(errors.length)throw new Error("Runtime console errors:\n"+errors.join("\n"));console.log("SMOKE_OK",{appRef,systemsRef});
   }catch(err){console.error("SMOKE_FAIL",err.stack||err);if(errors.length)console.error(errors.join("\n"));process.exit(1)}finally{window.close()}
 }
+
 

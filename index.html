@@ -1429,127 +1429,7 @@ body.topic-quiz-open{overflow:hidden}
   <p>這會清除目前裝置的生涯存檔。</p>
   <div class="button-row"><button type="button" class="secondary-btn" id="discordResetCancel">保留存檔</button><button type="button" class="danger-btn" id="discordResetConfirm">清除並重新開始</button></div>
 </dialog>
-<script id="standaloneBackendConfig">
-// Fill these with your Supabase project values.
-// Project Settings -> API
-window.SUPABASE_CONFIG = {
-  url: "",
-  anonKey: ""
-};
-
-</script>
-<script id="standaloneBackend">
-(() => {
-  const cfg = window.SUPABASE_CONFIG || {};
-  const ok = /^https:\/\/.+\.supabase\.co$/.test(cfg.url || "") && (cfg.anonKey || "").length > 20;
-
-  function headers(token) {
-    const h = {
-      "apikey": cfg.anonKey,
-      "Authorization": "Bearer " + (token || cfg.anonKey),
-      "Content-Type": "application/json"
-    };
-    return h;
-  }
-
-  async function signUp(email, password, displayName) {
-    if (!ok) throw new Error("Supabase 尚未設定");
-    const r = await fetch(cfg.url + "/auth/v1/signup", {
-      method: "POST",
-      headers: headers(),
-      body: JSON.stringify({ email, password, data: { display_name: displayName || "" } })
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.msg || data.error_description || "註冊失敗");
-    if (data.access_token) localStorage.setItem("twPoliceAccessToken", data.access_token);
-    if (data.refresh_token) localStorage.setItem("twPoliceRefreshToken", data.refresh_token);
-    return data;
-  }
-
-  async function signIn(email, password) {
-    if (!ok) throw new Error("Supabase 尚未設定");
-    const r = await fetch(cfg.url + "/auth/v1/token?grant_type=password", {
-      method: "POST",
-      headers: headers(),
-      body: JSON.stringify({ email, password })
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error_description || "登入失敗");
-    localStorage.setItem("twPoliceAccessToken", data.access_token);
-    localStorage.setItem("twPoliceRefreshToken", data.refresh_token);
-    return data;
-  }
-
-  function signOut() {
-    localStorage.removeItem("twPoliceAccessToken");
-    localStorage.removeItem("twPoliceRefreshToken");
-  }
-
-  function token() {
-    return localStorage.getItem("twPoliceAccessToken") || "";
-  }
-
-  async function me() {
-    if (!ok || !token()) return null;
-    const r = await fetch(cfg.url + "/auth/v1/user", { headers: headers(token()) });
-    if (!r.ok) return null;
-    return r.json();
-  }
-
-  async function saveGame(state, slotName = "main") {
-    if (!ok) throw new Error("Supabase 尚未設定");
-    const user = await me();
-    if (!user) throw new Error("請先登入");
-    const url = cfg.url + "/rest/v1/game_saves?on_conflict=user_id,slot_name";
-    const payload = [{ user_id: user.id, slot_name: slotName, version: 1, state }];
-    const r = await fetch(url, {
-      method: "POST",
-      headers: { ...headers(token()), "Prefer": "resolution=merge-duplicates,return=representation" },
-      body: JSON.stringify(payload)
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.message || "雲端儲存失敗");
-    return data[0] || null;
-  }
-
-  async function loadGame(slotName = "main") {
-    if (!ok) throw new Error("Supabase 尚未設定");
-    const user = await me();
-    if (!user) throw new Error("請先登入");
-    const q = encodeURIComponent(user.id);
-    const s = encodeURIComponent(slotName);
-    const r = await fetch(cfg.url + "/rest/v1/game_saves?user_id=eq." + q + "&slot_name=eq." + s + "&select=state&limit=1", {
-      headers: headers(token())
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.message || "雲端讀取失敗");
-    return data[0]?.state || null;
-  }
-
-  async function addCase(caseRecord) {
-    if (!ok) return;
-    const user = await me();
-    if (!user) return;
-    const payload = [{
-      user_id: user.id,
-      case_no: caseRecord.id || String(Date.now()),
-      case_type: caseRecord.type || "未分類",
-      action: caseRecord.action || "",
-      result: caseRecord.result || "",
-      xp: Number(caseRecord.xp || 0),
-      case_date: new Date().toISOString().slice(0,10)
-    }];
-    await fetch(cfg.url + "/rest/v1/case_records", {
-      method: "POST",
-      headers: { ...headers(token()), "Prefer": "return=minimal" },
-      body: JSON.stringify(payload)
-    });
-  }
-
-  window.CloudDB = { configured: ok, signUp, signIn, signOut, me, saveGame, loadGame, addCase };
-})();
-
-</script>
+<script src="firebase-config.js"></script>
 <script id="standaloneApp">
 const C=["臺北市","新北市","桃園市","臺中市","臺南市","高雄市","基隆市","新竹市","嘉義市","宜蘭縣","新竹縣","苗栗縣","彰化縣","南投縣","雲林縣","嘉義縣","屏東縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"];
 const LOCAL_POLICE_AGENCIES=[
@@ -2183,7 +2063,7 @@ function rec(a,b){
   s.history.unshift(entry);s.history=s.history.slice(0,100);
 }
 function toast(m){let t=document.querySelector(".toast");if(!t){t=document.createElement("div");t.className="toast";document.body.appendChild(t)}t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600)}
-function save(){normalizeState();migrateClock();s.maxSimEpoch=Math.max(s.maxSimEpoch||0,s.simEpoch||0);localStorage.setItem(CLOCK_KEY,String(s.maxSimEpoch));localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s));toast("已儲存")}
+function save(){normalizeState();migrateClock();s.maxSimEpoch=Math.max(s.maxSimEpoch||0,s.simEpoch||0);localStorage.setItem(CLOCK_KEY,String(s.maxSimEpoch));localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s));window.FirebaseCareer?.queueSave();toast("已儲存")}
 function load(){let x=localStorage.getItem("twPoliceCareerSaveV1");if(!x)return toast("找不到存檔");try{const before=Number(localStorage.getItem(CLOCK_KEY)||0);s=Object.assign(NEW(),JSON.parse(x));normalizeState();migrateClock();if(before>0&&s.simEpoch<before){s.simEpoch=before;s.maxSimEpoch=before;s.simDate=localIso(new Date(before))}render();toast("已讀取存檔（已修復舊狀態）")}catch(e){console.error(e);toast("存檔損壞")}}
 function fb(id,m,g){let e=$(id);e.className="feedback "+(g?"good":"bad");e.textContent=m}
 function go(p){const selected=document.querySelector(".nav-btn[data-page=\""+p+"\"]");const group=selected&&selected.closest(".nav-group");if(group)document.querySelectorAll(".nav-group").forEach(x=>x.open=x===group);document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===p));document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x.dataset.page===p));window.scrollTo({top:0,behavior:"smooth"});render()}
@@ -4844,5 +4724,17 @@ loadPoliceDirectory();
 <script src="scripts/exam_archive.js?v=20261007-game"></script>
 <script src="scripts/workforce_scenarios.js?v=20261012-role"></script>
 <script type="module" src="scripts/discord_activity.mjs?v=20261017"></script>
+<script>
+window.getPoliceCareerState=()=>({...JSON.parse(JSON.stringify(s)),_firebaseExtras:{historicalPractice:localStorage.getItem("twPoliceHistoricalPracticeV1")}});
+window.applyPoliceCloudState=state=>{
+  if(!state||typeof state!=="object"||Array.isArray(state))throw new Error("雲端存檔格式錯誤");
+  const previous=s,practice=state._firebaseExtras?.historicalPractice;
+  if(typeof practice==="string")JSON.parse(practice);
+  try{s=Object.assign(NEW(),state);delete s._firebaseExtras;normalizeState();migrateClock();}catch(e){s=previous;throw e;}
+  if(typeof practice==="string")localStorage.setItem("twPoliceHistoricalPracticeV1",practice);
+  localStorage.setItem("twPoliceCareerSaveV1",JSON.stringify(s));render();go("dashboard");
+};
+</script>
+<script type="module" src="scripts/firebase_web.mjs?v=20261018"></script>
 </body>
 </html>

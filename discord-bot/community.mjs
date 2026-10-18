@@ -70,7 +70,7 @@ export class Community {
   async ensure(id,chosen={}){return this.serialize(id,async()=>{
     const guild=await this.guild(id),all=await guild.channels.fetch();
     const me=guild.members.me||await guild.members.fetchMe();
-    const state={...this.game.settings(id)};
+    const state={...await this.game.settings(id)};
     for(const key of Object.keys(channelNames)){
       let channel=chosen[key]||(state[key]?all.get(state[key]):null)||all.find(c=>c?.name===channelNames[key]&&c.type===ChannelType.GuildText);
       if(!channel){
@@ -88,10 +88,10 @@ export class Community {
       }
       if(!channel.permissionsFor(me)?.has([P.ViewChannel,P.SendMessages,P.EmbedLinks,P.ReadMessageHistory,P.AttachFiles]))throw new GameError('機器人在指定頻道需有「檢視頻道、傳送訊息、嵌入連結、讀取訊息歷史、附加檔案」權限。');
       state[key]=channel.id;
-      this.game.setSettings(id,state); // Retain partial setup; retry never duplicates created channels.
+      await this.game.setSettings(id,state); // Retain partial setup; retry never duplicates created channels.
     }
     if(new Set(Object.keys(channelNames).map(k=>state[k])).size!==4)throw new GameError('角色、遊戲、排名及說明請分別使用四個不同的頻道。');
-    this.game.setSettings(id,state);
+    await this.game.setSettings(id,state);
     await this.upsert(id,state.play,'lobby',{embeds:[embed('警察生涯｜遊戲大廳',
       `在這裡輸入 **/開始** 建立角色，**/任務** 接案件，以 A／B／C 作答。\n\n遊玩內容公開，其他人能觀看，但只有案件本人可以操作按鈕。\n\n角色資料：<#${state.profiles}>\n生涯排名：<#${state.ranking}>\n玩法與職位說明：<#${state.guide}>\n\n/角色、/履歷、/訓練、/升遷、/輪調、/說明 都在本頻道使用。`)],components:[]});
     const cards=guideCards(state);
@@ -99,17 +99,17 @@ export class Community {
     this.logger.log(`COMMUNITY_GUIDE_SYNCED channel=${state.guide} messages=${cards.length}`);
     return state;
   });}
-  guard(i){const s=this.game.settings(i.guildId);if(s.play&&i.channelId!==s.play)throw new GameError(`請到 <#${s.play}> 遊玩，角色資料與排名頻道會自動更新。`);}
+  async guard(i){const s=await this.game.settings(i.guildId);if(s.play&&i.channelId!==s.play)throw new GameError(`請到 <#${s.play}> 遊玩，角色資料與排名頻道會自動更新。`);}
   async upsert(guild,channelId,slot,payload){
     if(this.closed)return;
     const channel=await this.client.channels.fetch(channelId);
     if(!channel||channel.guildId!==guild||channel.type!==ChannelType.GuildText)throw new GameError('遊戲頻道已移除，請重新執行 /遊戲頻道。');
-    const options={...preparePayload(payload),allowedMentions:{parse:[]}},id=this.game.message(guild,channelId,slot);
+    const options={...preparePayload(payload),allowedMentions:{parse:[]}},id=await this.game.message(guild,channelId,slot);
     if(id){
       try{const old=await channel.messages.fetch(id);const updated=await old.edit(options);this.verifyMedia(options,updated);return;}
       catch(e){if(e.code!==10008)throw e;} // Only recreate a genuinely deleted message.
     }
-    const message=await channel.send(options);this.verifyMedia(options,message);this.game.setMessage(guild,channelId,slot,message.id);
+    const message=await channel.send(options);this.verifyMedia(options,message);await this.game.setMessage(guild,channelId,slot,message.id);
   }
   verifyMedia(options,message){
     if(!options.files.length)return;
@@ -118,10 +118,10 @@ export class Community {
     this.logger.log(`COMMUNITY_INSIGNIA_DELIVERY files=${options.files.length} attachments=${message?.attachments?.size??0} discordImage=${hosted}`);
   }
   async syncAll(guild){return this.serialize(guild,async()=>{
-    const s=this.game.settings(guild);if(!s.profiles||!s.ranking)return;
-    const players=this.game.players(guild);
+    const s=await this.game.settings(guild);if(!s.profiles||!s.ranking)return;
+    const players=await this.game.players(guild);
     for(const {user,p} of players){if(this.closed)return;await this.upsert(guild,s.profiles,'profile:'+user,publicProfile(p,user));}
-    await this.upsert(guild,s.ranking,'ranking',rankingCard(this.game.players(guild)));
+    await this.upsert(guild,s.ranking,'ranking',rankingCard(await this.game.players(guild)));
   });}
   schedule(guild,user){
     if(this.closed)return;
@@ -131,9 +131,9 @@ export class Community {
     const work=this.serialize(guild,async()=>{
       while(!this.closed&&this.dirty.get(guild)?.size){
         const users=[...this.dirty.get(guild)];this.dirty.get(guild).clear();
-        const s=this.game.settings(guild);if(!s.profiles||!s.ranking)continue;
-        for(const user of users){const p=this.game.get(guild,user);if(p)await this.upsert(guild,s.profiles,'profile:'+user,publicProfile(p,user));}
-        await this.upsert(guild,s.ranking,'ranking',rankingCard(this.game.players(guild)));
+        const s=await this.game.settings(guild);if(!s.profiles||!s.ranking)continue;
+        for(const user of users){const p=await this.game.get(guild,user);if(p)await this.upsert(guild,s.profiles,'profile:'+user,publicProfile(p,user));}
+        await this.upsert(guild,s.ranking,'ranking',rankingCard(await this.game.players(guild)));
       }
     });
     this.workers.set(guild,work);
@@ -144,7 +144,7 @@ export class Community {
     const chosen={profiles:i.options.getChannel('角色'),play:i.options.getChannel('遊戲'),ranking:i.options.getChannel('排名'),guide:i.options.getChannel('說明')};
     const core=[chosen.profiles,chosen.play,chosen.ranking];
     if(core.some(Boolean)&&core.some(c=>!c))throw new GameError('指定既有核心頻道時，請同時選好角色、遊戲、排名三個頻道；說明頻道可單獨指定。');
-    const future={...this.game.settings(i.guildId),...Object.fromEntries(Object.entries(chosen).filter(([,c])=>c).map(([k,c])=>[k,c.id]))};
+    const future={...await this.game.settings(i.guildId),...Object.fromEntries(Object.entries(chosen).filter(([,c])=>c).map(([k,c])=>[k,c.id]))};
     const ids=Object.keys(channelNames).map(k=>future[k]).filter(Boolean);
     if(new Set(ids).size!==ids.length)throw new GameError('請為不同用途指定不同的頻道。');
     if(Object.values(chosen).some(c=>c&&(c.guildId!==i.guildId||c.type!==ChannelType.GuildText)))throw new GameError('請指定同一伺服器的普通文字頻道。');

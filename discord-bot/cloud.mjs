@@ -1,7 +1,8 @@
 import { Client, Events, GatewayIntentBits, REST } from 'discord.js';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
-import { Game, GameError } from './game.mjs';
+import { GameError } from './game.mjs';
+import { createGame } from './firestore-game.mjs';
 import { handle } from './ui.mjs';
 import { register, commands } from './register.mjs';
 import { Community } from './community.mjs';
@@ -25,7 +26,7 @@ export function cloudContext(ready,env){
   return {application,guild:requested||ids[0]};
 }
 
-export async function startCloud({env=process.env,client=new Client({intents:[GatewayIntentBits.Guilds],allowedMentions:{parse:[]}}),restFactory=token=>new REST({version:'10'}).setToken(token),gameFactory=path=>new Game(path),communityFactory=(c,g)=>new Community(c,g,{logger}),logger=console}={}){
+export async function startCloud({env=process.env,client=new Client({intents:[GatewayIntentBits.Guilds],allowedMentions:{parse:[]}}),restFactory=token=>new REST({version:'10'}).setToken(token),gameFactory=path=>createGame(path,env,{logger}),communityFactory=(c,g)=>new Community(c,g,{logger}),logger=console}={}){
   const token=env.DISCORD_TOKEN?.trim();
   if(!token)throw new Error('請在 Railway 的 Variables 新增 DISCORD_TOKEN，填入 Bot Token 後部署。');
   client.on(Events.Error,e=>logger.error(safeStartupFailure(e)));
@@ -36,7 +37,7 @@ export async function startCloud({env=process.env,client=new Client({intents:[Ga
       try{
         phase='context';scope=cloudContext(ready,env);
         phase='save';
-        game=gameFactory(env.DISCORD_DB_PATH||'./data/careers.sqlite');
+        game=await gameFactory(env.DISCORD_DB_PATH||'./data/careers.sqlite');
         phase='commands';
         await register(restFactory(token),scope);
         community=communityFactory(client,game);

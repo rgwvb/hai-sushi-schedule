@@ -47,61 +47,70 @@ export async function handle(interaction,game,{community}={}){
   const guild=interaction.guildId,user=interaction.user.id;
   const options={allowedMentions:{parse:[]}};
   const send=async payload=>{
-    const result=interaction.isButton()?await interaction.update({...options,...preparePayload(payload)}):await interaction.reply({...options,...preparePayload(payload),flags:0});
+    const result=interaction.deferred?await interaction.editReply({...options,...preparePayload(payload)}):interaction.isButton()?await interaction.update({...options,...preparePayload(payload)}):await interaction.reply({...options,...preparePayload(payload),flags:0});
     community?.schedule(guild,user);return result;
   };
   try{
     if(!guild)throw new GameError('請到已加入機器人的伺服器文字頻道使用。');
     let action=interaction.commandName;
+    if(game.remote){
+      if(interaction.isButton()&&interaction.customId.split(':')[1]!==user)throw new GameError('這是另一位玩家的生涯，請使用自己的指令。');
+      if(interaction.isButton()&&interaction.customId==='nav:'+user+':create')return await interaction.showModal(creationModal());
+      if(action!=='遊戲頻道'){
+        if(interaction.isButton())await interaction.deferUpdate();else await interaction.deferReply({flags:0});
+      }
+    }
     if(action==='遊戲頻道'){
       if(!community)throw new GameError('目前啟動方式尚未提供頻道設定。');
       return await community.setup(interaction);
     }
     if(action==='排名'){
       const {rankingCard}=await import('./community.mjs');
-      return await send(rankingCard(game.players(guild)));
+      return await send(rankingCard(await game.players(guild)));
     }
-    community?.guard(interaction);
+    await community?.guard(interaction);
     if(interaction.isButton()){
       const [type,owner,value,index]=interaction.customId.split(':');
       if(owner!==user)throw new GameError('這是另一位玩家的生涯，請使用 /開始 或 /任務。');
-      if(type==='answer')return await send(resultCard(game.answer(guild,user,owner,value,Number(index)),user));
+      if(type==='answer')return await send(resultCard(await game.answer(guild,user,owner,value,Number(index)),user));
       if(type==='promote'){
-        if(game.get(guild,user)?.stage!==Number(value))throw new GameError('升遷卡已過期，請重新輸入 /升遷。');
-        const r=game.offers(guild,user,'promotion');return await send(vacancyCard(r.p,r.offer,user));
+        if((await game.get(guild,user))?.stage!==Number(value))throw new GameError('升遷卡已過期，請重新輸入 /升遷。');
+        const r=await game.offers(guild,user,'promotion');return await send(vacancyCard(r.p,r.offer,user));
       }
       if(type==='jobs'){
-        const p=game.get(guild,user);if(!p?.offer||p.offer.id!==value)throw new GameError('職缺表已過期，請重新選填。');
+        const p=await game.get(guild,user);if(!p?.offer||p.offer.id!==value)throw new GameError('職缺表已過期，請重新選填。');
         return await send(vacancyCard(p,p.offer,user,Number(index)));
       }
-      if(type==='choose')return await send(profile(game.appoint(guild,user,value,Number(index)),user));
+      if(type==='choose')return await send(profile(await game.appoint(guild,user,value,Number(index)),user));
       if(type!=='nav')throw new GameError('這個按鈕無法使用，請輸入 /任務。');
       action={mission:'任務',profile:'角色',promotion:'升遷',training:'訓練',rotation:'輪調'}[value];
     }
     if(interaction.isModalSubmit()){
       if(interaction.customId!=='create-career')return;
-      return await send(profile(game.create(guild,user,interaction.fields.getTextInputValue('name'),interaction.fields.getTextInputValue('unit')),user));
+      return await send(profile(await game.create(guild,user,interaction.fields.getTextInputValue('name'),interaction.fields.getTextInputValue('unit')),user));
     }
     if(action==='說明')return await send(help());
-    const p=game.get(guild,user);
+    const p=await game.get(guild,user);
     if(action==='開始'){
       if(p)return await send(profile(p,user));
+      if(game.remote)return await send({embeds:[card('建立警察生涯','按下「建立角色」填寫姓名與任職單位。')],components:[row(button('nav:'+user+':create','建立角色',ButtonStyle.Primary))]});
       return await interaction.showModal(creationModal());
     }
     if(!p)throw new GameError('請先輸入 /開始 建立已正式任職的警員角色。');
     if(action==='角色')return await send(profile(p,user));
     if(action==='履歷')return await send(historyCard(p,user));
-    if(action==='輪調'){const r=game.offers(guild,user,'rotation');return await send(vacancyCard(r.p,r.offer,user));}
+    if(action==='輪調'){const r=await game.offers(guild,user,'rotation');return await send(vacancyCard(r.p,r.offer,user));}
     if(action==='升遷')return await send(promotionCard(game,p,user));
     if(action==='任務'||action==='訓練'){
-      const r=game.mission(guild,user,action==='訓練'?'training':'duty');
+      const r=await game.mission(guild,user,action==='訓練'?'training':'duty');
       return await send(missionCard(r.p,r.mission,user));
     }
     throw new GameError('請輸入 /說明 查看可用指令。');
   }catch(e){
     // Never log interaction tokens, input fields or player state.
     if(!(e instanceof GameError))console.error('Interaction failed:',e.name,e.code||'');
-    if(interaction.replied||interaction.deferred)return;
+    if(interaction.replied)return;
+    if(interaction.deferred){await interaction.editReply({content:e instanceof GameError?e.message:'操作未完成，請重新查詢角色存檔後再試。',embeds:[],components:[],attachments:[]}).catch(()=>{});return;}
     await interaction.reply({content:e instanceof GameError?e.message:'操作未完成。若已結算，請用 /角色 查看存檔；再用 /任務 繼續。',flags:64,allowedMentions:{parse:[]}}).catch(()=>{});
   }
 }

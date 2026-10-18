@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    function validSave(uid) {
+      return request.resource.data.keys().hasOnly(['userId','state','revision','version','updatedAt'])
+        && request.resource.data.userId == uid
+        && request.resource.data.state is string && request.resource.data.state.size() < 850000
+        && request.resource.data.version == 1
+        && request.resource.data.revision is int
+        && request.resource.data.updatedAt == request.time;
+    }
+    match /web_saves/{uid} {
+      allow get: if owner(uid);
+      allow create: if owner(uid) && validSave(uid) && request.resource.data.revision == 1;
+      allow update: if owner(uid) && validSave(uid) && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if owner(uid);
+    }
+    match /game_data/{id} { allow read: if true; allow write: if false; }
+    // All Discord save, channel, and message writes use the trusted Admin SDK.
+    match /{document=**} { allow read, write: if false; }
+  }
+}

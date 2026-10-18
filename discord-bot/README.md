@@ -110,3 +110,7 @@ npm start
 
 
 說明頻道的職位圖鑑拆為13張獨立職位卡，各自在右側附上正確 PNG 配階圖。直轄市與縣市分局長、副局長、局長分開顯示；其餘5篇一般說明保留。固定訊息識別碼可重複更新，不重複發文。
+
+### Firebase 儲存
+
+設定完成後，`FIREBASE_PROJECT_ID` 選用 Firestore；管理憑證透過 Railway 私密變數 `FIREBASE_SERVICE_ACCOUNT_JSON` 或標準 ADC 提供。未設定專案時保持原 SQLite，不會冒稱資料已搬移。啟用時會新增匯入舊角色、頻道與訊息 ID，不覆蓋 Firestore 既有資料，並保留原 SQLite。結算先完成 Firestore transaction 才顯示結果，故障不會悄悄改寫到 SQLite。網頁與 DC 使用不同集合。詳細流程、權限與尚待實際連接驗證的項目見根目錄 `FIREBASE_SETUP.md`。

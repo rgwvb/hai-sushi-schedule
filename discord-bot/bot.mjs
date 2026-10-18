@@ -1,11 +1,11 @@
 import { Client, Events, GatewayIntentBits } from 'discord.js';
-import { Game } from './game.mjs';
+import { createGame } from './firestore-game.mjs';
 import { handle } from './ui.mjs';
 import { config } from './config.mjs';
 import { Community } from './community.mjs';
 let client,game,community;
 try{
-  const c=config();game=new Game(c.path);
+  const c=config();game=await createGame(c.path);
   client=new Client({intents:[GatewayIntentBits.Guilds],allowedMentions:{parse:[]}});
   client.once(Events.ClientReady,async ready=>{
     if(ready.application.id!==c.application){console.error('Application ID 與 Bot Token 不符。');stop(1);return;}

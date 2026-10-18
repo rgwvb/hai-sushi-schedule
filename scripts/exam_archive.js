@@ -63,6 +63,7 @@
       const progress = readProgress();
       progress[item.paper.id + ':' + item.row[0]] = {correct, at: Date.now()};
       localStorage.setItem(progressKey, JSON.stringify(progress));
+      window.FirebaseCareer?.queueSave();
     } catch (_) { /* Practice remains usable if storage is unavailable. */ }
   }
   async function openArchive() {
@@ -361,3 +362,4 @@
   $('examQuizDialog').addEventListener('cancel', e => { e.preventDefault(); closeQuiz(); });
   $('examQuizDialog').addEventListener('click', e => { if (e.target === $('examQuizDialog')) closeQuiz(); });
 })();
+
