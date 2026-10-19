@@ -1456,6 +1456,10 @@ const LOCAL_POLICE_AGENCIES=[
   ["金門縣","金門縣警察局",10,55,false],
   ["連江縣","連江縣警察局",8,54,false]
 ];
+// Discord supplies its private, validated Sheets catalog; web visitors use the
+// checked-in 22-agency list. No credentials or private spreadsheet are exposed.
+if(Array.isArray(window.policeAgencyCatalog))for(const row of LOCAL_POLICE_AGENCIES){const a=window.policeAgencyCatalog.find(a=>a.county===row[0]);if(a)row[1]=a.name;}
+function availableLocalPoliceAgencies(){return LOCAL_POLICE_AGENCIES.filter(row=>!Array.isArray(window.policeAgencyCatalog)||window.policeAgencyCatalog.some(a=>a.county===row[0]&&a.enabled));}
 const CENTRAL_POLICE_AGENCIES=[
   "內政部警政署","內政部警政署刑事警察局","內政部警政署航空警察局","內政部警政署國道公路警察局","內政部警政署鐵路警察局",
   "內政部警政署保安警察第一總隊","內政部警政署保安警察第二總隊","內政部警政署保安警察第三總隊","內政部警政署保安警察第四總隊",
@@ -1792,8 +1796,8 @@ function officerRotationOffers(){
       {id:"spc2_chief2",unit:"central",assignmentType:"central_special",unitName:"內政部警政署保安警察第二總隊",position:"總隊長",seq:2,desc:"保安警察第二總隊首長。"}
     ];
   }else if(seq===1){
-    const metro=LOCAL_POLICE_AGENCIES.filter(x=>x[4]).map(x=>x[1]);
-    const metroAgency=metro[Math.floor(Math.random()*metro.length)];
+    const metro=availableLocalPoliceAgencies().filter(x=>x[4]).map(x=>x[1]);
+    const metroAgency=metro[Math.floor(Math.random()*metro.length)]||LOCAL_POLICE_AGENCIES.find(x=>x[4])[1];
     base=[
       {id:"npa_deputy1",unit:"central",assignmentType:"central_command",unitName:"內政部警政署",position:"副署長",seq:1,desc:"警政署副首長。"},
       {id:"cib_chief1",unit:"central",assignmentType:"central_cib",unitName:"內政部警政署刑事警察局",position:"局長",seq:1,desc:"刑事警察局首長，統籌全國重大刑案與刑事偵防。"},
@@ -1823,17 +1827,16 @@ function officerRotationOffers(){
   const extra=pickOfficerOffers(remaining,required.length?1:Math.min(2,remaining.length));
   const local=required.concat(extra).map(o=>{if(o.stationName)o.unitName=stationFullName(o.stationName);return o});
 
-  let external=null;
+  const external=[];
   if(seq===2){
     const alternative=base.filter(o=>!local.some(shown=>shown.id===o.id));
     const target=alternative[Math.floor(Math.random()*alternative.length)];
-    if(target)external={...target,id:"rotation_external_2_"+target.id,crossAgency:true,county:"中央",localAgency:target.unitName,desc:"跨機關同序列調任示例；實際遴補仍依機關資格與缺額辦理。"};
+    if(target)external.push({...target,id:"rotation_external_2_"+target.id,crossAgency:true,county:"中央",localAgency:target.unitName,desc:"跨機關同序列調任示例；實際遴補仍依機關資格與缺額辦理。"});
   }else if(seq!==0){
-    let candidates=LOCAL_POLICE_AGENCIES.filter(a=>a[0]!==s.county);
+    let candidates=availableLocalPoliceAgencies().filter(a=>a[0]!==s.county);
     if(seq===1)candidates=candidates.filter(a=>a[4]);
     else if(seq>=3&&seq<=5)candidates=candidates.filter(a=>Boolean(a[4])===homeMetro);
-    const agency=candidates[Math.floor(Math.random()*candidates.length)];
-    if(agency){
+    for(const agency of candidates){
       let position="",unitName=agency[1]+"局本部";
       if(seq===1)position="局長";
       else if(seq===3)position=agency[4]?"副局長":"局長";
@@ -1844,12 +1847,12 @@ function officerRotationOffers(){
       else if(seq===8)position="警務員";
       else if(seq===9)position="巡官";
       else if(seq===10)position="巡佐";
-      external={id:"rotation_external_"+seq+"_"+agency[0],unit:"admin",assignmentType:"administration",unitName,position,seq,county:agency[0],localAgency:agency[1],crossCounty:true,desc:"外縣市同序列職務示例；實際序列、官階與任用資格依該機關編制及甄選公告辦理。"};
+      external.push({id:"rotation_external_"+seq+"_"+agency[0],unit:"admin",assignmentType:"administration",unitName,position,seq,county:agency[0],localAgency:agency[1],crossCounty:true,desc:"外縣市同序列職務示例；實際序列、官階與任用資格依該機關編制及甄選公告辦理。"});
     }
   }
 
-  const offers=external?local.concat(external):local;
-  s.rotationOfferVersion=2;
+  const offers=local.concat(external);
+  s.rotationOfferVersion=3;
   return offers;
 }
 function retirementProfile(){
@@ -1932,7 +1935,7 @@ function normalizeState(){
   if(!Array.isArray(s.rotationOffers))s.rotationOffers=[];
   if(s.rotationOffers.length){
     const seqNow=isOfficerTrack()?effectiveOfficerSequence():Number(s.careerSequenceNo||9);
-    const stale=Number(s.rotationOfferVersion||0)<2||s.rotationOffers.some(o=>Number(o.seq||99)!==seqNow)||(seqNow===0?s.rotationOffers.some(o=>o.crossCounty||o.crossAgency):!s.rotationOffers.some(o=>o.crossCounty||o.crossAgency));
+    const stale=Number(s.rotationOfferVersion||0)<3||s.rotationOffers.some(o=>Number(o.seq||99)!==seqNow)||(seqNow===0?s.rotationOffers.some(o=>o.crossCounty||o.crossAgency):!s.rotationOffers.some(o=>o.crossCounty||o.crossAgency));
     if(stale){s.rotationOffers=[];s.selectedUnit=""}
   }
   if(!Number.isFinite(Number(s.rotationCycleDays)))s.rotationCycleDays=0;

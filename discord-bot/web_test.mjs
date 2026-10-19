@@ -139,3 +139,28 @@ test('imported patrol supervisors retain their ongoing rotation clock and open v
  const opened=await game.fullAction(g,u,{page:'unit',rotation:true},options);assert(opened.view.controls.some(c=>c.path.startsWith('#unitCards')));assert(opened.p.webCareer.state.rotationOffers.some(o=>o.position==='巡佐兼副所長'));
  }finally{game.close();}
 });
+
+test('duty card presents only question, direct answers and analysis with one insignia; quick navigation closes dialogs',async()=>{
+ const game=new Game(':memory:');try{
+ game.create(g,u,'鍾SIR','花蓮縣警察局吉安分局偵查隊');game.transaction(g,u,p=>Object.assign(p,{stage:1,month:40,completed:43,post:{unit:p.unit,role:{title:'偵查佐',deck:'criminal',authority:'staff'}}}));
+ let r=await game.fullAction(g,u,{start:true},options);r=await game.fullAction(g,u,{page:'duty'},options);r=await act(game,r,'#nextDutyBtn');
+ assert.equal(r.view.compact.mode,'question');let payload=validate(r.view),e=payload.embeds[0].toJSON(),rows=payload.components.map(r=>r.toJSON().components);
+ assert.equal(payload.content,'');assert(e.thumbnail);assert(!e.image);assert(!/勤務數據|值勤原則|混合派題/.test(e.description));assert.deepEqual(rows[0].map(b=>b.label),['勤務','角色','輪調','升遷','更多']);assert.deepEqual(rows[1].map(b=>b.label),['A','B','C','D']);
+ const ans=r.view.controls.find(c=>c.path.startsWith('#dutyChoices >'));r=await act(game,r,ans.path);payload=validate(r.view);assert(payload.embeds[0].toJSON().description.includes('作答解析'));assert(payload.components.some(row=>row.toJSON().components.some(b=>b.label==='下一題')));
+ const menu=fullCard(r.view,u,{menu:true});assert(menu.components.length<=5);assert(menu.components.every(row=>row.toJSON().components.every(b=>b.type===2)));assert.equal(menu.embeds[0].toJSON().description,'點選下方按鈕切換功能。');
+ r=await game.fullAction(g,u,{page:'academy'},historical);const open=r.view.controls.findIndex(c=>c.path==='#examArchiveOpenBtn');r=await game.fullAction(g,u,{revision:r.view.revision,action:open},historical);r=await game.fullAction(g,u,{page:'dashboard'},historical);assert.equal(r.view.compact.mode,'summary');assert(!r.view.controls.some(c=>c.path==='#examMixBtn'));
+ }finally{game.close();}
+});
+test('long question text is completely reachable without exceeding Discord embed limits',()=>{
+ const body='長題幹'.repeat(2300),view={title:'勤務中心',role:'偵查佐',date:'2013',revision:'r',pages:[],controls:[],rank:'—',compact:{mode:'question',meta:'角色',text:body,primary:[]}};
+ let joined='';for(let display=0;display<Math.ceil(body.length/2700);display++){const p=fullCard({...view,display},u);const e=p.embeds[0].toJSON();assert(e.description.length<=4096);assert(p.components.length<=5);joined+=e.description.split('\n\n')[1];}assert.equal(joined,body);
+});
+test('shared rotation exposes all 21 external counties in four-choice pages without resetting rank or time',async()=>{
+ const r=await runtime(null,options);try{
+ const s=r.w.dcCore.state();Object.assign(s,{created:true,name:'巡佐',passed:true,route:'g4',county:'花蓮縣',localAgency:'花蓮縣警察局',unit:'criminal',unitName:'花蓮縣警察局吉安分局偵查隊',assignmentType:'criminal',position:'偵查佐',rank:'偵查佐',officialRank:'警佐二階',careerSequenceNo:10,careerStage:'patrol_rotation',rotationCycleDays:540,rotationEligible:true,rotationOffers:[],selectedUnit:''});
+ r.w.dcCore.replace(s);await r.act({kind:'page',value:'unit'});const v=r.view();assert.equal(v.compact.mode,'vacancies');const offers=r.w.dcCore.state().rotationOffers;
+ for(const county of ['臺北市','基隆市','臺東縣','澎湖縣','金門縣','連江縣'])assert(offers.some(o=>o.county===county),county);
+ assert.equal(new Set(offers.filter(o=>o.county&&o.county!=='花蓮縣').map(o=>o.county)).size,21);
+ const card=fullCard({...v,revision:'r'},u);assert(card.components.length<=5);assert(card.components.some(row=>row.toJSON().components.some(b=>b.label==='下一頁職缺／操作')));assert.equal(r.w.dcCore.state().officialRank,'警佐二階');assert.equal(r.w.dcCore.state().simEpoch,s.simEpoch);
+ }finally{r.close();}
+});

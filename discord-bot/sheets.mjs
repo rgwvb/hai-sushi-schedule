@@ -1,6 +1,7 @@
 import {careerRole,currentRank,normalizeCareer} from './career.mjs';
 import {rankedPlayers} from './community.mjs';
 import {stamp} from './game.mjs';
+import {AgencyCatalogSync} from './agencies.mjs';
 export const sheetTitle='DC玩家總表';
 export const sheetHeaders=['排名','角色姓名','個人官階','現任職務','職務配階','服務單位','遊戲年月','年資（年）','總績效','現職績效','完成勤務','最近考績','角色狀態','Discord 玩家 ID','伺服器 ID','同步時間'];
 export const sheetDate=now=>new Date(now).getTime()/86400000+25569+8/24;
@@ -27,8 +28,8 @@ export class SheetsMirror {
   constructor({game,guild,spreadsheetId,request,logger=console,intervalMs=60000,debounceMs=5000,now=()=>new Date()}){
     Object.assign(this,{game,guild,spreadsheetId,request,logger,intervalMs,debounceMs,now});this.closed=false;this.active=null;this.timer=null;this.interval=null;this.dirty=false;
   }
-  start(){if(this.interval)return;this.schedule(0);this.interval=setInterval(()=>this.schedule(0),this.intervalMs);this.interval.unref?.();}
-  stop(){this.closed=true;clearTimeout(this.timer);clearInterval(this.interval);this.timer=null;this.interval=null;}
+  start(){if(this.interval)return;this.catalog?.start();this.schedule(0);this.interval=setInterval(()=>this.schedule(0),this.intervalMs);this.interval.unref?.();}
+  stop(){this.closed=true;this.catalog?.stop();clearTimeout(this.timer);clearInterval(this.interval);this.timer=null;this.interval=null;}
   schedule(delay=this.debounceMs){if(this.closed)return;this.dirty=true;if(this.active||this.timer)return;this.timer=setTimeout(()=>{this.timer=null;void this.flush();},delay);this.timer.unref?.();}
   async sync(){
     const base='https://sheets.googleapis.com/v4/spreadsheets/'+this.spreadsheetId;
@@ -55,5 +56,6 @@ export async function createSheetsMirror(game,guild,env=process.env,{logger=cons
   const {GoogleAuth}=await import('google-auth-library');
   const auth=new GoogleAuth({credentials:JSON.parse(env.FIREBASE_SERVICE_ACCOUNT_JSON),scopes:['https://www.googleapis.com/auth/spreadsheets']});
   const client=await auth.getClient();
-  return new SheetsMirror({game,guild,spreadsheetId,request:options=>client.request(options),logger});
+  const request=options=>client.request(options),mirror=new SheetsMirror({game,guild,spreadsheetId,request,logger});
+  mirror.catalog=new AgencyCatalogSync({spreadsheetId,request,logger});return mirror;
 }

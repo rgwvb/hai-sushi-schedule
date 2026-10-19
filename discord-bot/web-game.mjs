@@ -3,6 +3,8 @@ import {randomBytes} from 'node:crypto';
 import {JSDOM,VirtualConsole} from 'jsdom';
 import {GameError} from './game.mjs';
 import {careerRole,currentRank,careerArea} from './career.mjs';
+import {getAgencyCatalog} from './agencies.mjs';
+import {compactView} from './compact-view.mjs';
 const bundle=JSON.parse(readFileSync(new URL('web-engine.json',import.meta.url),'utf8'));
 const origin='https://rgwvb.github.io/hai-sushi-schedule/';
 const cache=new Map();
@@ -48,6 +50,7 @@ export async function runtime(saved,{fetcher=assetFetch,random}={}){
   const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e));vc.on('error',()=>errors.push(Error('Web engine render failed')));
   const dom=new JSDOM(bundle.html,{url:origin,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
     w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.confirm=()=>false;
+    w.policeAgencyCatalog=getAgencyCatalog();
     if(random)w.Math.random=random;
     w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
     w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
@@ -87,11 +90,12 @@ export async function runtime(saved,{fetcher=assetFetch,random}={}){
       }
       const pages=[...d.querySelectorAll('.sidebar .nav-btn[data-page]')].filter(el=>visible(el,w)&&el.dataset.page!=='settings').map(el=>({value:el.dataset.page,label:clean(el.textContent)}));
       const links=[...root.querySelectorAll('a[href]')].filter(a=>visible(a,w)&&a.href.startsWith('https://')).slice(0,3).map(a=>({label:clean(a.textContent),url:a.href}));
-      return {title:clean(root.querySelector('h1,h2')?.textContent)||'警察生涯',text:pageText(root,w),controls,pages,links,selection,notice:clean(d.querySelector('.toast.show')?.textContent),date:w.dcCore.stats().date,role:w.dcCore.state().position,rank:w.dcCore.state().officialRank,...w.dcSystems.stats()};
+      return {title:clean(root.querySelector('h1,h2')?.textContent)||'警察生涯',text:pageText(root,w),compact:compactView(w,root,controls),controls,pages,links,selection,notice:clean(d.querySelector('.toast.show')?.textContent),date:w.dcCore.stats().date,role:w.dcCore.state().position,rank:w.dcCore.state().officialRank,...w.dcSystems.stats()};
     },async act(a){
       if(a.kind==='page'){
         const allowed=[...d.querySelectorAll('.nav-btn[data-page]')].some(el=>el.dataset.page===a.value&&visible(el,w));
         if(!allowed||a.value==='settings')throw new GameError('此身分尚未開放這個功能。');
+        for(const dialog of d.querySelectorAll('dialog[open]'))dialog.close();
         w.dcCore.go(a.value);
       }else{
         const el=d.querySelector(a.path);
