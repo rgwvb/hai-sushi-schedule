@@ -37,6 +37,16 @@ test('additive migration preserves pending cases, channel and message IDs withou
     const repeat=await migrateSqlite(old,remote);assert.equal(repeat.skipped,3);assert.deepEqual(await remote.get('g','u'),saved);assert(old.get('g','u').pending);
   }finally{old.close();remote.close();}
 });
+test('shared web actions persist atomically and reject concurrent replay or failed writes',async()=>{
+ const db=new FakeFirestore(),game=new FirestoreGame(db),options={random:()=>.9,fetcher:async()=>({ok:true,json:async()=>({meta:{},counties:{}})})};
+ try{
+ await game.create('g','u','考生','尚未分發');const r=await game.fullAction('g','u',{start:true},options);
+ const action=r.view.controls.findIndex(c=>c.path==='#createCharacterBtn');
+ const results=await Promise.allSettled([game.fullAction('g','u',{revision:r.view.revision,action},options),game.fullAction('g','u',{revision:r.view.revision,action},options)]);
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.equal((await game.get('g','u')).webCareer.state.created,true);
+ const before=await game.get('g','u');db.fail=true;await assert.rejects(()=>game.fullAction('g','u',{page:'academy'},options));db.fail=false;assert.deepEqual(await game.get('g','u'),before);
+ }finally{game.close();}
+});
 test('no Firebase configuration keeps the existing SQLite backend; Admin SDK modules load',async()=>{
   await assert.rejects(()=>createGame(':memory:',{FIREBASE_PROJECT_ID:'not-connected'}),/credentials/);
   const game=await createGame(':memory:',{});try{assert.equal(game.remote,undefined);}finally{game.close();}

@@ -20,17 +20,15 @@ export function guideCards(channels){
   ];
   const cards=[
     ['overview','01｜新手入門與頻道導覽',
-      `先到 <#${channels.play}> 輸入 **/開始**，填角色姓名與任職單位。角色從 **2010 年、22 歲、已正式任職的警員** 開始；再次輸入 /開始 會繼續原存檔。\n\n**/任務** 接案 → 按 A／B／C → 看分析與績效 → 按「接下一件勤務」。\n\n**四個頻道**\n<#${channels.profiles}>：每人一張自動更新的角色卡。\n<#${channels.play}>：公開遊玩與案件處置。\n<#${channels.ranking}>：本伺服器排行榜。\n<#${channels.guide}>：玩法、職位與規則說明。\n\n**其他指令**\n/角色：階級與績效｜/履歷：最近生涯紀錄\n/訓練：模擬研習｜/升遷：條件與選缺\n/輪調：同序列選缺\n/排名：榜單｜/說明：快速指令表\n\n遊玩內容公開，但只有本人能操作自己的案件。此版本沒有考生模式，建立時即為正式任職警員。`],
-    ['positions','02｜職位、職務等階與胸章配階',
-      '**官、職分立：三個欄位分開看**\n個人官階是角色的任官階級；職務等階是職缺列等範圍；幾線幾星是職務配階。兼任所長或副所長不會直接變成另一個官階。\n\n'+
-      '每個職位改為獨立卡片，右側各有對應階級圖；請往下查看「職位圖鑑」。\n直轄市：主管職缺按直轄市編制標示。\n縣（市）：配階不同的主管職務另有獨立卡片。'+
-      `\n\n兼任配置及特定所隊仍須個別核對編制；上列縣市不含另有準用直轄市規定的情形。角色的個人官階由遊戲任命設定，不代表同職位的人都敘同一階。\n\n[階級原圖：Akira123／Wikimedia Commons](https://commons.wikimedia.org/wiki/File:TW-Police-Rank_06.svg) · [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)｜[官方陞遷序列表](${careerSources.positions})｜[人事條例](${careerSources.personnel})\n[警政署職務配階圖（第13頁）](${careerSources.insignia})｜[署長職務等階](${careerSources.commissioner})`],
-    ['promotion','03｜升遷條件與職涯順序',
-      '**先符合升遷條件，再由玩家選填職缺；兼任不是必經路線。**\n\n/升遷 → 查看可選升遷職缺 → 選擇一般或兼任職缺 → 確認派任。巡佐可走一般巡佐、警務佐、偵查佐或兼任職；巡官可走業務承辦、偵查、交通或派出所主管職。勤務題目隨選定職務切換。\n\n**二線四星**\n直轄市路線在警務正與分局長之間新增副分局長；縣（市）分局長也依機關編制顯示二線四星。\n\n**同序列輪調**\n輸入 /輪調 選填不同單位或職務。初任滿 12 個遊戲月開放，後續派任滿 18 個月再開放；基層職缺含外縣市選項。輪調保留升遷年資、績效、考績與研習。\n\n**升遷門檻（遊戲規則）**\n'+careerDisplayOrder.filter(i=>i!==8).map(i=>{const r=stages[i];return `${r.title}等職務層級：滿 ${r.years} 年、現職績效 ${r.merit.toFixed(1)}，可選下一層級職缺${stages[nextStage({stage:i,unit:'新北市警察局'})]?.training?'；另須 '+stages[nextStage({stage:i,unit:'新北市警察局'})]?.training:''}。`}).join('\n')+'\n\n最近兩年考績須 B 以上，先結算未完成案件。升遷後重計現職年資與績效，生涯總績效保留。DC 的月份與門檻仍採簡化規則，存檔與網頁分開。'],
-    ['performance','04｜績效、時間與年度考績',
-      '**一件正式勤務＝一個遊戲月份**\n妥適處置：績效 **+0.2**，年度評分 100 分。\n部分妥適：績效 **+0.1**，年度評分 60 分。\n有風險的處置：績效 **+0**，年度評分 20 分。\n\n**每 12 件正式勤務，自動結算一個年度**\n該年度處置評分平均 **85 分以上為 A**、**70 分以上為 B**、未滿 70 分為 C。不必額外申請考績。\n\n總績效持續累積，沒有終身 6 點上限。研習不增加月份或勤務績效；重複按同一題、查看資料卡或載入存檔都不會重複加分。結果卡會顯示績效前後變化，/角色 可查總分與最近考績。'],
-    ['faq','05｜研習、排名與常見問題',
-      '**研習申請後怎麼完成？**\n下一職務有研習需求時輸入 /訓練，連續答對 **3 題** 即完成並立即記錄；答錯重新累計。回到 /升遷 確認條件。研習使用遊戲業務情境，並非官方訓練試題。\n\n**排名怎麼比？**\n先比職務序列，再比總績效，最後比完成勤務數；完全相同並列。固定榜單顯示前 20 名，角色頻道則顯示所有已建立角色的玩家。\n\n**為什麼不能按別人的案件？**\n每位玩家各自存檔，只有本人能作答與申請升遷，其他人可以觀看。\n\n**重新啟動會重玩嗎？**\n不會。角色、未完成案件、頻道與資料卡都存於雲端持久資料庫。DC 與網頁版存檔分開。\n\n**退休後呢？**\n本版模擬退休年齡為 65 歲；退休後可查看角色與履歷。\n\n**頻道不見或資料卡被刪？**\n管理員可輸入 /遊戲頻道 修復；機器人需要管理頻道及頻道內讀寫、嵌入連結與讀取訊息歷史權限。']
+      `到 <#${channels.play}> 輸入 **/開始**。新版從 **2010 年、18 歲考生** 開始；考生沒有階級圖。先建立身分、選警專／警大／一般特考路線，再備考、筆試、體測、受訓與分發。下方選單會依身分開放功能。\n\n<#${channels.profiles}>：角色資料自動更新。\n<#${channels.play}>：公開遊玩，只有本人可操作。\n<#${channels.ranking}>：生涯排行榜。\n<#${channels.guide}>：玩法與職位說明。\n\nDC 使用網頁版同一份遊戲程式。舊角色在 /角色 按「切換網頁規則（保留進度）」匯入，原始進度另外保留備份。`],
+    ['positions','02｜角色權責與階級圖',
+      '**個人官階與職務配階分開顯示。** 考生沒有官階；正式任用後依職務顯示階級圖。一般承辦、帶班、兼任主管與機關首長的題目及權責不同。只有取得主管職的角色會顯示指揮功能。兼任不是必經條件，可依網頁版開放職缺選填。\n\n下方職位卡為機關編制示例；實際可選職位與配階以自己的操作卡、服務機關及網頁規則為準。原始階級圖為 Akira123／Wikimedia Commons，CC BY-SA 4.0。'],
+    ['promotion','03｜升遷、訓練與輪調',
+      '**/升遷、/訓練** 查看現職對應的年資、考績、資績與官等訓練條件，逐項完成後申請；使用與網頁相同的資格判定。**/輪調** 開啟任職選填，包含一般、兼任及開放的外縣市職缺。\n\n舊版的「連續答對 3 題研習」只保留於備份，不會當作已取得網頁版官等訓練資格。原有職位、個人官階、已完成勤務、年資、績效及考績匯入後保留；後續採網頁版規則。'],
+    ['performance','04｜績效、時間與考績',
+      '勤務、主管決策、獎懲與考績全部由網頁版程式結算。正式勤務通常推進約 30 天；學堂題目與人力演練依網頁規則增加知識。勤務／決策成果與考績績效持續累積。\n\n在功能選單選 **獎懲考績**，依頁面顯示的年度／階段門檻辦理考績；不是舊版固定 12 件自動評 A／B／C。解析後按「開始／換一題」或「下一題」繼續，方便在頻道閱讀。舊操作卡失效後不會重複加分。'],
+    ['faq','05｜存檔、操作與題庫',
+      '**資料存在哪？** Firebase 保存每位玩家的角色、未完成題目及操作狀態。重啟後用 /開始 繼續。角色卡、排名及 Google 試算表同步顯示新版進度；網頁存檔與 DC 存檔仍分開。\n\n**怎麼操作？** 選單切換頁面，按鈕執行動作；姓名／年齡會跳輸入視窗，縣市等使用分頁選單。內容與操作超過一頁時用上下頁按鈕。人力演練可逐項調整人數並送出分析。\n\n**題目來源？** 共用網頁的職務情境與學堂題庫；歷屆原卷按需載入，依當年度官方答案判定。歷屆法規可能已修正，原卷沒有詳解時會明確標示。\n\n**退休？** 依網頁版現職的退休設定判斷，不再固定所有人 65 歲。']
   ];
   const articles=cards.map(([slot,title,text])=>({slot:'guide:'+slot,payload:{embeds:[embed(title,text).setFooter({text:'DC 版遊戲說明 · 隨版本更新原訊息'})],components:[]}}));
   const positions=[];
@@ -52,6 +50,7 @@ export function rankedPlayers(players){
   return rows.map((r,i)=>{const key=JSON.stringify([level(r.p),r.p.merit,r.p.completed]);if(key!==last)rank=i+1;last=key;return {...r,rank};});
 }
 export function publicProfile(p,user){
+  if(p.webCareer){const s=p.webCareer.state,v=p.webSummary,r=careerRole(p);return {embeds:[withInsignia(embed(safe(p.name)+'｜'+r.title,`玩家：<@${user}>\n**職位：${safe(r.title)}**\n**個人官階：${currentRank(p)}**\n${v.badge?'**職務配階：'+v.badge+'**\n':''}\n**單位**\n${safe(p.unit)}\n\n${v.date}｜${v.age} 歲\n服務年資 ${v.years.toFixed(1)} 年｜完成勤務 ${p.completed} 件\n**累計績效 ${p.merit.toFixed(1)}**\n最近考績：${p.appraisals.slice(0,2).map(a=>a.year+' '+a.grade).join('、')||'尚未結算'}\n狀態：${s.retired?'退休':s.unit?'在職':'備考／受訓／待分發'}`).setFooter({text:'網頁版共用規則 · DC 獨立存檔 · 角色進度自動更新'}),r)],components:[]};}
   const role=careerRole(p);return {embeds:[withInsignia(embed(safe(p.name)+'｜'+role.title,
     `玩家：<@${user}>\n**職位：${role.title}**\n\n**個人官階（遊戲）：${currentRank(p)}**\n\n**職務配階：${role.badge}**\n${positionSummary(role)}\n\n**單位**\n${safe(p.unit)}${role.scopeNote?'\n'+role.scopeNote:''}\n\n${stamp(p.month)}｜年資 ${(p.month/12).toFixed(1)} 年\n績效 **${p.merit.toFixed(1)}**｜完成勤務 **${p.completed}** 件\n最近考績：${p.appraisals.slice(-2).map(a=>a.year+' '+a.grade).join('、')||'尚未結算'}${p.month>=516?'\n狀態：退休':''}`
   ).setFooter({text:'角色進度自動更新 · 前往「警察遊戲」頻道遊玩'}),role)],components:[]};

@@ -132,8 +132,9 @@ test('entire career plays through role changes with valid Discord embeds, no ins
 });
 test('Discord command/modal/button lifecycle, public replies and private replay errors',async()=>{
   const game=new Game(':memory:');try{
-    let i=mock({command:'開始'});await handle(i,game);assert.equal(i.calls[0][0],'modal');creationModal().toJSON();
-    i=mock({modal:'create-career'});await handle(i,game);assert.equal(i.calls[0][1].flags,0);assert.equal(game.get(g,u).stage,0);
+    creationModal().toJSON();
+    let i=mock({modal:'create-career'});await handle(i,game);assert.equal(i.calls[0][1].flags,0);assert.equal(game.get(g,u).stage,0);
+    i=mock({command:'開始'});await handle(i,game);assert.equal(i.calls[0][0],'reply');assert.match(i.calls[0][1].embeds[0].data.title,/新玩家/);
     i=mock();await handle(i,game);const payload=i.calls[0][1];valid(payload);
     const id=payload.components[0].toJSON().components[0].custom_id;
     i=mock({button:id,actor:other});await handle(i,game);assert.equal(i.calls[0][0],'reply');assert.equal(i.calls[0][1].flags,64);assert(game.get(g,u).pending);

@@ -50,6 +50,16 @@ export class Game {
     if(!r.changes)throw new GameError('你已經有角色；輸入 /角色 繼續原本的生涯。');
     return p;
   }
+  async fullAction(guild,user,request,options){
+    const raw=this.db.prepare('SELECT state FROM players WHERE guild=? AND user=?').get(guild,user)?.state;
+    const p=raw?normalizeCareer(JSON.parse(raw)):null;requireGame(p);
+    const {fullAction}=await import('./web-game.mjs');
+    const result=await fullAction(p,request,options),state=JSON.stringify(result.p);
+    if(Buffer.byteLength(state)>850000)throw new GameError('存檔容量接近上限，請先聯絡管理員備份。');
+    const updated=this.db.prepare('UPDATE players SET state=? WHERE guild=? AND user=? AND state=?').run(state,guild,user,raw);
+    if(!updated.changes)throw new GameError('角色進度剛剛已更新，請用 /開始 重新開啟。');
+    return result;
+  }
   mission(guild,user,kind='duty'){
     return this.transaction(guild,user,p=>{
       requireGame(p);

@@ -2,6 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilde
 import { stages, stamp, GameError,careerRole,currentRank } from './game.mjs';
 import { withInsignia,preparePayload } from './insignia.mjs';
 import { positionSummary } from './career.mjs';
+import {handleWeb} from './web-ui.mjs';
 const safe=value=>escapeMarkdown(String(value));
 const blue=0x2463b2;
 const card=(title,text)=>new EmbedBuilder().setColor(blue).setTitle(title).setDescription(text).setFooter({text:'DC 獨立存檔 · 生涯與升遷採簡化遊戲規則'});
@@ -9,13 +10,13 @@ const button=(id,label,style=ButtonStyle.Secondary)=>new ButtonBuilder().setCust
 const row=(...buttons)=>new ActionRowBuilder().addComponents(...buttons);
 const nav=user=>row(button('nav:'+user+':mission','接下一件勤務',ButtonStyle.Primary),button('nav:'+user+':profile','我的角色'),button('nav:'+user+':promotion','升遷條件'),button('nav:'+user+':rotation','輪調選缺'));
 export const help=()=>({embeds:[card('台灣警察生涯｜文字頻道版',
-  '**/開始** 建立已正式任職的警員角色\n**/任務** 依目前職務接案，以 A／B／C 選擇處置\n**/角色** 查看階級、年資、績效與考績\n**/履歷** 查看最近的生涯紀錄\n**/訓練** 進行下一職務需要的模擬研習\n**/升遷** 查看條件並選填職缺\n**/輪調** 選填同序列一般或兼任職缺\n**/排名** 查看本伺服器生涯排行榜\n**/遊戲頻道** 管理員設定三個專用頻道\n\n遊玩與角色資料公開；只有本人可操作自己的案件按鈕。每件正式勤務推進一個遊戲月份；每 12 件自動結算年度考績。研習連續答對 3 題即完成，不增加年資或績效。每位玩家、每個伺服器各自存檔，與網頁版分開。')],components:[]});
+  '**/開始** 開啟生涯。新玩家從考生建立身分，依序選路線、備考、考試、受訓及分發。\n**/任務** 依目前職務處理案件與法規題\n**/角色** 查看角色、階級與進度\n**/履歷** 查看生涯紀錄\n**/訓練、/升遷** 查看網頁版的訓練及升遷條件\n**/輪調** 選填一般或兼任職缺\n**/排名** 查看伺服器榜單\n\n新版使用網頁版同一份遊戲程式；下方選單可切換備考、學堂、指揮、考績與生活。只有本人可操作，解析後用按鈕繼續。考生沒有階級；主管功能依職務開放。DC 與網頁存檔仍各自獨立。\n\n舊版角色可在 /角色 按「切換網頁規則」保留職位、階級、年資及既有成果；原始存檔另保留備份。舊版的簡化研習不視為完成新版官等訓練。')],components:[]});
 export function creationModal(){return new ModalBuilder().setCustomId('create-career').setTitle('建立警察生涯').addComponents(
   row(new TextInputBuilder().setCustomId('name').setLabel('角色姓名').setStyle(TextInputStyle.Short).setMinLength(1).setMaxLength(20).setRequired(true)),
   row(new TextInputBuilder().setCustomId('unit').setLabel('任職單位（可填全台各縣市單位）').setPlaceholder('例：新北市政府警察局板橋分局某派出所').setStyle(TextInputStyle.Short).setMinLength(1).setMaxLength(80).setRequired(true))
 );}
 export function profile(p,user){const r=careerRole(p);return {embeds:[withInsignia(card(safe(p.name)+'｜'+r.title,
-  '**職位：'+r.title+'**\n\n**個人官階（遊戲）：'+currentRank(p)+'**\n\n**職務配階：'+r.badge+'**\n'+positionSummary(r)+'\n\n**任職單位**\n'+safe(p.unit)+(r.scopeNote?'\n'+r.scopeNote:'')+'\n\n'+stamp(p.month)+'｜'+(22+Math.floor(p.month/12))+' 歲\n服務年資 '+(p.month/12).toFixed(1)+' 年｜完成勤務 '+p.completed+' 件\n**勤務績效 '+p.merit.toFixed(1)+'**\n最近考績：'+(p.appraisals.slice(-2).map(a=>a.year+' '+a.grade+'（'+a.score+'）').join('、')||'尚未滿一年')+(p.month>=516?'\n\n已屆本版模擬退休年齡。':'') ),r)],components:[nav(user)]};}
+  '**職位：'+r.title+'**\n\n**個人官階（遊戲）：'+currentRank(p)+'**\n\n**職務配階：'+r.badge+'**\n'+positionSummary(r)+'\n\n**任職單位**\n'+safe(p.unit)+(r.scopeNote?'\n'+r.scopeNote:'')+'\n\n'+stamp(p.month)+'｜'+(22+Math.floor(p.month/12))+' 歲\n服務年資 '+(p.month/12).toFixed(1)+' 年｜完成勤務 '+p.completed+' 件\n**勤務績效 '+p.merit.toFixed(1)+'**\n最近考績：'+(p.appraisals.slice(-2).map(a=>a.year+' '+a.grade+'（'+a.score+'）').join('、')||'尚未滿一年')+(p.month>=516?'\n\n已屆本版模擬退休年齡。':'') ),r)],components:[nav(user),row(button('web:'+user+':enable:start','切換網頁規則（保留進度）',ButtonStyle.Success))]};}
 export function missionCard(p,m,user){const r=careerRole(p);return {embeds:[withInsignia(card((m.kind==='training'?'模擬研習｜':'勤務｜')+m.title,
   '**'+safe(p.name)+'｜'+r.title+'**\n\n**'+currentRank(p)+'｜'+r.badge+'**\n\n'+safe(p.unit)+'\n'+(m.kind==='training'?m.training+'｜連續答對 '+p.trainingProgress+'／3 題\n':'')+'\n'+m.story+'\n\n'+m.choices.map((c,i)=>'**'+['A','B','C'][i]+'** '+c.text).join('\n\n')+'\n\n'+(r.deck==='patrol'?'你負責本人及搭檔勤務；跨單位調度請通報主管。':(r.authority==='deputy'||r.title.includes('副'))?'依授權協助正主管，超出範圍須呈報核定。':(r.authority==='staff'||r.deck==='staff')?'你負責承辦、查驗與呈報，資源需經權責核定。':r.authority==='team'?'依授權帶領本班或小隊；超出範圍須呈報主管。':'依職務權責協調分工，跨單位需求仍須核定。')),r)],
   components:[row(...m.choices.map((_,i)=>button(`answer:${user}:${m.id}:${i}`,['A','B','C'][i],ButtonStyle.Primary)))]};}
@@ -43,7 +44,7 @@ export function vacancyCard(p,offer,user,page=0){
 export function historyCard(p,user){return {embeds:[card('生涯履歷｜'+safe(p.name),
   p.history.slice(-16).reverse().map(h=>'**'+h.date+'**\n'+safe(h.text)).join('\n\n'))],components:[nav(user)]};}
 export async function handle(interaction,game,{community,mirror}={}){
-  if(!interaction.isChatInputCommand()&&!interaction.isButton()&&!interaction.isModalSubmit())return;
+  if(!interaction.isChatInputCommand()&&!interaction.isButton()&&!interaction.isModalSubmit()&&!interaction.isStringSelectMenu?.())return;
   const guild=interaction.guildId,user=interaction.user.id;
   const options={allowedMentions:{parse:[]}};
   const send=async payload=>{
@@ -52,13 +53,18 @@ export async function handle(interaction,game,{community,mirror}={}){
   };
   try{
     if(!guild)throw new GameError('請到已加入機器人的伺服器文字頻道使用。');
+    if(await handleWeb(interaction,game,{community,mirror}))return;
     let action=interaction.commandName;
     if(game.remote){
       if(interaction.isButton()&&interaction.customId.split(':')[1]!==user)throw new GameError('這是另一位玩家的生涯，請使用自己的指令。');
       if(interaction.isButton()&&interaction.customId==='nav:'+user+':create')return await interaction.showModal(creationModal());
-      if(action!=='遊戲頻道'){
+      if(action!=='遊戲頻道'&&!interaction.deferred){
         if(interaction.isButton())await interaction.deferUpdate();else await interaction.deferReply({flags:0});
       }
+    }
+    if(interaction.isButton()){
+      if(interaction.customId.split(':')[1]!==user)throw new GameError('這是另一位玩家的生涯，請使用自己的指令。');
+      if((await game.get(guild,user))?.webCareer)throw new GameError('角色已切換網頁版規則，請用 /開始 開啟新版操作卡。');
     }
     if(action==='遊戲頻道'){
       if(!community)throw new GameError('目前啟動方式尚未提供頻道設定。');

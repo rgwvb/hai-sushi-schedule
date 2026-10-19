@@ -10,11 +10,13 @@
     "start": "node --env-file=.env bot.mjs",
     "cloud": "node cloud.mjs",
     "register": "node --env-file=.env register.mjs",
-    "test": "node --test test.mjs community_test.mjs firestore_test.mjs sheets_test.mjs"
+    "sync-web": "node sync-web.mjs",
+    "test": "node --test test.mjs community_test.mjs firestore_test.mjs sheets_test.mjs web_test.mjs"
   },
   "dependencies": {
     "discord.js": "14.24.0",
     "firebase-admin": "14.5.0",
-    "google-auth-library": "11.3.1"
+    "google-auth-library": "11.3.1",
+    "jsdom": "26.1.0"
   }
 }

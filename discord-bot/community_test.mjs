@@ -123,7 +123,7 @@ test('existing three-channel server gains only the guide channel; saves and exis
     const roles=cards.map(c=>c.payload.embeds[0].data.description+' '+c.payload.embeds[0].data.title).join('\n');
     for(const stage of stages){assert(roles.includes(stage.title));assert(roles.includes(stage.rank));}
     const promotion=cards.find(c=>c.slot==='guide:promotion').payload.embeds[0].data.description;
-    for(const stage of stages.filter(r=>r.years)){assert(promotion.includes(stage.years+' 年'));assert(promotion.includes(stage.merit.toFixed(1)));}
+    assert(promotion.includes('網頁'));assert(roles.includes('原始'));assert(!promotion.includes('DC 的月份與門檻仍採簡化規則'));
     assert.equal(h.channels.get(state.guide).rows.size,18);
     await h.community.ensure(guild);assert.equal(h.created.length,1);assert.equal(h.channels.get(state.guide).rows.size,18);
   }finally{h.community.stop();game.close();}
@@ -148,7 +148,7 @@ test('leaderboard compares official duty sequence across county and municipal ch
   assert.equal(ranked[0].user,'metro-chief');assert.equal(ranked[1].rank,2);assert.equal(ranked[2].rank,2);
   const cards=guideCards({play:'1',profiles:'2',ranking:'3',guide:'4'});for(const c of cards)valid(c.payload);
   const roles=cards.map(c=>c.payload.embeds[0].data.description+' '+c.payload.embeds[0].data.title).join('\n');
-  assert(roles.includes('個人官階'));assert(roles.includes('直轄市：'));assert(roles.includes('縣（市）：'));assert(roles.includes('law.moj.gov.tw'));
+  assert(roles.includes('個人官階'));assert(roles.includes('直轄市'));assert(roles.includes('縣（市）'));assert(roles.includes('考生沒有官階'));
   const game=new Game(':memory:');try{
     const p=game.create(guild,user,'角色','新北市某派出所');const card=publicProfile({...p,stage:2},user).embeds[0].data.description;
     assert(card.includes('職務等階：警佐一階至警正三階'));assert(card.includes('職務配階：二線一星'));assert(card.includes('個人官階（遊戲）'));

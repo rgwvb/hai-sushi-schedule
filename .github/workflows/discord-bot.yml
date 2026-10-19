@@ -2,9 +2,9 @@ name: Discord bot tests
 on:
   push:
     branches: [main]
-    paths: ['discord-bot/**', '.github/workflows/discord-bot.yml']
+    paths: ['discord-bot/**', 'index.html', 'scripts/exam_archive.js', 'scripts/workforce_scenarios.js', '.github/workflows/discord-bot.yml']
   pull_request:
-    paths: ['discord-bot/**', '.github/workflows/discord-bot.yml']
+    paths: ['discord-bot/**', 'index.html', 'scripts/exam_archive.js', 'scripts/workforce_scenarios.js', '.github/workflows/discord-bot.yml']
 permissions:
   contents: read
 jobs:

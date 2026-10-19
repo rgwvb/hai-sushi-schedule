@@ -7,7 +7,8 @@ export const sheetDate=now=>new Date(now).getTime()/86400000+25569+8/24;
 export function playerSheetRows(players,guild,now=new Date()){
   return rankedPlayers(players.map(r=>({...r,p:normalizeCareer(structuredClone(r.p))}))).map(({user,p,rank})=>{
     const role=careerRole(p);
-    return [rank,p.name,currentRank(p),role.title,role.badge,p.unit,stamp(p.month),Number((p.month/12).toFixed(1)),Number(p.merit.toFixed(1)),Number(p.stageMerit.toFixed(1)),p.completed,p.appraisals.slice(-2).map(a=>a.year+' '+a.grade).join('、')||'尚未結算',p.month>=516?'退休':'在職',String(user),String(guild),sheetDate(now)];
+    const v=p.webSummary;
+    return [rank,p.name,currentRank(p),role.title,role.badge,p.unit,v?.date||stamp(p.month),Number((v?.years??p.month/12).toFixed(1)),Number(p.merit.toFixed(1)),Number((p.stageMerit||0).toFixed(1)),p.completed,(v?p.appraisals.slice(0,2):p.appraisals.slice(-2)).map(a=>a.year+' '+a.grade).join('、')||'尚未結算',v?(v.retired?'退休':p.webCareer.state.unit?'在職':'備考／受訓／待分發'):p.month>=516?'退休':'在職',String(user),String(guild),sheetDate(now)];
   });
 }
 const cell=value=>({userEnteredValue:typeof value==='number'?{numberValue:value}:{stringValue:String(value??'')}});

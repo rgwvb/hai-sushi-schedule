@@ -21,7 +21,7 @@ export class FirestoreGame {
       const saved=await tx.get(ref),game=new Game(':memory:');
       try{
         if(saved.exists)game.db.prepare('INSERT INTO players VALUES (?,?,?)').run(guild,user,saved.data().state);
-        const result=game[method](guild,user,...args),p=game.get(guild,user);
+        const result=await game[method](guild,user,...args),p=game.get(guild,user);
         if(!p)throw new GameError('角色存檔未建立。');
         const state=JSON.stringify(p);
         if(Buffer.byteLength(state)>850000)throw new GameError('存檔容量接近上限，請先聯絡管理員備份。');
@@ -36,6 +36,7 @@ export class FirestoreGame {
   offers(g,u,...a){return this.mutate(g,u,'offers',a);}
   appoint(g,u,...a){return this.mutate(g,u,'appoint',a);}
   promote(g,u,...a){return this.mutate(g,u,'promote',a);}
+  fullAction(g,u,...a){return this.mutate(g,u,'fullAction',a);}
 }
 export async function migrateSqlite(source,target){
   const counts={players:0,settings:0,messages:0,skipped:0};

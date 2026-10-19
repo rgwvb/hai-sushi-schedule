@@ -29,14 +29,16 @@ const metros=['臺北市','新北市','桃園市','臺中市','臺南市','高�
 const counties=['基隆市','新竹市','嘉義市','新竹縣','苗栗縣','彰化縣','南投縣','雲林縣','嘉義縣','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣'];
 export function careerArea(text){const normalized=String(text||'').replaceAll('台','臺');const county=[...metros,...counties].find(c=>normalized.includes(c));return {county:county||null,type:county?(metros.includes(county)?'metro':'county'):'unspecified'};}
 export function careerRole(p,index=p.stage){
+  if(p.webCareer&&index===p.stage){const s=p.webCareer.state,v=p.webSummary||{};return {title:s.position||'考生',rank:s.officialRank||'—',rankRange:'依網頁版職務與機關判定',allowedRanks:[s.officialRank||'—'],badge:v.badge||'尚無配階',sequence:v.sequence??99,scope:s.unitName||'尚未分發',deck:'staff',area:careerArea(s.unitName),scopeNote:''};}
   const area=careerArea(p.careerHome||p.homeUnit||p.unit),variant=area.type==='county'?countyVariants[index]:null;
   return {...stages[index],...variant,...(index===p.stage?p.post?.role:null),area,scopeNote:area.type==='unspecified'&&index>=5&&index<=7?'未辨識縣市，主管職務暫按直轄市範例模擬。':''};
 }
-export function currentRank(p){const role=careerRole(p);return role.allowedRanks.includes(p.personalRank)?p.personalRank:role.rank;}
+export function currentRank(p){if(p.webCareer)return p.webCareer.state.officialRank||'—';const role=careerRole(p);return role.allowedRanks.includes(p.personalRank)?p.personalRank:role.rank;}
 export const sequenceLabel=r=>r.sequence===null?'未列一般陞遷序列':`第 ${r.sequence} 序列`;
 export function positionSummary(r){return `${r.badge}｜${sequenceLabel(r)}\n職務等階：${r.rankRange}\n機關層級：${r.scope}`;}
 export function normalizeCareer(p){
   if(!p)return p;
+  if(p.webCareer)return p;
   p.homeUnit ||= p.unit;
   p.personalRank=currentRank(p);
   if((p.careerModelVersion||0)<3&&[1,2,3].includes(p.stage)&&!p.post){
