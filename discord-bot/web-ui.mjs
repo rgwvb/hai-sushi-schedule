@@ -7,11 +7,14 @@ function compactCard(view,user,controlsPage=0){
   const c=view.compact,prefix=`web:${user}:${view.revision}:`,components=[];
   const quick=[['duty','勤務'],['dashboard','角色'],['unit','輪調'],['career','升遷']].map(([value,label])=>{const i=view.pages.findIndex(p=>p.value===value);return i<0?null:button(prefix+'act:'+(view.controls.length+i),label);}).filter(Boolean);
   components.push(row(...quick,button(prefix+'menu','更多')));
-  let body=c.text,primary=c.primary,answerIndexes=c.answerIndexes||[];
+  let body=c.text,primary=c.primary,answerIndexes=c.answerIndexes||[],vacancyCards=[];
   let page=Math.max(0,controlsPage),pages=1;
   if(c.mode==='vacancies'&&c.cards.length){
     pages=Math.ceil(c.cards.length/4);page=Math.min(page,pages-1);
-    const cards=c.cards.slice(page*4,page*4+4);body+='\n\n'+cards.map((v,i)=>`${v.selected?'✅ ':''}${page*4+i+1}. ${v.unit}\n${v.title}${v.badge?'｜'+v.badge:''}`).join('\n\n');
+    const cards=c.cards.slice(page*4,page*4+4);vacancyCards=cards;
+    const selected=c.cards.find(v=>v.selected);
+    body+='\n\n'+`職缺 ${page*4+1}–${Math.min(page*4+4,c.cards.length)}／${c.cards.length}｜第 ${page+1}／${pages} 頁`;
+    body+='\n'+(selected?'✅ 已選：'+selected.title+'｜'+selected.unit:'請先選取職缺，再按「確認單位」。');
     primary=cards.map(v=>v.action).concat(c.primary);if(c.feedback)body+='\n\n'+c.feedback;
   }else{
     pages=Math.max(1,Math.ceil(primary.length/8));page=Math.min(page,pages-1);primary=primary.slice(page*8,page*8+8);
@@ -29,7 +32,7 @@ function compactCard(view,user,controlsPage=0){
   const heading=c.mode==='career'?'陞遷中心｜'+view.role:view.title.includes(view.role)?view.title:view.title+'｜'+view.role;
   const embed=new EmbedBuilder().setColor(0x2463b2).setTitle(heading.slice(0,256)).setDescription((c.meta?'**'+escapeMarkdown(c.meta).slice(0,500)+'**\n\n':'')+(escaped.length<=bodySize?escaped:escaped.slice(display*bodySize,(display+1)*bodySize))).setFooter({text:view.date+' · '+(textPages>1?`內容 ${display+1}/${textPages} · `:'')+'網頁共用規則 · DC 獨立存檔'});
   let credit='';
-  if(view.rank&&view.rank!=='—'&&!['考生','待分發'].includes(view.role)){
+  if(!vacancyCards.length&&view.rank&&view.rank!=='—'&&!['考生','待分發'].includes(view.role)){
     const description=embed.data.description;
     withInsignia(embed,{badge:view.badge}).setImage(null);
     if(c.fields?.length){credit=embed.data.description.slice(description.length).trim();embed.setDescription(description);}
@@ -40,11 +43,18 @@ function compactCard(view,user,controlsPage=0){
   if(view.links?.length&&c.mode==='question')embed.addFields({name:'題目來源',value:view.links.slice(0,2).map(l=>'['+escapeMarkdown(l.label).slice(0,70)+']('+l.url+')').join('\n').slice(0,900)});
   for(let i=0;i<primary.length;i+=4)components.push(row(...primary.slice(i,i+4).map(n=>{
     const control=view.controls[n],isAnswer=answerIndexes.includes(n),letter=control.label.match(/^[A-D](?:\.|．|\s)/)?.[0]?.trim().replace(/[.．]/,'');
+    const vacancy=vacancyCards.find(v=>v.action===n);
+    if(vacancy)return button(prefix+'act:'+n+':'+page,(vacancy.selected?'✅ ':'選 ')+(c.cards.indexOf(vacancy)+1)+'｜'+vacancy.title,vacancy.selected?ButtonStyle.Success:ButtonStyle.Secondary);
     return button(prefix+(control.kind==='input'?'edit:':'act:')+n,isAnswer?(letter||String(answerIndexes.indexOf(n)+1)):control.path==='#'+c.nextId?'下一題':c.labels?.[control.path]||control.label,isAnswer||control.path==='#promotionBtn'?ButtonStyle.Primary:ButtonStyle.Secondary);
   })));
   if(pages>1)components.push(row(...(page?[button(prefix+'controls:'+(page-1),'上一頁職缺／操作')]:[]),...(page+1<pages?[button(prefix+'controls:'+(page+1),'下一頁職缺／操作')]:[])));
   if(textPages>1)components.push(row(...(display?[button(prefix+'text:'+(display-1),'上一頁內容')]:[]),...(display+1<textPages?[button(prefix+'text:'+(display+1),'下一頁內容')]:[])));
-  return {content:'',embeds:[embed],components};
+  const vacancyEmbeds=vacancyCards.map((v,i)=>{
+    const title=(v.selected?'✅ ':'')+(page*4+i+1)+'｜'+v.title;
+    const card=new EmbedBuilder().setColor(v.selected?0x2e9d67:0x2463b2).setTitle(title.slice(0,256)).setDescription(escapeMarkdown(v.unit).slice(0,500)+'\n\n'+[v.sequence,v.badge].filter(Boolean).join(' · ')+(v.description?'\n'+escapeMarkdown(v.description).slice(0,350):'')).setFooter({text:'職缺配階參考 · 選取後仍須確認單位'});
+    return withInsignia(card,{badge:v.badge}).setImage(null);
+  });
+  return {content:'',embeds:[embed,...vacancyEmbeds],components};
 }
 export function fullCard(view,user,{controlsPage=0,menu=false}={}){
   if(menu){
@@ -123,6 +133,7 @@ export async function handleWeb(i,game,{community,mirror}={}){
   }
   const result=await game.fullAction(guild,user,request);
   if(result.view.selection)result.view.selection.action=index;
-  await i.editReply({allowedMentions:{parse:[]},...preparePayload(fullCard(result.view,user,{controlsPage:['controls','menucontrols'].includes(op)?index:0,menu:['menu','menucontrols'].includes(op)}))});
+  const retainedPage=op==='act'&&/^\d+$/.test(parts[5]||'')?Number(parts[5]):0;
+  await i.editReply({allowedMentions:{parse:[]},...preparePayload(fullCard(result.view,user,{controlsPage:['controls','menucontrols'].includes(op)?index:retainedPage,menu:['menu','menucontrols'].includes(op)}))});
   community?.schedule(guild,user);mirror?.schedule();return true;
 }

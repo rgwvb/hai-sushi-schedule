@@ -191,3 +191,18 @@ test('section pagination retains every long history field within Discord limits'
  const v={title:'生涯紀錄',role:'偵查佐',date:'2013',revision:'r',pages:[],controls:[],rank:'—',compact:{mode:'sections',meta:'角色',text:'完整年表',primary:[],fields}};
  const first=fullCard(v,u).embeds[0].toJSON();const count=Number(first.footer.text.match(/內容 1\/(\d+)/)[1]);let combined='';for(let display=0;display<count;display++){const p=fullCard({...v,display},u),e=p.embeds[0].toJSON();assert(e.fields.every(f=>f.value.length<=1024));assert(JSON.stringify(e).length<6000);assert(p.components.length<=5);combined+=e.fields.map(f=>f.value).join('');}assert.equal(combined,fields.map(f=>f.value).join(''));
 });
+
+test('each vacancy has its own matching image and numbered role button; selecting a later page keeps that page',async()=>{
+ const game=new Game(':memory:');const full=game.fullAction.bind(game);game.fullAction=(g,u,a)=>full(g,u,a,options);
+ try{
+ game.create(g,u,'輪調測試','新北市政府警察局');game.transaction(g,u,p=>Object.assign(p,{stage:1,completed:40,month:40,appointed:12,lastRotation:22}));
+ await game.fullAction(g,u,{start:true});const r=await game.fullAction(g,u,{page:'unit',rotation:true});
+ const v=r.view,cards=v.compact.cards;assert(cards.length>4);const payload=preparePayload(fullCard(v,u));assert.equal(payload.embeds.length,5);assert(!payload.embeds[0].toJSON().thumbnail);
+ for(let i=0;i<4;i++){const e=payload.embeds[i+1].toJSON();assert.equal(e.title,(i+1)+'｜'+cards[i].title);assert(e.description.includes(cards[i].unit));assert(e.thumbnail);assert(!e.image);assert(payload.files.some(f=>'attachment://'+f.name===e.thumbnail.url));}
+ const buttons=payload.components.flatMap(row=>row.toJSON().components);for(let i=0;i<4;i++)assert(buttons.some(b=>b.label==='選 '+(i+1)+'｜'+cards[i].title));
+ const page2=fullCard(v,u,{controlsPage:1});const choice=page2.components.flatMap(row=>row.toJSON().components).find(b=>b.label.startsWith('選 5｜'));assert(choice);assert(choice.custom_id.endsWith(':1'));
+ let reply;const interaction={guildId:g,user:{id:u},customId:choice.custom_id,deferred:false,isChatInputCommand:()=>false,isButton:()=>true,isModalSubmit:()=>false,isStringSelectMenu:()=>false,async deferUpdate(){this.deferred=true;},async editReply(p){reply=p;},async reply(p){throw Error(JSON.stringify(p));}};
+ await handle(interaction,game);assert(reply);const selected=reply.embeds[1].toJSON();assert(selected.title.startsWith('✅ 5｜'));assert.equal(selected.color,0x2e9d67);assert(reply.embeds[0].toJSON().description.includes('已選'));
+ assert(reply.components.flatMap(row=>row.toJSON().components).some(b=>b.label==='確認單位'));
+ }finally{game.close();}
+});

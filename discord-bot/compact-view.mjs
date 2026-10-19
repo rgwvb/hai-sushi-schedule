@@ -47,7 +47,7 @@ export function compactView(w,root,controls,visible=()=>true){
   }
   if(id==='dashboard')return {...common,mode:'summary',meta,text:value('goalText'),fields:[field('👤 生涯進度',`年齡 ${s.age} 歲\n完成勤務 ${s.dutyCount||0} 件\n經驗 ${s.xp||0} XP`,true),field('📊 當前狀態',`體力 ${s.energy} · 壓力 ${s.stress}\n聲望 ${s.rep}\n資績 ${(s.promotionScore||0).toFixed(1)}`,true),field('📚 能力',`法學 ${s.law} · 英文 ${s.eng}\n體能 ${s.fit} · 溝通 ${s.comm}`)]};
   if(id==='unit'){
-    const cards=[...d.querySelectorAll('#unitCards > .choice-card')].map(el=>({action:controls.findIndex(c=>d.querySelector(c.path)===el),title:text(el.querySelector('.vacancy-position'))||text(el.querySelector('h3')),unit:text(el.querySelector('h3')),badge:text(el.querySelector('.vacancy-rank')),selected:el.classList.contains('selected')})).filter(c=>c.action>=0);
+    const cards=[...d.querySelectorAll('#unitCards > .choice-card')].map(el=>({action:controls.findIndex(c=>d.querySelector(c.path)===el),title:text(el.querySelector('.vacancy-position'))||text(el.querySelector('h3')),unit:text(el.querySelector('h3')),badge:text(el.querySelector('.vacancy-rank')),sequence:text([...el.querySelectorAll('.tag')].find(n=>/^第\d+序列職務$/.test(text(n)))),description:text(el.querySelector('p')),selected:el.classList.contains('selected')})).filter(c=>c.action>=0);
     return {mode:'vacancies',meta,text:text(d.getElementById('unitBanner')),cards,primary:indexes(c=>c.path==='#confirmUnitBtn'||c.path==='#policeMonitorTrainingBtn'),feedback:text(d.getElementById('unitMsg'))};
   }
   if(id==='career'){
