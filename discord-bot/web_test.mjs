@@ -122,3 +122,20 @@ test('Discord slash, input modal and dropdown work with early acknowledgements a
  i=interaction({custom:`web:${u}:${p.webView.revision}:select:${n}`,selected:['2']});await handle(i,game);assert.equal(i.calls[0],'defer');p=game.get(g,u);assert.equal(p.webCareer.inputs.find(a=>a.path==='#charEducation').value,'大學畢業');assert.equal(p.webCareer.inputs.find(a=>a.path==='#charName').value,'輸入姓名');
  }finally{game.close();}
 });
+test('shared rotation explains waiting and recovers accrued eligibility without adding time or lowering thresholds',async()=>{
+ const r=await runtime(null,options);try{
+ for(const [route,stage,seq,required] of [['g3','officer_initial',9,360],['g3','officer_rotation',9,540],['g4','patrol_rotation',10,540]]){
+   const s=r.w.dcCore.state();Object.assign(s,{created:true,passed:true,route,county:'臺北市',precinct:'',unit:'admin',unitName:'臺北市政府警察局行政單位',assignmentType:'administration',position:seq===10?'巡佐':'巡官',rank:seq===10?'巡佐':'巡官',officialRank:seq===10?'警佐二階':'警正四階',careerSequenceNo:seq,careerStage:stage,rotationCycleDays:required-1,rotationEligible:false,rotationOffers:[],selectedUnit:''});
+   r.w.dcCore.replace(s);await r.act({kind:'page',value:'unit'});assert.equal(r.w.dcCore.state().rotationEligible,false);assert(!r.view().controls.some(c=>c.path.startsWith('#unitCards')));
+   if(stage==='officer_rotation')assert(r.view().text.includes('尚差 1 個月'));
+   const ready=r.w.dcCore.state(),time=ready.simEpoch;ready.rotationCycleDays=required;r.w.dcCore.replace(ready);await r.act({kind:'page',value:'unit'});assert.equal(r.w.dcCore.state().rotationEligible,true);assert(r.view().controls.some(c=>c.path.startsWith('#unitCards')));assert.equal(r.w.dcCore.state().simEpoch,time);
+ }
+ }finally{r.close();}
+});
+test('imported patrol supervisors retain their ongoing rotation clock and open vacancies when the wait completes',async()=>{
+ const game=new Game(':memory:');try{
+ game.create(g,u,'巡佐','新北市政府警察局');game.transaction(g,u,p=>Object.assign(p,{stage:1,completed:40,month:40,appointed:12,lastRotation:22}));
+ const r=await game.fullAction(g,u,{start:true},options);assert.equal(r.p.webCareer.state.careerStage,'patrol_rotation');
+ const opened=await game.fullAction(g,u,{page:'unit',rotation:true},options);assert(opened.view.controls.some(c=>c.path.startsWith('#unitCards')));assert(opened.p.webCareer.state.rotationOffers.some(o=>o.position==='巡佐兼副所長'));
+ }finally{game.close();}
+});

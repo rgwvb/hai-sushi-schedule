@@ -69,7 +69,7 @@ export async function handleWeb(i,game,{community,mirror}={}){
   }else if(commands[i.commandName]){
     const page=commands[i.commandName];
     // Before appointment, /任務 continues the entrance flow rather than exposing officer controls.
-    request=p.webSummary?.sequence===99?{}:{page};
+    request=p.webSummary?.sequence===99?{}:{page,...(i.commandName==='輪調'?{rotation:true}:{})};
   }
   const result=await game.fullAction(guild,user,request);
   if(result.view.selection)result.view.selection.action=index;

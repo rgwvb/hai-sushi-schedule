@@ -14,7 +14,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { preparePayload,withInsignia } from './insignia.mjs';
 import { EmbedBuilder } from 'discord.js';
-import { careerRole,currentRank,positionSummary,nextStage,careerDisplayOrder } from './career.mjs';
+import { careerRole,currentRank,positionSummary,nextStage,careerDisplayOrder,vacancies } from './career.mjs';
 const g='111111111111111111',u='222222222222222222',other='333333333333333333';
 const create=game=>game.create(g,u,'測試警員','新北市政府警察局板橋分局某派出所');
 function finish(game,quality=100,kind='duty'){
@@ -350,4 +350,23 @@ test('bundled images match the downloaded original Wikimedia PNG bytes exactly',
     assert.equal(data.length,item.bytes);assert.equal(createHash('sha256').update(data).digest('hex'),item.sha256);
     assert(item.source.startsWith('https://commons.wikimedia.org/wiki/File:TW-Police-Rank_'));
   }
+});
+test('senior rotation never disappears after excluding the current office and stays within the same agency class',()=>{
+ const game=new Game(':memory:');try{
+ for(const home of ['新北市政府警察局','花蓮縣警察局'])for(const stage of [4,9,5,6,7,8]){
+   const user=home+'-'+stage;game.create(g,user,'測試角色',home);
+   game.transaction(g,user,p=>{p.stage=stage;p.month=60;const post=vacancies(p)[0];p.post=post;p.unit=post.unit;});
+   const before=game.get(g,user),{offer}=game.offers(g,user,'rotation');assert(offer.rows.length>0,home+' '+stage);
+   assert(offer.rows.every(r=>r.unit!==before.unit||r.role.title!==careerRole(before).title));
+   if(stage===4)assert(new Set(offer.rows.map(r=>r.unit)).size===offer.rows.length);
+   if(stage===8)assert(offer.rows.some(r=>r.unit==='中央警察大學'&&r.role.title==='校長'));
+   const after=game.appoint(g,user,offer.id,0);for(const key of ['stage','appointed','stageMerit','merit','appraisals','trained','month'])assert.deepEqual(after[key],before[key]);assert.equal(currentRank(after),currentRank(before));
+ }
+ }finally{game.close();}
+});
+test('rotation countdown identifies the exact remaining months and opening date without opening early',()=>{
+ const game=new Game(':memory:');try{create(game);assert.throws(()=>game.offers(g,u,'rotation'),/已任職 0／12.*尚差 12.*2011 年 1 月/);
+ game.transaction(g,u,p=>{p.month=29;p.appointed=12;p.lastRotation=12;});assert.throws(()=>game.offers(g,u,'rotation'),/已任職 17／18.*尚差 1.*2012 年 7 月/);
+ game.transaction(g,u,p=>p.month=30);assert(game.offers(g,u,'rotation').offer.rows.length);
+ }finally{game.close();}
 });

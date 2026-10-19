@@ -124,7 +124,8 @@ export class Game {
     if(p.pending)throw new GameError('請先完成目前案件或研習，再選填職缺。');
     if(kind==='promotion'&&!this.requirements(p).ready)throw new GameError('升遷條件尚未完成，請輸入 /升遷。');
     const wait=(p.lastRotation??p.appointed)===0?12:18;
-    if(kind==='rotation'&&p.month-(p.lastRotation??p.appointed)<wait)throw new GameError(`尚未開放輪調；本次任職需滿 ${wait} 個遊戲月。`);
+    const elapsed=p.month-(p.lastRotation??p.appointed);
+    if(kind==='rotation'&&elapsed<wait)throw new GameError(`輪調尚未開放：本次已任職 ${elapsed}／${wait} 個遊戲月，尚差 ${wait-elapsed} 個月；預計 ${stamp((p.lastRotation??p.appointed)+wait)} 開放。`);
     const target=kind==='promotion'?nextStage(p):p.stage;
     const rows=vacancies(p,target).filter(x=>kind!=='rotation'||x.unit!==p.unit||x.role.title!==careerRole(p).title);
     if(!rows.length)throw new GameError('目前沒有其他同序列模擬職缺。');

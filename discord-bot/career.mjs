@@ -78,12 +78,26 @@ export function vacancies(p,index=p.stage){
     [['警務正','staff','staff','業務單位'],['警務正','inspection','staff','督察單位'],['警務正','dispatch','staff','勤務指揮中心']],
   ];
   let specs=groups[index]||[[base.title,base.deck,[6,9].includes(index)?'deputy':'head','']];
-  const rows=specs.map(([title,deck,authority,suffix],i)=>({id:'local-'+i,unit:index<4?agency+'｜'+suffix:appointmentUnit({...p,post:null,stage:index}),role:{title,deck,authority}}));
+  const dutyAgency=index===4?appointmentUnit({...p,post:null,stage:index}).split('｜')[0]:agency;
+  const rows=specs.map(([title,deck,authority,suffix],i)=>({id:'local-'+i,unit:index<=4?dutyAgency+'｜'+suffix:appointmentUnit({...p,post:null,stage:index}),role:{title,deck,authority}}));
   if(index<4)for(const county of ['新北市','臺中市','高雄市','屏東縣','花蓮縣']){
     if(local.includes(county))continue;
     const [title,deck,authority,suffix]=specs[0];
     rows.push({id:'transfer-'+county,unit:county+'政府警察局｜'+suffix+'（模擬職缺）',role:{title,deck,authority}});
   }
+  // Senior offices need alternatives too. Previously their sole row was the
+  // current office and Game.offers filtered it out, leaving an empty list.
+  if([5,6,7,9].includes(index)){
+    const peers=base.area.type==='county'?
+      ['屏東縣政府警察局','花蓮縣警察局','宜蘭縣政府警察局','新竹縣政府警察局','嘉義市政府警察局']:
+      metros.map(city=>city+'政府警察局');
+    for(const peer of peers){
+      if(peer===agency||local.includes(peer)||p.unit.startsWith(peer))continue;
+      const unit=peer+([5,9].includes(index)?'｜所屬分局（模擬職缺）':'');
+      rows.push({id:'transfer-'+index+'-'+peer,unit,role:{title:base.title,deck:base.deck,authority:[6,9].includes(index)?'deputy':'head'}});
+    }
+  }
+  if(index===8)rows.push({id:'central-school-president',unit:'中央警察大學',role:{title:'校長',deck:'education',authority:'head'}});
   return rows;
 }
 

@@ -2402,6 +2402,8 @@ function units(){
     s.unitSelectionOpen=false;
   }
   if(isOfficerTrack()||s.careerStage==="patrol_rotation"){
+    const requiredDays=s.careerStage==="officer_initial"?360:540;
+    if(["officer_initial","officer_rotation","patrol_rotation"].includes(s.careerStage)&&Number(s.rotationCycleDays)>=requiredDays)s.rotationEligible=true;
     if(s.careerStage==="officer_initial_offer"){
       $("confirmUnitBtn").style.display="";
       $("unitBanner").textContent="已分發至 "+([s.county,s.precinct].filter(Boolean).join("｜"))+"。以下為本次3個模擬初任職缺。";
@@ -2435,6 +2437,12 @@ function units(){
       $("unitCards").innerHTML=s.rotationOffers.map(o=>officerVacancyCard(o,"輪調職缺")).join("");
       document.querySelectorAll("[data-o]").forEach(e=>e.onclick=()=>{s.selectedUnit=e.dataset.o;units()});
       return;
+    }
+    if(s.careerStage==="officer_rotation"&&!s.rotationEligible){
+      const elapsedDays=Math.max(0,Number(s.rotationCycleDays)||0),elapsed=Math.floor(elapsedDays/30),remaining=Math.ceil(Math.max(0,540-elapsedDays)/30);
+      $("unitBanner").textContent="目前職務："+(s.position||"—")+"｜本次已任職 "+elapsed+"／18 個遊戲月，尚差 "+remaining+" 個月開放同序列輪調。";
+      $("unitCards").innerHTML='<div class="choice-card selected current-assignment-card"><h3>🏢 '+(s.unitName||"目前單位")+'</h3><p>任職歷練尚未完成，完成勤務或推進遊戲日期後會自動開放職缺。</p><div class="meta"><span class="tag">尚差 '+remaining+' 個月</span></div></div>';
+      $("confirmUnitBtn").style.display="none";return;
     }
     $("unitBanner").textContent="目前職務："+(s.unitName||"—")+"｜"+(s.position||"—")+"。後續職務輪調將依缺額與序列開放。";
     $("unitCards").innerHTML='<div class="empty-state">目前沒有新的輪調缺額。</div>';
