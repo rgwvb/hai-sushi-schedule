@@ -164,3 +164,15 @@ test('shared rotation exposes all 21 external counties in four-choice pages with
  const card=fullCard({...v,revision:'r'},u);assert(card.components.length<=5);assert(card.components.some(row=>row.toJSON().components.some(b=>b.label==='下一頁職缺／操作')));assert.equal(r.w.dcCore.state().officialRank,'警佐二階');assert.equal(r.w.dcCore.state().simEpoch,s.simEpoch);
  }finally{r.close();}
 });
+
+test('career card separates eligibility, performance and result fields without duplicating dense web text or changing rules',async()=>{
+ const game=new Game(':memory:');try{
+ game.create(g,u,'鍾SIR','花蓮縣警察局吉安分局偵查隊');game.transaction(g,u,p=>Object.assign(p,{stage:1,month:40,completed:43,merit:8.5,post:{unit:p.unit,role:{title:'偵查佐',deck:'criminal',authority:'staff'}}}));
+ await game.fullAction(g,u,{start:true},options);let r=await game.fullAction(g,u,{page:'career'},options);
+ assert.equal(r.view.compact.mode,'career');let p=validate(r.view),e=p.embeds[0].toJSON();assert.equal(e.title,'陞遷中心｜偵查佐');assert(e.thumbnail&&!e.image);assert.equal(p.content,'');
+ assert(!e.description.includes('勤務實績'));assert(!e.description.includes('警佐班第1類'));assert(e.fields.find(f=>f.name.includes('升遷資格')).value.includes('警正官等資格：未取得'));
+ assert(e.fields.find(f=>f.name.includes('考試與訓練')).value.includes('\n'));assert.equal(e.fields.filter(f=>f.name.includes('資績與考績')).length,1);
+ const score=r.p.webCareer.state.promotionScore,epoch=r.p.webCareer.state.simEpoch;const actions=p.components.flatMap(row=>row.toJSON().components);const exam=actions.find(b=>b.label==='三等特考／訓練');assert(exam);assert.equal(Number(exam.custom_id.split(':').at(-1)),r.view.controls.findIndex(c=>c.path==='#thirdGradeUpgradeBtn'));
+ r=await act(game,r,'#thirdGradeUpgradeBtn');e=validate(r.view).embeds[0].toJSON();assert(e.fields.find(f=>f.name.includes('最近操作結果')).value.includes('三等警察特考'));assert.equal(r.p.webCareer.state.simEpoch,epoch);assert.equal(r.p.webCareer.state.promotionScore,score);
+ }finally{game.close();}
+});

@@ -17,13 +17,20 @@ function compactCard(view,user,controlsPage=0){
     pages=Math.max(1,Math.ceil(primary.length/8));page=Math.min(page,pages-1);primary=primary.slice(page*8,page*8+8);
   }
   const escaped=escapeMarkdown(body),textPages=Math.max(1,Math.ceil(escaped.length/2700)),display=Math.min(Math.max(0,view.display||0),textPages-1);
-  const heading=view.title.includes(view.role)?view.title:view.title+'｜'+view.role;
+  const heading=c.mode==='career'?'陞遷中心｜'+view.role:view.title.includes(view.role)?view.title:view.title+'｜'+view.role;
   const embed=new EmbedBuilder().setColor(0x2463b2).setTitle(heading.slice(0,256)).setDescription((c.meta?'**'+escapeMarkdown(c.meta).slice(0,500)+'**\n\n':'')+escaped.slice(display*2700,(display+1)*2700)).setFooter({text:view.date+' · '+(textPages>1?`內容 ${display+1}/${textPages} · `:'')+'網頁共用規則 · DC 獨立存檔'});
-  if(view.rank&&view.rank!=='—'&&!['考生','待分發'].includes(view.role))withInsignia(embed,{badge:view.badge}).setImage(null);
+  let credit='';
+  if(view.rank&&view.rank!=='—'&&!['考生','待分發'].includes(view.role)){
+    const description=embed.data.description;
+    withInsignia(embed,{badge:view.badge}).setImage(null);
+    if(c.mode==='career'){credit=embed.data.description.slice(description.length).trim();embed.setDescription(description);}
+  }
+  if(c.fields?.length)embed.addFields(c.fields.map(f=>({name:f.name,value:escapeMarkdown(f.value).slice(0,1024)||'—',inline:f.inline})));
+  if(credit)embed.addFields({name:'階級圖來源',value:credit,inline:false});
   if(view.links?.length&&c.mode==='question')embed.addFields({name:'題目來源',value:view.links.slice(0,2).map(l=>'['+escapeMarkdown(l.label).slice(0,70)+']('+l.url+')').join('\n').slice(0,900)});
   for(let i=0;i<primary.length;i+=4)components.push(row(...primary.slice(i,i+4).map(n=>{
     const control=view.controls[n],isAnswer=answerIndexes.includes(n),letter=control.label.match(/^[A-D](?:\.|．|\s)/)?.[0]?.trim().replace(/[.．]/,'');
-    return button(prefix+(control.kind==='input'?'edit:':'act:')+n,isAnswer?(letter||String(answerIndexes.indexOf(n)+1)):control.path==='#'+c.nextId?'下一題':control.label,isAnswer?ButtonStyle.Primary:ButtonStyle.Secondary);
+    return button(prefix+(control.kind==='input'?'edit:':'act:')+n,isAnswer?(letter||String(answerIndexes.indexOf(n)+1)):control.path==='#'+c.nextId?'下一題':c.labels?.[control.path]||control.label,isAnswer||control.path==='#promotionBtn'?ButtonStyle.Primary:ButtonStyle.Secondary);
   })));
   if(pages>1)components.push(row(...(page?[button(prefix+'controls:'+(page-1),'上一頁職缺／操作')]:[]),...(page+1<pages?[button(prefix+'controls:'+(page+1),'下一頁職缺／操作')]:[])));
   if(textPages>1)components.push(row(...(display?[button(prefix+'text:'+(display-1),'上一頁題目內容')]:[]),...(display+1<textPages?[button(prefix+'text:'+(display+1),'下一頁題目內容')]:[])));

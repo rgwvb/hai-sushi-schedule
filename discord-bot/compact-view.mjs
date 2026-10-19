@@ -22,7 +22,26 @@ export function compactView(w,root,controls){
     const cards=[...d.querySelectorAll('#unitCards > .choice-card')].map(el=>({action:controls.findIndex(c=>d.querySelector(c.path)===el),title:text(el.querySelector('.vacancy-position'))||text(el.querySelector('h3')),unit:text(el.querySelector('h3')),badge:text(el.querySelector('.vacancy-rank')),selected:el.classList.contains('selected')})).filter(c=>c.action>=0);
     return {mode:'vacancies',meta,text:text(d.getElementById('unitBanner')),cards,primary:indexes(c=>c.path==='#confirmUnitBtn'||c.path==='#policeMonitorTrainingBtn'),feedback:text(d.getElementById('unitMsg'))};
   }
-  if(id==='career')return {mode:'summary',meta,text:['【升遷條件】',text(d.getElementById('promotionRuleText')),text(d.getElementById('officerQualificationPanel')?.style.display!=='none'?d.getElementById('officerQualificationBox'):null),text(d.getElementById('promotionScoreBox')),text(d.getElementById('careerMsg'))].filter(Boolean).join('\n\n'),primary:controls.map((_,i)=>i)};
+  if(id==='career'){
+    const parts=text(d.getElementById('promotionScoreBox')).split('｜'),fields=[];
+    const stats=parts.filter(x=>/^資績|^最近考績/.test(x));
+    if(stats.length)fields.push({name:'📊 資績與考績',value:stats.join('\n'),inline:true});
+    if(!['考生','待分發'].includes(s.position))fields.push({name:'🎖️ 獎懲紀錄',value:`嘉獎 ${s.commend||0} · 記功 ${s.merit||0}\n申誡 ${s.admonition||0} · 記過 ${s.demerit||0}\n紀律 ${s.discipline??100}`,inline:true});
+    const panel=d.getElementById('officerQualificationPanel'),qualification=d.getElementById('officerQualificationBox');
+    if(panel&&panel.style.display!=='none'){
+      const lines=[...qualification.querySelectorAll('.qualification-grid > div')].map(el=>{const status=text(el.querySelector('b'));return (/^(符合|已取得|可參加)$/.test(status)?'✅ ':'⏳ ')+text(el.querySelector('span'))+'：'+status;});
+      if(lines.length)fields.push({name:'📋 升遷資格',value:lines.join('\n'),inline:false});
+      const notes=text(qualification.querySelector('.qualification-notes')).split('｜');
+      if(notes[0])fields.push({name:'🎓 考試與訓練',value:notes.join('\n'),inline:false});
+    }
+    const performance=parts.filter(x=>/^勤務|^考績績效/.test(x));
+    if(performance.length)fields.push({name:'📈 績效來源',value:performance.join('\n'),inline:false});
+    const result=text(d.getElementById('careerMsg'));
+    if(result)fields.push({name:'💬 最近操作結果',value:result,inline:false});
+    const labels={'#promotionBtn':'參加升遷甄審','#specialUnitBtn':'專業甄選','#transferBtn':'跨機關調任','#thirdGradeUpgradeBtn':'三等特考／訓練','#promotionExamBtn':'警正升官等考試','#promotionTrainingBtn':'晉升警正訓練','#sergeantClass1Btn':'警佐班第1類','#sergeantClass2Btn':'警佐班第2類','#sergeantClass3Btn':'警佐班第3類'};
+    labels['#promotionTarget']='申請職務：'+(d.getElementById('promotionTarget')?.value||'選擇職務');
+    return {mode:'career',meta,text:text(d.getElementById('promotionRuleText')),fields,primary:controls.map((_,i)=>i),labels};
+  }
   if(id==='academy')return {mode:'summary',meta,text:'選擇練習：歷屆特考、混合題庫、主題測驗，或人力配置情境。\n\n知識 '+(s.knowledge||0)+'｜答對 '+(s.quizCorrect||0)+'／'+(s.quizTotal||0)+' 題',primary:controls.map((_,i)=>i)};
   return null;
 }
