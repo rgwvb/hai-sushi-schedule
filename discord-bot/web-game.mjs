@@ -90,7 +90,7 @@ export async function runtime(saved,{fetcher=assetFetch,random}={}){
       }
       const pages=[...d.querySelectorAll('.sidebar .nav-btn[data-page]')].filter(el=>visible(el,w)&&el.dataset.page!=='settings').map(el=>({value:el.dataset.page,label:clean(el.textContent)}));
       const links=[...root.querySelectorAll('a[href]')].filter(a=>visible(a,w)&&a.href.startsWith('https://')).slice(0,3).map(a=>({label:clean(a.textContent),url:a.href}));
-      return {title:clean(root.querySelector('h1,h2')?.textContent)||'警察生涯',text:pageText(root,w),compact:compactView(w,root,controls),controls,pages,links,selection,notice:clean(d.querySelector('.toast.show')?.textContent),date:w.dcCore.stats().date,role:w.dcCore.state().position,rank:w.dcCore.state().officialRank,...w.dcSystems.stats()};
+      return {title:clean(root.querySelector('h1,h2')?.textContent)||'警察生涯',text:pageText(root,w),compact:compactView(w,root,controls,n=>visible(n,w)),controls,pages,links,selection,notice:clean(d.querySelector('.toast.show')?.textContent),date:w.dcCore.stats().date,role:w.dcCore.state().position,rank:w.dcCore.state().officialRank,...w.dcSystems.stats()};
     },async act(a){
       if(a.kind==='page'){
         const allowed=[...d.querySelectorAll('.nav-btn[data-page]')].some(el=>el.dataset.page===a.value&&visible(el,w));

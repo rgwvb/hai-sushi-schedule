@@ -13,19 +13,29 @@ function compactCard(view,user,controlsPage=0){
     pages=Math.ceil(c.cards.length/4);page=Math.min(page,pages-1);
     const cards=c.cards.slice(page*4,page*4+4);body+='\n\n'+cards.map((v,i)=>`${v.selected?'✅ ':''}${page*4+i+1}. ${v.unit}\n${v.title}${v.badge?'｜'+v.badge:''}`).join('\n\n');
     primary=cards.map(v=>v.action).concat(c.primary);if(c.feedback)body+='\n\n'+c.feedback;
-  }else if(c.mode!=='question'){
+  }else{
     pages=Math.max(1,Math.ceil(primary.length/8));page=Math.min(page,pages-1);primary=primary.slice(page*8,page*8+8);
   }
-  const escaped=escapeMarkdown(body),textPages=Math.max(1,Math.ceil(escaped.length/2700)),display=Math.min(Math.max(0,view.display||0),textPages-1);
+  const fieldPages=[[]];let fieldSize=0;
+  for(const f of c.fields||[]){
+    const value=escapeMarkdown(f.value||'—');
+    for(let offset=0;offset<value.length;offset+=850){
+      const chunk={name:f.name+(offset?'（續）':''),value:value.slice(offset,offset+850),inline:f.inline};
+      if(fieldPages.at(-1).length>=6||fieldSize+chunk.value.length>2200){fieldPages.push([]);fieldSize=0;}
+      fieldPages.at(-1).push(chunk);fieldSize+=chunk.value.length;
+    }
+  }
+  const escaped=escapeMarkdown(body),bodySize=c.fields?.length?1200:2700,textPages=Math.max(1,Math.ceil(escaped.length/bodySize),fieldPages.length),display=Math.min(Math.max(0,view.display||0),textPages-1);
   const heading=c.mode==='career'?'陞遷中心｜'+view.role:view.title.includes(view.role)?view.title:view.title+'｜'+view.role;
-  const embed=new EmbedBuilder().setColor(0x2463b2).setTitle(heading.slice(0,256)).setDescription((c.meta?'**'+escapeMarkdown(c.meta).slice(0,500)+'**\n\n':'')+escaped.slice(display*2700,(display+1)*2700)).setFooter({text:view.date+' · '+(textPages>1?`內容 ${display+1}/${textPages} · `:'')+'網頁共用規則 · DC 獨立存檔'});
+  const embed=new EmbedBuilder().setColor(0x2463b2).setTitle(heading.slice(0,256)).setDescription((c.meta?'**'+escapeMarkdown(c.meta).slice(0,500)+'**\n\n':'')+(escaped.length<=bodySize?escaped:escaped.slice(display*bodySize,(display+1)*bodySize))).setFooter({text:view.date+' · '+(textPages>1?`內容 ${display+1}/${textPages} · `:'')+'網頁共用規則 · DC 獨立存檔'});
   let credit='';
   if(view.rank&&view.rank!=='—'&&!['考生','待分發'].includes(view.role)){
     const description=embed.data.description;
     withInsignia(embed,{badge:view.badge}).setImage(null);
-    if(c.mode==='career'){credit=embed.data.description.slice(description.length).trim();embed.setDescription(description);}
+    if(c.fields?.length){credit=embed.data.description.slice(description.length).trim();embed.setDescription(description);}
   }
-  if(c.fields?.length)embed.addFields(c.fields.map(f=>({name:f.name,value:escapeMarkdown(f.value).slice(0,1024)||'—',inline:f.inline})));
+  if(fieldPages[display]?.length)embed.addFields(fieldPages[display]);
+  if(view.notice&&view.notice!=='已儲存')embed.addFields({name:'操作結果',value:escapeMarkdown(view.notice).slice(0,500)});
   if(credit)embed.addFields({name:'階級圖來源',value:credit,inline:false});
   if(view.links?.length&&c.mode==='question')embed.addFields({name:'題目來源',value:view.links.slice(0,2).map(l=>'['+escapeMarkdown(l.label).slice(0,70)+']('+l.url+')').join('\n').slice(0,900)});
   for(let i=0;i<primary.length;i+=4)components.push(row(...primary.slice(i,i+4).map(n=>{
@@ -33,7 +43,7 @@ function compactCard(view,user,controlsPage=0){
     return button(prefix+(control.kind==='input'?'edit:':'act:')+n,isAnswer?(letter||String(answerIndexes.indexOf(n)+1)):control.path==='#'+c.nextId?'下一題':c.labels?.[control.path]||control.label,isAnswer||control.path==='#promotionBtn'?ButtonStyle.Primary:ButtonStyle.Secondary);
   })));
   if(pages>1)components.push(row(...(page?[button(prefix+'controls:'+(page-1),'上一頁職缺／操作')]:[]),...(page+1<pages?[button(prefix+'controls:'+(page+1),'下一頁職缺／操作')]:[])));
-  if(textPages>1)components.push(row(...(display?[button(prefix+'text:'+(display-1),'上一頁題目內容')]:[]),...(display+1<textPages?[button(prefix+'text:'+(display+1),'下一頁題目內容')]:[])));
+  if(textPages>1)components.push(row(...(display?[button(prefix+'text:'+(display-1),'上一頁內容')]:[]),...(display+1<textPages?[button(prefix+'text:'+(display+1),'下一頁內容')]:[])));
   return {content:'',embeds:[embed],components};
 }
 export function fullCard(view,user,{controlsPage=0,menu=false}={}){

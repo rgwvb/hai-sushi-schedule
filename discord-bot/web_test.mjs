@@ -176,3 +176,18 @@ test('career card separates eligibility, performance and result fields without d
  r=await act(game,r,'#thirdGradeUpgradeBtn');e=validate(r.view).embeds[0].toJSON();assert(e.fields.find(f=>f.name.includes('最近操作結果')).value.includes('三等警察特考'));assert.equal(r.p.webCareer.state.simEpoch,epoch);assert.equal(r.p.webCareer.state.promotionScore,score);
  }finally{game.close();}
 });
+
+test('life, appraisal, records and every available page use section cards and scoped shortcuts',async()=>{
+ const game=new Game(':memory:');try{
+ game.create(g,u,'生活測試','花蓮縣警察局吉安分局偵查隊');game.transaction(g,u,p=>Object.assign(p,{stage:1,month:40,completed:43}));await game.fullAction(g,u,{start:true},options);
+ let r=await game.fullAction(g,u,{page:'life'},options);assert.equal(r.view.compact.mode,'sections');let p=validate(r.view),e=p.embeds[0].toJSON();assert(!e.description.includes('危勞第一類'));assert(e.fields.find(f=>f.name.includes('財務')));assert(e.fields.find(f=>f.name.includes('身心')));assert(e.fields.find(f=>f.name.includes('退休進度')));assert(!e.fields.some(f=>f.value.includes('遊戲依現行危勞職務')));assert(p.components.flatMap(row=>row.toJSON().components).every(c=>c.type===2));
+ const before=r.p.webCareer.state,rest=r.view.controls.find(c=>c.label==='完整休息');assert(rest);r=await act(game,r,rest.path);assert(r.p.webCareer.state.stress<=before.stress);assert.equal(r.p.webCareer.state.simEpoch-before.simEpoch,86400000);assert.equal(r.p.webCareer.state.savings,before.savings);
+ r=await game.fullAction(g,u,{page:'performance'},options);assert(r.view.compact.fields.some(f=>f.name==='考績結算'));validate(r.view);r=await game.fullAction(g,u,{page:'records'},options);assert(r.view.compact.fields.some(f=>f.name.includes('目前任職')));validate(r.view);
+ const pages=r.view.pages.map(p=>p.value);for(const page of pages){r=await game.fullAction(g,u,{page},options);assert(r.view.compact,page);const payload=validate(r.view);assert(payload.components.flatMap(row=>row.toJSON().components).every(c=>c.type===2),page);}
+ }finally{game.close();}
+});
+test('section pagination retains every long history field within Discord limits',()=>{
+ const fields=Array.from({length:23},(_,i)=>({name:'經歷 '+i,value:String(i).padStart(3,'0')+'長篇任職紀錄'.repeat(270),inline:false}));
+ const v={title:'生涯紀錄',role:'偵查佐',date:'2013',revision:'r',pages:[],controls:[],rank:'—',compact:{mode:'sections',meta:'角色',text:'完整年表',primary:[],fields}};
+ const first=fullCard(v,u).embeds[0].toJSON();const count=Number(first.footer.text.match(/內容 1\/(\d+)/)[1]);let combined='';for(let display=0;display<count;display++){const p=fullCard({...v,display},u),e=p.embeds[0].toJSON();assert(e.fields.every(f=>f.value.length<=1024));assert(JSON.stringify(e).length<6000);assert(p.components.length<=5);combined+=e.fields.map(f=>f.value).join('');}assert.equal(combined,fields.map(f=>f.value).join(''));
+});
